@@ -1020,7 +1020,7 @@
         </div>
 
         <div class="card">
-          <div class="head" style="cursor:default"><span class="num">合</span><span class="ttl" id="awMxTitle">Matriz de afinidad</span></div>
+          <div class="head" style="cursor:default"><span class="num">合</span><span class="ttl" id="awMxTitle">Matriz de afinidad</span><button class="awai adminonly" style="margin-left:auto" onclick="awRescoreAll()" title="re-puntuar todos los pasos con IA (pisa los ajustes manuales)">⟳ Re-puntuar todo con IA</button></div>
           <div class="body">
             <div style="overflow-x:auto"><table class="awmx" id="awMx"></table></div>
             <div class="awlegend">
@@ -5293,7 +5293,7 @@ function kjQuickGo(tab, focusId){
    TAB · AISHŌ 相性 — maridaje: matriz de afinidad, flights, optimizador,
    mapa, guía de compra y puntuación por IA (proxy en el servidor)
    ===================================================================== */
-let AW={ bebidas:[], m:{}, notes:{}, flight:[], override:{}, prices:{}, target:28, autoAi:true, aiRows:{} };
+let AW={ bebidas:[], m:{}, notes:{}, flight:[], override:{}, prices:{}, target:28, autoAi:true, aiRows:{}, fp:{}, archMap:{} };
 const awUI={ cat:'sake', tier:'comun', optScope:'activo', arch:'graso', aiTried:{}, aiBusy:false };
 const AW_SYM=['—','○','◎','★'];
 
@@ -5341,7 +5341,7 @@ function awEnsure(a){
   if(!Array.isArray(a.flight)) a.flight=[];
   if(!a.target) a.target=28;
   if(a.autoAi===undefined) a.autoAi=true;
-  if(!a.aiRows||typeof a.aiRows!=='object') a.aiRows={};
+  ['aiRows','fp','archMap'].forEach(k=>{ if(!a[k]||typeof a[k]!=='object') a[k]={}; });
   return a;
 }
 /* siembra: completar celdas faltantes matcheando por nombre de paso */
@@ -5414,8 +5414,9 @@ function awCycle(bid,pid){ const b=awBebById(bid); if(!b||!b.avail) return;
   AW.m[bid][pid]=((AW.m[bid][pid]||0)+1)%4;
   delete AW.override[pid];
   delete AW.aiRows[pid];        /* tocar la fila = criterio humano: sale de "sin revisar" */
+  awBless(pid);
   awPersist(); renderAisho(); }
-function awReview(pid){ delete AW.aiRows[pid]; awPersist(); renderAisho(); }
+function awReview(pid){ delete AW.aiRows[pid]; awBless(pid); awPersist(); renderAisho(); }
 function awSetAutoAi(v){ AW.autoAi=!!v; awPersist(); renderAisho(); }
 function awTogFlight(pid){
   const i=AW.flight.indexOf(pid);
@@ -5504,6 +5505,24 @@ async function awAiScore(bid){
 function awRowUnscored(pid){
   return AW.bebidas.every(b=>!awScore(b.id,pid));
 }
+function awIngNames(p){
+  return (p.ing||[]).map(l=>{ const i=gkInsById(l.ins); return i? i.n : null; }).filter(Boolean).slice(0,10);
+}
+function awFingerprint(p){
+  return awNorm(p.n)+'|'+awNorm(p.d||'')+'|'+awIngNames(p).map(awNorm).sort().join(',');
+}
+/* migración + detección de cambios: devuelve los pasos cuya composición cambió
+   desde la última puntuación (nombre, descripción o insumos del escandallo) */
+function awStalePasos(){
+  const out=[];
+  G.pasos.forEach(p=>{
+    const cur=awFingerprint(p);
+    if(AW.fp[p.id]===undefined){ AW.fp[p.id]=cur; return; }   /* primera vista: adoptar sin marcar */
+    if(AW.fp[p.id]!==cur && !awRowUnscored(p.id)) out.push(p);
+  });
+  return out;
+}
+function awBless(pid){ const p=G.pasos.find(x=>x.id===pid); if(p) AW.fp[pid]=awFingerprint(p); }
 function awPasoScoreable(p){
   const n=awNorm(p.n);
   if(!n || n==='nuevo paso') return false;                 /* placeholder: la IA no adivina */
@@ -5511,7 +5530,10 @@ function awPasoScoreable(p){
 }
 async function awAutoAi(){
   if(!AW.autoAi || awUI.aiBusy || !kjIsAdmin()) return;
-  const cand=G.pasos.filter(p=>awPasoScoreable(p) && !awUI.aiTried[p.id]).slice(0,3);
+  const stale=awStalePasos();
+  const nuevos=G.pasos.filter(p=>awPasoScoreable(p) && !awUI.aiTried[p.id]);
+  const viejos=stale.filter(p=>awNorm(p.n)!=='nuevo paso' && !awUI.aiTried[p.id]);
+  const cand=[...nuevos, ...viejos].slice(0,3);
   if(!cand.length) return;
   awUI.aiBusy=true;
   try{
@@ -5522,27 +5544,48 @@ async function awAutoAi(){
     }
   } finally { awUI.aiBusy=false; }
 }
-async function awAiScorePaso(pid){
-  const p=G.pasos.find(x=>x.id===pid); if(!p) return;
-  flash('Consultando IA para «'+p.n+'»…');
+async function awAiScorePaso(pid,quiet){
+  const p=G.pasos.find(x=>x.id===pid); if(!p) return false;
+  if(!quiet) flash('Consultando IA para «'+p.n+'»…');
   try{
     const r=await fetch('/api/ai/pair',{ method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ paso:{n:p.n, d:p.d||'', prem:!!p.prem},
+      body:JSON.stringify({ paso:{n:p.n, d:p.d||'', prem:!!p.prem, i:awIngNames(p)},
         bebidas:AW.bebidas.map(b=>({id:b.id, n:b.n, d:b.d||'', cat:b.cat, tier:b.tier||null})) }) });
-    if(r.status===501){ flash('El servidor no tiene OPENAI_API_KEY configurada'); return; }
-    if(r.status===403){ flash('La puntuación por IA es solo para admin'); return; }
-    if(!r.ok){ flash('La IA no respondió ('+r.status+')'); return; }
+    if(r.status===501){ flash('El servidor no tiene OPENAI_API_KEY configurada'); return false; }
+    if(r.status===403){ flash('La puntuación por IA es solo para admin'); return false; }
+    if(!r.ok){ flash('La IA no respondió ('+r.status+')'); return false; }
     const j=await r.json();
-    if(!j.scores){ flash('Respuesta de IA sin scores'); return; }
+    if(!j.scores){ flash('Respuesta de IA sin scores'); return false; }
     let n=0;
     AW.bebidas.forEach(b=>{ const v=j.scores[b.id]; if(v!=null){
       if(!AW.m[b.id]) AW.m[b.id]={};
       AW.m[b.id][pid]=Math.max(0,Math.min(3,Math.round(+v))); n++;
       if(j.notas && j.notas[b.id]){ if(!AW.notes[b.id]) AW.notes[b.id]={}; AW.notes[b.id][pid]=j.notas[b.id]; }
     }});
+    if(typeof j.arch==='string' && AW_ARCH.some(a=>a.id===j.arch)) AW.archMap[pid]=j.arch;
     AW.aiRows[pid]=true;
-    awPersist(); flash('IA puntuó «'+p.n+'» contra '+n+' bebidas — revisá y corregí ✓'); renderAisho();
-  }catch(e){ flash('IA disponible en la versión deployada (el archivo suelto no tiene servidor)'); }
+    awBless(pid);                                   /* la huella queda sellada a esta composición */
+    awPersist(); if(!quiet) flash('IA puntuó «'+p.n+'» contra '+n+' bebidas — revisá y corregí ✓'); renderAisho();
+    return true;
+  }catch(e){ flash('IA disponible en la versión deployada (el archivo suelto no tiene servidor)'); return false; }
+}
+/* re-puntuar TODO el menú: pisa scores y arquetipos, marca todo "sin revisar" */
+async function awRescoreAll(){
+  const cand=G.pasos.filter(p=>awNorm(p.n) && awNorm(p.n)!=='nuevo paso');
+  if(!cand.length){ flash('No hay pasos con nombre real'); return; }
+  if(!confirm('Esto vuelve a puntuar los '+cand.length+' pasos con IA y PISA los ajustes manuales de la matriz. ¿Seguir?')) return;
+  awUI.aiBusy=true;
+  let ok=0;
+  try{
+    for(let i=0;i<cand.length;i++){
+      flash('IA: '+(i+1)+' / '+cand.length+' — '+cand[i].n);
+      const r=await awAiScorePaso(cand[i].id, true);
+      if(r) ok++; else if(ok===0 && i===0) break;    /* si la primera falla (sin key/servidor), abortar */
+      await new Promise(r2=>setTimeout(r2,350));
+    }
+  } finally { awUI.aiBusy=false; }
+  flash(ok? 'Re-puntuados '+ok+' de '+cand.length+' pasos ✓ — todo quedó marcado para revisar' : 'No se pudo re-puntuar');
+  renderAisho();
 }
 
 /* ---- guía de compra ---- */
@@ -5571,7 +5614,7 @@ const AW_ARCH=[
   donde:[['Río Negro: Chacra, Noemía y la escuela del pinot fino','']],
   evitar:[['Malbec / cabernet con roble nuevo','aplastan el matiz del wagyu'],['Blancos livianos','se quedan cortos']],
   frase:'Un pinot patagónico elegante — que acompañe al wagyu, no que lo tape.' },
-{ id:'marisco', k:'貝', n:'Mariscos dulces', ad:'vieira · langostino', kw:['vieira','langostino','camaron','centolla','sakizuke'],
+{ id:'marisco', k:'貝', n:'Mariscos dulces', ad:'vieira · langostino', kw:['vieira','langostino','camaron','centolla','sakizuke','cangrejo','pulpo','calamar','mejillon','ostra'],
   domina:'Dulzor natural, yodo suave, textura. Con soplete se suma un borde tostado (maillard) que abre otra puerta.',
   attrs:{acidez:3,burbuja:3,dulzor:1,tanino:0,cuerpo:1,umami:1},
   why:'El dulzor del marisco contra <b>acidez + salinidad</b> genera tensión — esa chispa agridulce-salina es el maridaje. La <b>burbuja seca</b> limpia la untuosidad de la vieira. Con soplete, los <b>tostados</b> (crianza del espumante, arroz del genmaicha) espejan el maillard.',
@@ -5579,7 +5622,7 @@ const AW_ARCH=[
   donde:[['Espumantes método tradicional de Mendoza',''],['Chapadmalal para el albariño','']],
   evitar:[['Dulzor residual alto','apaga la chispa'],['Tintos','nada que agarrar']],
   frase:'Un espumante bien seco, o un blanco con salinidad de verdad.' },
-{ id:'graso', k:'脂', n:'Pescado graso', ad:'salmón · chutoro', kw:['salmon','chutoro','toro','atun','sashimi'],
+{ id:'graso', k:'脂', n:'Pescado graso', ad:'salmón · chutoro', kw:['salmon','chutoro','toro','atun','sashimi','bonito','caballa','jurel','anchoa','sardina','hiramasa','pez limon'],
   domina:'Grasa que recubre el paladar, textura mantecosa, umami medio. El bocado más rico del menú — y el que más rápido satura si nada lo corta.',
   attrs:{acidez:3,burbuja:3,dulzor:1,tanino:0,cuerpo:2,umami:2},
   why:'La grasa forma una película en el paladar; la <b>acidez la emulsiona</b> y la <b>astringencia fina</b> (té) o la <b>burbuja</b> la barren mecánicamente — eso es "el corte". La trampa: <b>tanino alto + grasa de pescado + hierro = gusto metálico</b>, la razón química por la que el malbec y el sushi no se llevan. Si va tinto, es pinot: tanino sedoso, servido fresco.',
@@ -5587,7 +5630,7 @@ const AW_ARCH=[
   donde:[['Patagonia: Río Negro y Neuquén','clima frío = acidez natural alta'],['Casas de té (sencha de primavera)',''],['Importadores de sake: junmai clásico','']],
   evitar:[['Malbec, cabernet, tintos con roble','tanino + pescado graso = metálico'],['Chardonnay con mucha madera','manteca sobre manteca empalaga']],
   frase:'Buscame un blanco o un pinot patagónico, seco, acidez alta, nada de madera.' },
-{ id:'blanco', k:'白', n:'Pescado blanco', ad:'chernia · pesca del día', kw:['chernia','pesca','blanca','lenguado','besugo','zensai'],
+{ id:'blanco', k:'白', n:'Pescado blanco', ad:'chernia · pesca del día', kw:['chernia','pesca','blanca','lenguado','besugo','zensai','mero','abadejo','corvina','pejerrey'],
   domina:'Dulzor sutil, textura firme, sabor que susurra. El plato más fácil de arruinar con una bebida que grita.',
   attrs:{acidez:2,burbuja:1,dulzor:1,tanino:0,cuerpo:1,umami:1},
   why:'La regla es <b>intensidad pareja</b>: la bebida no puede ser más protagonista que el plato. Un blanco perfumado o con madera <b>tapa</b> el dulzor natural del pescado; se busca acidez cítrica limpia y, si se puede, un toque <b>salino</b> que espeje el mar.',
@@ -5621,7 +5664,8 @@ function awArchPasos(a){
   /* asignación: primer arquetipo (en orden) cuyas keywords matchean nombre+desc */
   const assign={};
   G.pasos.forEach(p=>{
-    const t=awNorm(p.n+' '+(p.d||''));
+    if(AW.archMap[p.id] && AW_ARCH.some(a=>a.id===AW.archMap[p.id])){ assign[p.id]=AW.archMap[p.id]; return; }
+    const t=awNorm(p.n+' '+(p.d||'')+' '+awIngNames(p).join(' '));
     for(const ar of AW_ARCH){ if(ar.kw.some(k=>t.includes(k))){ assign[p.id]=ar.id; break; } }
   });
   return G.pasos.filter(p=>assign[p.id]===a.id);
@@ -5723,6 +5767,7 @@ function renderAisho(){
     </div>`).join('');
 
   /* matriz */
+  const awStaleSet=new Set(awStalePasos().map(p=>p.id));
   const {comp,c:fcost}=awFlightCost(bebs);
   const winner={}; comp.forEach(x=>{ if(x.b) winner[x.p.id]=x.b.id; });
   document.getElementById('awMxTitle').textContent='Matriz de afinidad · '+AW_CATL[awUI.cat].split(' ')[0]+(awUI.cat==='vino'?' '+(awUI.tier==='comun'?'común':'premium'):'');
@@ -5730,7 +5775,7 @@ function renderAisho(){
     `<tr><th style="width:26px">⚑</th><th>Paso</th>${bebsAll.map(b=>`<th class="${b.avail?'':'off'}">${escapeHtml(b.n.split(' ')[0])}</th>`).join('')}</tr>`+
     G.pasos.map(p=>`<tr>
       <td><input type="checkbox" class="awfl" ${AW.flight.includes(p.id)?'checked':''} onchange="awTogFlight('${p.id}')"></td>
-      <td class="paso">${escapeHtml(p.n)}${p.prem?'<span class="gktagprem">premium</span>':''}${awRowUnscored(p.id)?'<span class="awnew" title="paso nuevo: todavía sin afinidades">▲ sin puntuar</span>'+(isAdm?`<button class="awai awrowai" onclick="awUI.aiTried['${p.id}']=true;awAiScorePaso('${p.id}')" title="puntuar este paso contra toda la carta">✦</button>`:''):(AW.aiRows[p.id]?`<span class="awianew" title="puntuado por IA — tocá una celda para ajustar, o confirmá">✦ IA sin revisar</span><button class="awai awrowai" onclick="awReview('${p.id}')" title="dar por revisado">✓</button>`:'')}<span class="pd">${escapeHtml(p.d||'')}</span></td>
+      <td class="paso">${escapeHtml(p.n)}${p.prem?'<span class="gktagprem">premium</span>':''}${awStaleSet.has(p.id)?'<span class="awnew" title="cambió el nombre, la descripción o los insumos desde la última puntuación">▼ cambió el plato</span>'+(isAdm?`<button class="awai awrowai" onclick="awUI.aiTried['${p.id}']=true;awAiScorePaso('${p.id}')" title="re-puntuar con la composición nueva">✦</button>`:''):''}${awRowUnscored(p.id)?'<span class="awnew" title="paso nuevo: todavía sin afinidades">▲ sin puntuar</span>'+(isAdm?`<button class="awai awrowai" onclick="awUI.aiTried['${p.id}']=true;awAiScorePaso('${p.id}')" title="puntuar este paso contra toda la carta">✦</button>`:''):(AW.aiRows[p.id]?`<span class="awianew" title="puntuado por IA — tocá una celda para ajustar, o confirmá">✦ IA sin revisar</span><button class="awai awrowai" onclick="awReview('${p.id}')" title="dar por revisado">✓</button>`:'')}<span class="pd">${escapeHtml(p.d||'')}</span></td>
       ${bebsAll.map(b=>{ const s=awScore(b.id,p.id);
         const note=AW.notes[b.id]&&AW.notes[b.id][p.id]?` title="${escapeHtml(AW.notes[b.id][p.id])}"`:'';
         return `<td><span class="awcell s${s}${winner[p.id]===b.id&&AW.flight.includes(p.id)?' win':''}${b.avail?'':' offc'}"${note} onclick="awCycle('${b.id}','${p.id}')">${AW_SYM[s]}</span></td>`; }).join('')}
