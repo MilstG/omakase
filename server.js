@@ -138,14 +138,16 @@ app.post('/api/ai/pair', requireAuth, async (req,res)=>{
   const modeB = bebida && Array.isArray(pasos) && pasos.length && pasos.length<=40;      /* una bebida vs el menú */
   const modeP = paso && Array.isArray(bebidas) && bebidas.length && bebidas.length<=40;  /* un paso vs la carta */
   if(!modeB && !modeP) return res.status(400).json({ error:'bad_request' });
-  const sys='Sos un sommelier especializado en cocina japonesa omakase en Buenos Aires. Respondé SOLO un objeto JSON válido, sin markdown: {"scores":{"<id>":0-3,...para todos los ids...},"notas":{"<id>":"nota breve",...solo para scores>=2...}}. Escala: 0 no va, 1 funciona, 2 muy bien, 3 maridaje de firma (máximo 2 o 3 treses). Notas en castellano rioplatense, máximo 12 palabras.';
+  const ings=x=>Array.isArray(x&&x.i)&&x.i.length? ' | ingredientes: '+x.i.slice(0,10).map(s=>String(s).slice(0,40)).join(', ') : '';
+  const sys='Sos un sommelier especializado en cocina japonesa omakase en Buenos Aires. Respondé SOLO un objeto JSON válido, sin markdown: {"scores":{"<id>":0-3,...para todos los ids...},"notas":{"<id>":"nota breve",...solo para scores>=2...}}. Escala: 0 no va, 1 funciona, 2 muy bien, 3 maridaje de firma (máximo 2 o 3 treses). Los ingredientes del escandallo son la señal más importante: puntuá según lo que el plato ES hoy, no según su nombre. Notas en castellano rioplatense, máximo 12 palabras.';
   let usr;
   if(modeB){
-    const menu=pasos.map(p=>`${String(p.id).slice(0,24)}: ${String(p.n).slice(0,60)} — ${String(p.d||'').slice(0,90)}${p.prem?' (premium)':''}`).join('\n');
+    const menu=pasos.map(p=>`${String(p.id).slice(0,24)}: ${String(p.n).slice(0,60)} — ${String(p.d||'').slice(0,90)}${ings(p)}${p.prem?' (premium)':''}`).join('\n');
     usr='Menú (id: paso — descripción):\n'+menu+'\n\nBebida a puntuar contra cada paso:\n'+String(bebida.n).slice(0,80)+' — '+String(bebida.d||'').slice(0,200)+'\nCategoría: '+String(bebida.cat||'')+(bebida.tier?' '+bebida.tier:'');
   } else {
     const carta=bebidas.map(b=>`${String(b.id).slice(0,24)}: ${String(b.n).slice(0,60)} — ${String(b.d||'').slice(0,90)} [${String(b.cat||'')}${b.tier?' '+b.tier:''}]`).join('\n');
-    usr='Carta de bebidas (id: bebida — descripción [categoría]):\n'+carta+'\n\nPlato nuevo del omakase, a puntuar contra cada bebida:\n'+String(paso.n).slice(0,80)+' — '+String(paso.d||'').slice(0,200)+(paso.prem?' (paso premium)':'');
+    usr='Carta de bebidas (id: bebida — descripción [categoría]):\n'+carta+'\n\nPlato del omakase, a puntuar contra cada bebida:\n'+String(paso.n).slice(0,80)+' — '+String(paso.d||'').slice(0,200)+ings(paso)+(paso.prem?' (paso premium)':'')
+      +'\n\nAdemás clasificá el plato en UN arquetipo de sabor y agregá al JSON la clave "arch" con el id. Opciones — salino: huevas y salinos · uni: erizo y cremosos yodados · carne: res/wagyu · marisco: mariscos dulces (crustáceos, moluscos) · graso: pescado graso o azul (salmón, atún, bonito, caballa, hiramasa) · blanco: pescado blanco delicado · arroz: shari, tamago, miso, temaki · dulce: postre.';
   }
   const AI_BASE=(process.env.OPENAI_BASE_URL||'https://api.openai.com').replace(/\/+$/,'');
   const MODEL=process.env.OPENAI_MODEL||'gpt-5.5';
@@ -174,7 +176,9 @@ app.post('/api/ai/pair', requireAuth, async (req,res)=>{
     const obj=JSON.parse(String(raw).replace(/```json|```/g,'').trim());
     if(!obj.scores) return res.status(502).json({ error:'no_scores' });
     db.audit(req.role,'ai_pair',null,null,null);
-    res.json({ scores:obj.scores, notas:obj.notas||{} });
+    const out={ scores:obj.scores, notas:obj.notas||{} };
+    if(modeP && typeof obj.arch==='string') out.arch=String(obj.arch).slice(0,20);
+    res.json(out);
   }catch(e){ console.warn('[ai]', e.message); res.status(502).json({ error:'upstream_error' }); }
 });
 
