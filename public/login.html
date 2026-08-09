@@ -1,0 +1,41 @@
+<!doctype html>
+<!-- Kanjō 勘定 — login. El tablero (index.html) solo se sirve con sesión válida. -->
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kanjō 勘定 · acceso</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@600&family=Inter:wght@400;600&family=JetBrains+Mono:wght@400&display=swap');
+  html,body{margin:0;height:100%}
+  body{background:#f4efe6;display:flex;align-items:center;justify-content:center;font-family:Inter,system-ui,sans-serif}
+  .box{width:320px;max-width:90vw;background:#fdfaf3;border:1px solid #d8d2c4;border-radius:3px;padding:28px 26px;box-shadow:0 6px 24px rgba(60,50,30,.10)}
+  h1{font-family:'Zilla Slab',Georgia,serif;font-size:22px;font-weight:600;color:#26221c;margin:0}
+  h1 span{color:#A87338}
+  .sub{font-size:11.5px;color:#8a8377;margin:4px 0 18px}
+  input{width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d8d2c4;border-radius:3px;font:13px 'JetBrains Mono',monospace;background:#fff;outline:none}
+  .err{font-size:11px;color:#A8392B;min-height:16px;margin-top:6px}
+  button{width:100%;margin-top:8px;padding:10px;border:none;border-radius:3px;background:#26221c;color:#f4efe6;font:600 12.5px Inter,sans-serif;letter-spacing:.04em;cursor:pointer}
+  button:disabled{opacity:.6;cursor:default}
+</style>
+<div class="box">
+  <h1>Kanjō <span>勘定</span></h1>
+  <div class="sub">El tablero del omakase · ingresá tu contraseña</div>
+  <input id="pw" type="password" placeholder="Contraseña" autocomplete="current-password" autofocus>
+  <div class="err" id="err"></div>
+  <button id="go">Entrar</button>
+</div>
+<script>
+  const pw=document.getElementById('pw'), err=document.getElementById('err'), go=document.getElementById('go');
+  async function attempt(){
+    err.textContent=''; go.disabled=true; go.textContent='…';
+    try{
+      const r=await fetch('/api/login',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ password: pw.value }) });
+      if(r.ok){ location.replace('/'); return; }
+      err.textContent = r.status===429 ? 'Demasiados intentos: esperá unos minutos.' : 'Contraseña incorrecta.';
+    }catch(e){ err.textContent='No se pudo conectar con el servidor.'; }
+    go.disabled=false; go.textContent='Entrar'; pw.select();
+  }
+  go.addEventListener('click', attempt);
+  pw.addEventListener('keydown', e=>{ if(e.key==='Enter') attempt(); });
+</script>
+</html>

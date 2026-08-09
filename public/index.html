@@ -471,7 +471,6 @@
   .editrow{border:none;background:none;color:var(--indigo);cursor:pointer;font-size:13px;line-height:1;padding:2px 4px;border-radius:2px;opacity:.55}
   .editrow:hover{opacity:1;background:#e4ebec}
   .syncpill{font-family:'Inter',sans-serif;font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:#9a8f7c;border-radius:10px;padding:2px 9px}
-  #sheetUrl{font-family:'JetBrains Mono',monospace;font-size:11px}
   .svrow .d{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:12px}
   .svrow .dow{font-size:10px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;white-space:nowrap}
   .svrow .meta{font-family:'JetBrains Mono',monospace;color:var(--ink-soft);font-size:11px;text-align:right}
@@ -654,6 +653,7 @@
     <button class="tab" data-tab="crm" onclick="switchTab('crm')">Clientes <span class="tk">顧客</span></button>
     <button class="roletab kjqlaunch" onclick="kjQuick()">⚡ carga rápida</button>
     <button class="roletab" id="roleBtn" onclick="kjRoleToggle()">⚙ roles</button>
+    <button class="roletab" id="logoutBtn" onclick="kjLogout()" style="display:none" title="Cerrar sesión en este dispositivo">⎋ salir</button>
   </nav>
 
   <div id="tab-costos" class="tabpanel">
@@ -827,20 +827,6 @@
               <button class="btn ghost" onclick="seedServices()">Cargar ejemplo</button>
               <span class="savemsg" id="tSaveMsg"></span>
             </div>
-          </div>
-        </div>
-
-        <div class="card adminonly">
-          <div class="head" style="cursor:default"><span class="num">☁</span><span class="ttl">Sincronización · Google Sheets</span><span class="syncpill" id="syncPill">local</span></div>
-          <div class="body">
-            <p class="note">Pegá la URL de tu Apps Script (aplicación web). Cada alta, edición y baja se guarda en tu Google Sheet, y al abrir la app trae todo desde ahí. Sin URL, los datos quedan solo en este navegador. <b>El test real corre con la app alojada o abierta en tu navegador</b>, no dentro de este preview.</p>
-            <div class="row"><label>URL del script</label><div class="ifield"><input type="text" id="sheetUrl" placeholder="https://script.google.com/macros/s/.../exec"></div></div>
-            <div class="toolbar">
-              <button class="btn" onclick="syncTest()">Conectar / Probar</button>
-              <button class="btn ghost" onclick="syncPull()">Traer de la sheet</button>
-              <button class="btn ghost" onclick="syncPushAll()">Subir locales</button>
-            </div>
-            <p class="note" id="syncHelp" style="margin-top:9px;min-height:1em"></p>
           </div>
         </div>
 
@@ -2031,10 +2017,9 @@ function delScenario(id){
   scenarios=scenarios.filter(x=>x.id!==id);
   persistScenarios(); renderScenarios();
 }
-async function persistScenarios(){ try{ await window.storage.set('kanjo:scenarios', JSON.stringify(scenarios), false); }catch(e){} }
+async function persistScenarios(){ await persistSafe('kanjo:scenarios', scenarios); }
 async function loadScenarios(){
-  try{ const r=await window.storage.get('kanjo:scenarios', false); if(r&&r.value){ scenarios=JSON.parse(r.value); scenarios.forEach(s=>ensureShape(s.snap)); } }
-  catch(e){}
+  await kjLoadKey('kanjo:scenarios', v=>{ scenarios=v; scenarios.forEach(s=>ensureShape(s.snap)); });
   renderScenarios();
 }
 
@@ -2088,17 +2073,17 @@ function exportPL(){
 
 /* ----------------------------- persistence ----------------------------- */
 async function saveBaseline(){
-  try{
-    await window.storage.set('kanjo:baseline', JSON.stringify(S), false);
-    flash('Baseline guardada ✓');
-  }catch(e){ flash('No se pudo guardar (almacenamiento no disponible)'); }
+  const ok = await persistSafe('kanjo:baseline', S);
+  if(ok) flash('Baseline guardada ✓');
+}
+/* carga silenciosa al iniciar: el modelo guardado ES el estado de la app */
+async function loadBaselineSilent(){
+  await kjLoadKey('kanjo:baseline', v=>{ S = ensureShape(v); });
 }
 async function loadBaseline(){
-  try{
-    const r = await window.storage.get('kanjo:baseline', false);
-    if(r && r.value){ S = ensureShape(JSON.parse(r.value)); renderInputs(); renderOutputs(); flash('Baseline cargada ✓'); }
-    else flash('No hay baseline guardada todavía');
-  }catch(e){ flash('No hay baseline guardada todavía'); }
+  const res = await kjLoadKey('kanjo:baseline', v=>{ S = ensureShape(v); });
+  if(res==='loaded'){ renderInputs(); renderOutputs(); flash('Baseline cargada ✓'); }
+  else if(res==='empty') flash('No hay baseline guardada todavía');
 }
 function resetState(){ S = defaultState(); renderInputs(); renderOutputs(); flash('Valores base restaurados'); }
 function flash(msg){
@@ -2108,10 +2093,46 @@ function flash(msg){
 }
 
 /* =====================================================================
+   PERSISTENCIA SEGURA
+   Regla: una clave que NO cargó bien del servidor no se escribe nunca,
+   para no pisar datos reales con un estado vacío por un error transitorio.
+   404 (no existe) es un vacío legítimo; 500/red/403 bloquean la escritura.
+   ===================================================================== */
+const kjLoad={ ok:{}, fail:{} };
+async function kjLoadKey(key, apply){
+  try{
+    const r=await window.storage.get(key, false);   /* null = 404: la clave no existe todavía */
+    kjLoad.ok[key]=true;
+    if(r && r.value){ apply(JSON.parse(r.value)); return 'loaded'; }
+    return 'empty';
+  }catch(e){
+    kjLoad.fail[key]=true;
+    const msg=(e&&e.message)||'';
+    console.warn('[kanjo] no cargó '+key+':', msg);
+    /* 403 = staff sin permiso de lectura: esperado, sin alarma */
+    if(!/403/.test(msg)) flash('⚠ No cargó «'+key.replace('kanjo:','')+'» — módulo en solo lectura hasta recargar');
+    return 'fail';
+  }
+}
+function persistSafe(key, payload){
+  if(kjLoad.fail[key]){
+    flash('⚠ «'+key.replace('kanjo:','')+'» no cargó del servidor: no se guarda para no pisar datos. Recargá la página.');
+    return Promise.resolve(false);
+  }
+  return Promise.resolve(window.storage.set(key, typeof payload==='string'?payload:JSON.stringify(payload), false))
+    .then(()=>{ kjLoad.ok[key]=true; return true; })
+    .catch(e=>{
+      const msg=(e&&e.message)||'error';
+      if(msg==='conflict-reload') return false;      /* el usuario eligió recargar */
+      if(msg!=='forbidden') flash('⚠ No se guardó «'+key.replace('kanjo:','')+'» ('+msg+')');
+      return false;
+    });
+}
+
+/* =====================================================================
    TAB 2 · ANALISTA DE TURNOS
    ===================================================================== */
 let services = [];
-let sheet = { url:'', status:'off' };   // status: off | ok | error | syncing
 let editingId = null;
 
 function switchTab(name){
@@ -2167,10 +2188,16 @@ function serviceMetrics(sv){
   const listTotal = oma+prem+beb+ext;
   // proporción por medio de pago (si no se carga, mix por defecto)
   let pc=sv.payCard||0, pe=sv.payCash||0, pq=sv.payQR||0; const psum=pc+pe+pq;
-  let cardP,cashP,qrP;
-  if(psum>0){ cardP=pc/psum; cashP=pe/psum; qrP=pq/psum; }
-  else { const t=(S.pagos.defCard+S.pagos.defCash+S.pagos.defQR)||100; cardP=S.pagos.defCard/t; cashP=S.pagos.defCash/t; qrP=S.pagos.defQR/t; }
   const disc=(sv.cashDiscPct||0)/100;
+  let cardP,cashP,qrP;
+  if(psum>0){
+    /* pe es lo COBRADO en efectivo (ya con descuento aplicado): se lleva a valor
+       de carta antes de calcular proporciones, para no descontar dos veces */
+    const peList = disc<1 ? pe/(1-disc) : pe;
+    const psumList = pc+peList+pq;
+    cardP=pc/psumList; cashP=peList/psumList; qrP=pq/psumList;
+  }
+  else { const t=(S.pagos.defCard+S.pagos.defCash+S.pagos.defQR)||100; cardP=S.pagos.defCard/t; cashP=S.pagos.defCash/t; qrP=S.pagos.defQR/t; }
   const cardAmt=listTotal*cardP, qrAmt=listTotal*qrP, cashList=listTotal*cashP;
   const cashDiscount=cashList*disc;
   const cashAmt=cashList-cashDiscount;                 // efectivo cobrado (post-descuento)
@@ -2257,13 +2284,13 @@ function submitService(){
     const i=services.findIndex(s=>s.id===editingId);
     if(i>=0){ services[i]={...services[i], date, ...f}; const rec=services[i];
       persistServices(); renderServiceList(); renderTurnos();
-      pushChange({action:'update', record:rec}, 'Cambios guardados ✓'); }
+      tFlash('Cambios guardados ✓'); }
     cancelEdit();
   } else {
     const sv={ id:rid(), date, ...f };
     services.push(sv); clearForm();
     persistServices(); renderServiceList(); renderTurnos();
-    pushChange({action:'add', record:sv}, 'Servicio registrado ✓');
+    tFlash('Servicio registrado ✓');
   }
 }
 function editService(id){
@@ -2284,72 +2311,9 @@ function delService(id){
   services=services.filter(s=>s.id!==id);
   if(editingId===id) cancelEdit();
   persistServices(); renderServiceList(); renderTurnos();
-  pushChange({action:'delete', id}, 'Servicio eliminado');
+  tFlash('Servicio eliminado');
 }
 function tFlash(msg){ const el=document.getElementById('tSaveMsg'); el.textContent=msg; el.classList.add('show'); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),2400); }
-
-/* ---- Google Sheets sync ---- */
-async function loadSheetUrl(){ try{ const r=await window.storage.get('kanjo:sheeturl', false); if(r&&r.value) sheet.url=JSON.parse(r.value); }catch(e){} }
-async function saveSheetUrl(){ try{ await window.storage.set('kanjo:sheeturl', JSON.stringify(sheet.url||''), false); }catch(e){} }
-function setSyncStatus(s){ sheet.status=s; renderSyncBar(); }
-function renderSyncBar(){
-  const pill=document.getElementById('syncPill'), inp=document.getElementById('sheetUrl');
-  if(inp && document.activeElement!==inp) inp.value=sheet.url||'';
-  if(!pill) return;
-  const map={off:['local','#9a8f7c'], ok:['conectado','var(--good)'], error:['sin conexión','var(--vermilion)'], syncing:['sincronizando…','var(--brass-deep)']};
-  const [t,c]=map[sheet.status]||map.off; pill.textContent=t; pill.style.background=c;
-}
-function normalizeRecord(r){
-  const n=v=>{ const x=parseFloat(v); return isFinite(x)?x:0; };
-  const b=v=> v===true||v==='true'||v==='SÍ'||v==='SI'||v===1||v==='1';
-  return { id:String(r.id||rid()), date:String(r.date||'').slice(0,10), turno:String(r.turno||'N1'),
-    covers:n(r.covers), omakase:n(r.omakase), premium:n(r.premium), bebidas:n(r.bebidas), extras:n(r.extras),
-    payCard:n(r.payCard), payQR:n(r.payQR), payCash:n(r.payCash), cashDiscPct:n(r.cashDiscPct), cashUndeclared:b(r.cashUndeclared) };
-}
-function errMsg(e){ const m=e&&e.message; return m==='no-url'?'Falta la URL del script':m==='bad-response'?'Respuesta inválida (revisá el script y el acceso)':'No se pudo conectar (revisá la URL y la conexión)'; }
-// POST con text/plain para evitar el preflight CORS que Apps Script no responde
-async function sheetCall(payload){
-  if(!sheet.url) throw new Error('no-url');
-  const res=await fetch(sheet.url, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(payload), redirect:'follow' });
-  const txt=await res.text(); let data;
-  try{ data=JSON.parse(txt); }catch(e){ throw new Error('bad-response'); }
-  if(!data.ok) throw new Error(data.error||'error');
-  return data;
-}
-async function pushChange(payload, okMsg){
-  if(!sheet.url){ tFlash(okMsg); return; }
-  setSyncStatus('syncing');
-  try{ await sheetCall(payload); setSyncStatus('ok'); tFlash(okMsg+' · en la nube'); }
-  catch(e){ setSyncStatus('error'); tFlash('Guardado local; no sincronizó'); }
-}
-async function syncTest(){
-  const url=document.getElementById('sheetUrl').value.trim();
-  sheet.url=url; saveSheetUrl(); renderSyncBar();
-  const help=document.getElementById('syncHelp');
-  if(!url){ setSyncStatus('off'); if(help)help.textContent='Pegá la URL para conectar.'; return; }
-  setSyncStatus('syncing');
-  try{
-    const data=await sheetCall({action:'list'});
-    const remote=(data.services||[]).length;
-    setSyncStatus('ok');
-    if(help)help.textContent = remote===services.length ? 'Conectado ✓ — sheet y app en sincronía ('+remote+' servicios).'
-      : 'Conectado ✓ — sheet: '+remote+' · local: '+services.length+'. «Traer de la sheet» baja la nube; «Subir locales» manda lo de la app.';
-  }catch(e){ setSyncStatus('error'); if(help)help.textContent='No conectó: '+errMsg(e)+'. Verificá que la URL termine en /exec y que el acceso sea «cualquiera».'; }
-}
-async function syncPull(){
-  if(!sheet.url){ tFlash('Configurá la URL primero'); return; }
-  setSyncStatus('syncing');
-  try{ const data=await sheetCall({action:'list'}); services=(data.services||[]).map(normalizeRecord); persistServices();
-    setSyncStatus('ok'); tFlash('Traído de la sheet ✓ ('+services.length+')'); renderServiceList(); renderTurnos(); }
-  catch(e){ setSyncStatus('error'); tFlash(errMsg(e)); }
-}
-async function syncPushAll(){
-  if(!sheet.url){ tFlash('Configurá la URL primero'); return; }
-  if(!services.length){ tFlash('No hay servicios locales para subir'); return; }
-  setSyncStatus('syncing');
-  try{ await sheetCall({action:'replaceAll', services}); setSyncStatus('ok'); tFlash('Subidos '+services.length+' a la sheet ✓'); }
-  catch(e){ setSyncStatus('error'); tFlash(errMsg(e)); }
-}
 
 function seedServices(){
   const seats=S.revenue.seats||13;
@@ -2397,9 +2361,9 @@ function seedServices(){
   persistServices(); renderServiceList(); renderTurnos(); tFlash('Datos de ejemplo cargados ✓');
 }
 
-async function persistServices(){ try{ await window.storage.set('kanjo:services', JSON.stringify(services), false); }catch(e){} }
+async function persistServices(){ await persistSafe('kanjo:services', services); }
 async function loadServices(){
-  try{ const r=await window.storage.get('kanjo:services', false); if(r&&r.value) services=JSON.parse(r.value); }catch(e){}
+  await kjLoadKey('kanjo:services', v=>{ services=v; });
   services.forEach(s=>{ if(typeof s.turno==='number') s.turno = (s.turno===1?'N1':'N2'); });
   renderServiceList(); renderTurnos();
 }
@@ -3043,12 +3007,12 @@ function setYosoHorizon(n){ yoso.horizon=n; renderYoso(); }
 
 // registro de salud del modelo a través del tiempo (una foto por día revisado)
 let fcHealth=[];
-async function loadFcHealth(){ try{ const r=await window.storage.get('kanjo:fchealth',false); fcHealth=r&&r.value?JSON.parse(r.value):[]; }catch(e){ fcHealth=[]; } }
+async function loadFcHealth(){ fcHealth=[]; await kjLoadKey('kanjo:fchealth', v=>{ fcHealth=v; }); }
 function recordFcHealth(snap){ try{
   const prev=fcHealth.find(x=>x.date===snap.date);
   if(prev && prev.rel===snap.rel && prev.base===snap.base && prev.corr===snap.corr && prev.n===snap.n && prev.bias===snap.bias) return;
   fcHealth=fcHealth.filter(x=>x.date!==snap.date); fcHealth.push(snap); fcHealth.sort((a,b)=>a.date<b.date?-1:1); fcHealth=fcHealth.slice(-40);
-  window.storage.set('kanjo:fchealth', JSON.stringify(fcHealth), false);
+  persistSafe('kanjo:fchealth', fcHealth);
 }catch(e){} }
 
 // Feriados nacionales Argentina (editable). Aproximados 2026–2027.
@@ -3589,11 +3553,10 @@ const gkUI = { open:{}, shockIns:null, shockPct:30, collapsed:{} };
 let gkPersistT=null;
 function gkPersist(){
   clearTimeout(gkPersistT);
-  gkPersistT=setTimeout(async()=>{ try{ await window.storage.set('kanjo:genka', JSON.stringify(G), false); }catch(e){} },400);
+  gkPersistT=setTimeout(()=>{ persistSafe('kanjo:genka', G); },400);
 }
 async function loadGenka(){
-  try{ const r=await window.storage.get('kanjo:genka', false); if(r&&r.value) G=ensureGenka(JSON.parse(r.value)); }
-  catch(e){}
+  await kjLoadKey('kanjo:genka', v=>{ G=ensureGenka(v); });
 }
 
 /* ---- compute ---- */
@@ -3893,12 +3856,12 @@ const cpUI={ month:'', mrEditing:null, editing:null };
 const MERMA_MOTIVOS=[['sobre','Sobreproducción'],['corte','Corte fallido'],['venc','Vencimiento'],['rotura','Rotura / derrame'],['otro','Otro']];
 const MERMA_LABEL=Object.fromEntries(MERMA_MOTIVOS);
 
-function cpPersist(){ try{ window.storage.set('kanjo:compras', JSON.stringify(compras), false); }catch(e){} }
-function mrPersist(){ try{ window.storage.set('kanjo:mermas', JSON.stringify(mermas), false); }catch(e){} }
-function fxPersist(){ try{ window.storage.set('kanjo:fxlog', JSON.stringify(fxlog), false); }catch(e){} }
-async function loadCompras(){ try{ const r=await window.storage.get('kanjo:compras',false); if(r&&r.value) compras=JSON.parse(r.value); }catch(e){} }
-async function loadMermas(){ try{ const r=await window.storage.get('kanjo:mermas',false); if(r&&r.value) mermas=JSON.parse(r.value); }catch(e){} }
-async function loadFxlog(){ try{ const r=await window.storage.get('kanjo:fxlog',false); if(r&&r.value) fxlog=JSON.parse(r.value); }catch(e){} }
+function cpPersist(){ persistSafe('kanjo:compras', compras); }
+function mrPersist(){ persistSafe('kanjo:mermas', mermas); }
+function fxPersist(){ persistSafe('kanjo:fxlog', fxlog); }
+async function loadCompras(){ await kjLoadKey('kanjo:compras', v=>{ compras=v; }); }
+async function loadMermas(){ await kjLoadKey('kanjo:mermas', v=>{ mermas=v; }); }
+async function loadFxlog(){ await kjLoadKey('kanjo:fxlog', v=>{ fxlog=v; }); }
 
 /* ---- tipo de cambio ---- */
 function fxSet(v){
@@ -3974,7 +3937,9 @@ function mrCostUnit(insId){
   const i=gkInsById(insId); if(!i) return 0;
   return (i.ars/(1+(i.iva||0)/100)/((G.params.tc)||1))/Math.max(i.qty||1,0.0001);
 }
-function mrCost(m){ return (m.qty||0)*mrCostUnit(m.ins); }
+/* costo de la merma: usa el costo unitario CONGELADO al momento de registrarla;
+   los registros viejos (sin cu) caen al precio actual del insumo */
+function mrCost(m){ return (m.qty||0)*(m.cu!=null ? m.cu : mrCostUnit(m.ins)); }
 function mrResetForm(){
   cpUI.mrEditing=null;
   document.getElementById('mrDate').value=fmtDate(new Date());
@@ -3988,7 +3953,9 @@ function mrSave(){
   const motivo=document.getElementById('mrMotivo').value;
   const nota=document.getElementById('mrNota').value.trim();
   if(!date || !ins || qty<=0){ flash('Completá fecha, insumo y cantidad'); return; }
-  const rec={ id:cpUI.mrEditing||rid(), date, ins, qty, motivo, nota };
+  const prev=cpUI.mrEditing? mermas.find(m=>m.id===cpUI.mrEditing) : null;
+  const cu = (prev && prev.ins===ins && prev.cu!=null) ? prev.cu : mrCostUnit(ins);   /* costo congelado al registrar */
+  const rec={ id:cpUI.mrEditing||rid(), date, ins, qty, motivo, nota, cu };
   if(cpUI.mrEditing){ const ix=mermas.findIndex(m=>m.id===cpUI.mrEditing); if(ix>=0) mermas[ix]=rec; }
   else mermas.push(rec);
   mrPersist(); flash(cpUI.mrEditing?'Merma actualizada ✓':'Merma registrada ✓'); mrResetForm(); renderCompras();
@@ -4172,8 +4139,8 @@ function cjEnsure(c){
   if(![8,13,26].includes(c.horizon)) c.horizon=13;
   return c;
 }
-function cjPersist(){ try{ window.storage.set('kanjo:caja', JSON.stringify(caja), false); }catch(e){} }
-async function loadCaja(){ try{ const r=await window.storage.get('kanjo:caja',false); if(r&&r.value) caja=cjEnsure(JSON.parse(r.value)); }catch(e){} }
+function cjPersist(){ persistSafe('kanjo:caja', caja); }
+async function loadCaja(){ await kjLoadKey('kanjo:caja', v=>{ caja=cjEnsure(v); }); }
 function cjSet(k,v){ caja[k]=(k==='asOf')?v:+v||0; cjPersist(); renderCaja(); }
 function cjSetHorizon(n){ caja.horizon=n; cjPersist(); renderCaja(); }
 function cjAddExtra(){
@@ -4328,8 +4295,8 @@ function renderCaja(){
    ===================================================================== */
 let reservas=[];
 const rvUI={ editing:null, month:'' };
-function rvPersist(){ try{ window.storage.set('kanjo:reservas', JSON.stringify(reservas), false); }catch(e){} }
-async function loadReservas(){ try{ const r=await window.storage.get('kanjo:reservas',false); if(r&&r.value) reservas=JSON.parse(r.value); }catch(e){} }
+function rvPersist(){ persistSafe('kanjo:reservas', reservas); }
+async function loadReservas(){ await kjLoadKey('kanjo:reservas', v=>{ reservas=v; }); }
 
 function rvServiceFor(date,turno){ return services.find(s=>s.date===date && s.turno===turno); }
 function rvCovers(r){
@@ -4564,8 +4531,8 @@ function renderMix(){
    ===================================================================== */
 let stockC={ counts:{} };   /* counts['YYYY-MM'] = { insumoId: qty al cierre del mes } */
 function stEnsure(s){ if(!s||typeof s!=='object') s={}; if(!s.counts||typeof s.counts!=='object') s.counts={}; return s; }
-function stPersist(){ try{ window.storage.set('kanjo:stock', JSON.stringify(stockC), false); }catch(e){} }
-async function loadStock(){ try{ const r=await window.storage.get('kanjo:stock',false); if(r&&r.value) stockC=stEnsure(JSON.parse(r.value)); }catch(e){} }
+function stPersist(){ persistSafe('kanjo:stock', stockC); }
+async function loadStock(){ await kjLoadKey('kanjo:stock', v=>{ stockC=stEnsure(v); }); }
 function stFor(mk,ins){ const m=stockC.counts[mk]; const v=m?m[ins]:undefined; return (v===undefined||v===null||v==='')?null:+v; }
 function stSet(mk,ins,v){
   if(!stockC.counts[mk]) stockC.counts[mk]={};
@@ -4660,8 +4627,8 @@ function crmEnsure(c){
   if(!Array.isArray(c.visits)) c.visits=[];
   return c;
 }
-function crmPersist(){ try{ window.storage.set('kanjo:crm', JSON.stringify(crm), false); }catch(e){} }
-async function loadCRM(){ try{ const r=await window.storage.get('kanjo:crm',false); if(r&&r.value) crm=crmEnsure(JSON.parse(r.value)); }catch(e){} }
+function crmPersist(){ persistSafe('kanjo:crm', crm); }
+async function loadCRM(){ await kjLoadKey('kanjo:crm', v=>{ crm=crmEnsure(v); }); }
 function crmById(id){ return crm.clients.find(c=>c.id===id); }
 function crmVisitsOf(id){ return crm.visits.filter(v=>v.client===id).sort((a,b)=>a.date.localeCompare(b.date)); }
 function daysBetween(a,b){ return Math.round((parseDate(b)-parseDate(a))/86400000); }
@@ -4834,8 +4801,15 @@ function renderCRM(){
   const bdHtml=bdays.length? `<div class="panel"><h3>Cumpleaños de ${monthLabel(today.slice(0,7))}</h3><div class="ystate">${bdays.map(c=>`<div class="ystat"><span>${escapeHtml(c.name)}</span><b>día ${+c.bday.slice(8,10)}</b></div>`).join('')}</div>
     <p class="desc" style="margin:8px 0 0">Un mensaje y una copa de sake de la casa valen más que cualquier campaña.</p></div>`:'';
 
-  document.getElementById('crmOut').innerHTML=`
-    <div class="filterbar"><span class="fl">Buscar</span><input type="text" value="${escapeHtml(crmUI.q||'')}" placeholder="nombre, teléfono, nota…" oninput="crmSearch(this.value)" style="min-width:180px"></div>
+  /* la barra de búsqueda se crea UNA vez y no se re-renderiza: si el innerHTML
+     la pisara en cada tecla, el input perdería el foco mientras tipeás */
+  const out=document.getElementById('crmOut');
+  if(!document.getElementById('crmBody')){
+    out.innerHTML=`
+      <div class="filterbar"><span class="fl">Buscar</span><input type="text" id="crmQ" value="${escapeHtml(crmUI.q||'')}" placeholder="nombre, teléfono, nota…" oninput="crmSearch(this.value)" style="min-width:180px"></div>
+      <div id="crmBody"></div>`;
+  }
+  document.getElementById('crmBody').innerHTML=`
     ${detail}
     ${bdHtml}
     <div class="panel"><h3>Clientes <span style="font-weight:400;font-size:11px;color:var(--ink-soft)">· ordenados por última visita</span></h3>
@@ -4857,8 +4831,8 @@ function authEnsure(a){
   a.modules=Object.assign({},authDefaults(),a.modules||{});
   return a;
 }
-function authPersist(){ try{ window.storage.set('kanjo:auth', JSON.stringify(auth), false); }catch(e){} }
-async function loadAuth(){ try{ const r=await window.storage.get('kanjo:auth',false); if(r&&r.value) auth=authEnsure(JSON.parse(r.value)); else auth=authEnsure(null); }catch(e){ auth=authEnsure(null); } }
+function authPersist(){ persistSafe('kanjo:auth', auth); }
+async function loadAuth(){ auth=authEnsure(null); await kjLoadKey('kanjo:auth', v=>{ auth=authEnsure(v); }); }
 
 async function kjHash(s){
   try{
@@ -4924,11 +4898,19 @@ function applyRoles(){
   });
   const rb=document.getElementById('roleBtn');
   if(rb) rb.textContent = !auth.pin ? '⚙ roles' : (admin?'admin ▾':'staff ▸');
+  const lb=document.getElementById('logoutBtn');
+  if(lb) lb.style.display = window.KANJO_SERVER_ROLE ? '' : 'none';
   if(activeHidden && firstVisible) switchTab(firstVisible);
+}
+async function kjLogout(){
+  const ok=window.confirm ? window.confirm('¿Cerrar sesión en este dispositivo?') : true;
+  if(!ok) return;
+  try{ await fetch('/api/logout',{method:'POST'}); }catch(e){}
+  location.reload();
 }
 
 /* ---- backup / restore total ---- */
-const KANJO_KEYS=['kanjo:baseline','kanjo:scenarios','kanjo:services','kanjo:sheeturl','kanjo:fchealth','kanjo:genka','kanjo:compras','kanjo:mermas','kanjo:fxlog','kanjo:caja','kanjo:reservas','kanjo:stock','kanjo:crm','kanjo:auth','kanjo:cierres','kanjo:aisho'];
+const KANJO_KEYS=['kanjo:baseline','kanjo:scenarios','kanjo:services','kanjo:fchealth','kanjo:genka','kanjo:compras','kanjo:mermas','kanjo:fxlog','kanjo:caja','kanjo:reservas','kanjo:stock','kanjo:crm','kanjo:auth','kanjo:cierres','kanjo:aisho'];
 async function kjBackup(){
   const data={};
   for(const k of KANJO_KEYS){
@@ -5109,8 +5091,8 @@ function renderResumen(){
    RESUMEN · Cierre de mes 締め — snapshot inmutable, P&L histórico
    ===================================================================== */
 let cierres={};   /* { 'YYYY-MM': snapshot } */
-function ciPersist(){ try{ window.storage.set('kanjo:cierres', JSON.stringify(cierres), false); }catch(e){} }
-async function loadCierres(){ try{ const r=await window.storage.get('kanjo:cierres',false); if(r&&r.value){ const p=JSON.parse(r.value); if(p&&typeof p==='object') cierres=p; } }catch(e){} }
+function ciPersist(){ persistSafe('kanjo:cierres', cierres); }
+async function loadCierres(){ await kjLoadKey('kanjo:cierres', v=>{ if(v&&typeof v==='object') cierres=v; }); }
 
 function kjSnapshotMonth(mk){
   const div=1+S.iva.rateVentas/100;
@@ -5166,6 +5148,7 @@ function kjReabrirMes(mk){
   delete cierres[mk]; ciPersist(); flash('Mes reabierto'); renderResumen();
 }
 function kjCierresHtml(){
+  if(kjLoad.fail['kanjo:cierres']) return '';   /* staff sin permiso de lectura: panel oculto */
   const keys=Object.keys(cierres).sort().reverse();
   const admin=kjIsAdmin();
   const opts=kjCierreMonths();
@@ -5361,8 +5344,8 @@ function awSeedMissing(){
   }
 }
 let awPersistT=null;
-function awPersist(){ clearTimeout(awPersistT); awPersistT=setTimeout(async()=>{ try{ await window.storage.set('kanjo:aisho', JSON.stringify(AW), false); }catch(e){} },400); }
-async function loadAisho(){ try{ const r=await window.storage.get('kanjo:aisho',false); AW=awEnsure(r&&r.value?JSON.parse(r.value):null); }catch(e){ AW=awEnsure(null); } }
+function awPersist(){ clearTimeout(awPersistT); awPersistT=setTimeout(()=>{ persistSafe('kanjo:aisho', AW); },400); }
+async function loadAisho(){ AW=awEnsure(null); await kjLoadKey('kanjo:aisho', v=>{ AW=awEnsure(v); }); }
 
 /* ---- cálculo ---- */
 function awScore(bid,pid){ return (AW.m[bid]&&AW.m[bid][pid])||0; }
@@ -5832,14 +5815,18 @@ function renderAisho(){
 initChartTips();
 renderInputs();
 renderOutputs();
-loadScenarios();
 document.getElementById('svDate').value = fmtDate(new Date());
 Promise.all([
+  loadBaselineSilent(),                        /* el esquema guardado ES la app: sin esto todo calcula sobre defaults */
   loadServices(), loadFcHealth(),
   loadGenka().then(()=>{ meEnsureMix(); }),
   loadCompras(), loadMermas(), loadFxlog(),
   loadCaja(), loadReservas(),
   loadStock(), loadCRM(), loadAuth(), loadCierres(), loadAisho()
-]).then(()=>{ applyRoles(); renderResumen(); });
-loadSheetUrl().then(()=>{ renderSyncBar(); if(sheet.url) syncPull(); });
+]).then(()=>{
+  renderInputs(); renderOutputs();             /* re-render con la baseline real */
+  loadScenarios();
+  renderServiceList(); renderTurnos();         /* las métricas por servicio dependen de S */
+  applyRoles(); renderResumen();
+});
 </script>
