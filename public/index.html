@@ -708,7 +708,6 @@
           <button class="btn ghost" onclick="loadBaseline()">Cargar baseline</button>
           <button class="btn ghost" onclick="exportPL()">Exportar P&amp;L (CSV)</button>
           <button class="btn ghost" onclick="resetState()">Restaurar valores base</button>
-          <span class="savemsg" id="savemsg">Baseline guardada ✓</span>
         </div>
       </div>
     </div>
@@ -2087,9 +2086,16 @@ async function loadBaseline(){
 }
 function resetState(){ S = defaultState(); renderInputs(); renderOutputs(); flash('Valores base restaurados'); }
 function flash(msg){
-  const el = document.getElementById('savemsg');
-  el.textContent = msg; el.classList.add('show');
-  clearTimeout(el._t); el._t = setTimeout(()=>el.classList.remove('show'),2200);
+  /* toast fijo global: el viejo #savemsg vivía dentro del tab Esquema y los
+     mensajes disparados desde cualquier otro tab eran invisibles */
+  let el=document.getElementById('kjFlash');
+  if(!el){
+    el=document.createElement('div'); el.id='kjFlash';
+    el.style.cssText='position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#26221c;color:#f4efe6;font:12px Inter,sans-serif;padding:9px 16px;border-radius:3px;z-index:9999;box-shadow:0 4px 14px rgba(0,0,0,.25);opacity:0;transition:opacity .25s;pointer-events:none;max-width:86vw;text-align:center';
+    document.body.appendChild(el);
+  }
+  el.textContent=msg; el.style.opacity='1';
+  clearTimeout(el._t); el._t=setTimeout(()=>{ el.style.opacity='0'; },2600);
 }
 
 /* =====================================================================
@@ -4873,7 +4879,16 @@ async function kjClearPin(){
   applyRoles(); renderResumen();
 }
 async function kjRoleToggle(){
-  if(window.KANJO_SERVER_ROLE){ flash('El rol lo define tu contraseña de acceso ('+window.KANJO_SERVER_ROLE+')'); return; }
+  if(window.KANJO_SERVER_ROLE){
+    if(window.KANJO_SERVER_ROLE==='admin'){
+      switchTab('resumen');
+      setTimeout(()=>{ const el=document.getElementById('kjAdminPanel'); if(el){ try{ el.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){ el.scrollIntoView(); } } },150);
+      flash('Sos admin — acá elegís qué tabs ve el staff');
+    } else {
+      flash('Sos staff: el rol lo define la contraseña de acceso. Para entrar como admin, salí (⎋) y volvé a entrar con la otra contraseña.');
+    }
+    return;
+  }
   if(!auth.pin){ flash('Sin PIN no hay roles: configuralo en Resumen → Administración'); switchTab('resumen'); return; }
   if(kjIsAdmin()){
     kjRoleSet(null);
@@ -4897,7 +4912,9 @@ function applyRoles(){
     if(b.classList.contains('active')){ activeTab=t; if(hide) activeHidden=true; }
   });
   const rb=document.getElementById('roleBtn');
-  if(rb) rb.textContent = !auth.pin ? '⚙ roles' : (admin?'admin ▾':'staff ▸');
+  if(rb) rb.textContent = window.KANJO_SERVER_ROLE
+    ? (window.KANJO_SERVER_ROLE==='admin' ? '⚙ admin' : 'staff')
+    : (!auth.pin ? '⚙ roles' : (admin?'admin ▾':'staff ▸'));
   const lb=document.getElementById('logoutBtn');
   if(lb) lb.style.display = window.KANJO_SERVER_ROLE ? '' : 'none';
   if(activeHidden && firstVisible) switchTab(firstVisible);
@@ -5066,11 +5083,12 @@ function renderResumen(){
     const mrows=Object.entries(TAB_LABELS).map(([t,l])=>`<div class="ystat"><span>${l}</span><b><select class="sel" onchange="kjSetModuleRole('${t}',this.value)">
       <option value="staff"${auth.modules[t]!=='admin'?' selected':''}>staff</option>
       <option value="admin"${auth.modules[t]==='admin'?' selected':''}>solo admin</option></select></b></div>`).join('');
-    adminCard=`<div class="panel adminonly"><h3>Administración</h3>
-      <p class="note">${auth.pin? 'PIN activo. El botón <b>'+(kjIsAdmin()?'admin':'staff')+'</b> arriba a la derecha cambia de modo.' : '<b>Sin PIN configurado:</b> todos ven todo. Configurá un PIN y elegí qué tabs ve el staff.'}</p>
+    const srv=window.KANJO_SERVER_ROLE;
+    adminCard=`<div class="panel adminonly" id="kjAdminPanel"><h3>Administración</h3>
+      <p class="note">${srv? 'El rol lo define la <b>contraseña de acceso</b> (esta sesión: <b>'+srv+'</b>) — el servidor lo aplica en cada escritura. Abajo elegís qué tabs ve una sesión staff.' : (auth.pin? 'PIN activo. El botón <b>'+(kjIsAdmin()?'admin':'staff')+'</b> arriba a la derecha cambia de modo.' : '<b>Sin PIN configurado:</b> todos ven todo. Configurá un PIN y elegí qué tabs ve el staff.')}</p>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0">
-        <button class="gkadd" style="margin:0" onclick="kjSetPin()">${auth.pin?'Cambiar PIN':'Configurar PIN'}</button>
-        ${auth.pin?'<button class="gkadd" style="margin:0" onclick="kjClearPin()">Desactivar</button>':''}
+        ${srv?'':`<button class="gkadd" style="margin:0" onclick="kjSetPin()">${auth.pin?'Cambiar PIN':'Configurar PIN'}</button>`}
+        ${!srv&&auth.pin?'<button class="gkadd" style="margin:0" onclick="kjClearPin()">Desactivar</button>':''}
         <button class="gkadd" style="margin:0" onclick="kjBackup()">⬇ Backup total</button>
         <button class="gkadd" style="margin:0" onclick="kjRestorePick()">⬆ Restaurar</button>
         <input type="file" id="kjRestoreFile" accept="application/json" style="display:none" onchange="kjRestoreFile(this)">
@@ -5080,7 +5098,7 @@ function renderResumen(){
       <div id="kjAuditBox"></div>
       <div class="hslab" style="margin-top:12px"><span>Visibilidad por módulo</span></div>
       <div class="ystate" style="margin-top:6px">${mrows}</div>
-      <p class="desc" style="margin:8px 0 0">Control operativo del lado del navegador: ordena qué ve cada uno en el local, pero no es seguridad criptográfica — la aplicación real de permisos llega con el servidor.</p></div>`;
+      <p class="desc" style="margin:8px 0 0">${srv? 'La visibilidad ordena qué ve cada uno; la seguridad real la aplica el servidor: staff no puede leer caja ni cierres, ni escribir el esquema, escenarios o permisos — aunque manipule el navegador.' : 'Control operativo del lado del navegador: ordena qué ve cada uno en el local, pero no es seguridad criptográfica — la aplicación real de permisos llega con el servidor.'}</p></div>`;
   }
 
   side.innerHTML=insHtml+nav+adminCard;
