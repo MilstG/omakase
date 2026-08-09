@@ -10,19 +10,48 @@ const db = require('./lib/db');
 
 const ADMIN_PW = process.env.APP_PASSWORD_ADMIN || process.env.APP_PASSWORD || '';
 const STAFF_PW = process.env.APP_PASSWORD_STAFF || '';
-const SECRET = process.env.SESSION_SECRET
-  || crypto.createHash('sha256').update('kanjo·'+ADMIN_PW+'·'+STAFF_PW).digest('hex');
+/* El secreto NUNCA se deriva de las contraseñas (permitiría forjar cookies o
+   brute-forcearlas offline). Sin SESSION_SECRET se genera uno aleatorio por
+   proceso: las sesiones caen en cada restart — definilo en Railway. */
+const SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+if(!process.env.SESSION_SECRET)
+  console.warn('[auth] ⚠ SESSION_SECRET no definido — se generó uno efímero (las sesiones caen en cada deploy/restart).');
 const SESS_TTL_MS = 1000*60*60*24*14;   /* 14 días */
 const COOKIE = 'kanjo_sess';
+/* Modo dev: sin contraseña y sin Postgres, cualquier password entra como admin.
+   Con DATABASE_URL (producción) el server se niega a arrancar sin contraseña. */
+const DEV_OPEN = !ADMIN_PW && !process.env.DATABASE_URL;
 
 /* Claves que el staff puede LEER (la app las necesita para renderizar)
    pero NO escribir: modelo financiero, escenarios, caja, permisos y sync. */
-const ADMIN_ONLY_WRITE = ['kanjo:baseline','kanjo:scenarios','kanjo:caja','kanjo:auth','kanjo:sheeturl','kanjo:cierres'];
+const ADMIN_ONLY_WRITE = ['kanjo:baseline','kanjo:scenarios','kanjo:caja','kanjo:auth','kanjo:cierres'];
+/* Claves que el staff tampoco puede LEER (saldos de caja, P&L congelado):
+   ocultar el tab no alcanza si la API igual entrega el dato. */
+const ADMIN_ONLY_READ = ['kanjo:caja','kanjo:cierres'];
 
-if(!ADMIN_PW) console.warn('[auth] ⚠ Definí APP_PASSWORD_ADMIN — sin contraseña nadie puede entrar.');
+if(!ADMIN_PW && process.env.DATABASE_URL){
+  console.error('[auth] ✖ APP_PASSWORD_ADMIN es obligatoria en producción (hay DATABASE_URL). Definila en Railway.');
+  process.exit(1);
+}
+if(DEV_OPEN) console.warn('[auth] ⚠ MODO DEV ABIERTO: sin APP_PASSWORD_ADMIN ni DATABASE_URL, cualquier contraseña entra como admin.');
 
 const app = express();
+app.set('trust proxy', 1);            /* Railway: 1 proxy adelante → req.ip es la IP real del cliente */
+app.disable('x-powered-by');
 app.use(express.json({ limit:'8mb' }));
+
+/* ---------- headers de seguridad ---------- */
+app.use((req,res,next)=>{
+  res.setHeader('X-Content-Type-Options','nosniff');
+  res.setHeader('X-Frame-Options','DENY');
+  res.setHeader('Referrer-Policy','same-origin');
+  res.setHeader('Content-Security-Policy',
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "+
+    "font-src https://fonts.gstatic.com; img-src 'self' data:; "+
+    "connect-src 'self'; "+
+    "frame-ancestors 'none'; base-uri 'self'");
+  next();
+});
 
 /* ---------- sesión ---------- */
 const b64u = b => Buffer.from(b).toString('base64url');
@@ -55,7 +84,10 @@ function setCookie(res, req, value, maxAge){
 /* ---------- rate limit de login ---------- */
 const attempts = new Map();
 function limited(ip){
-  const now=Date.now(); const a=attempts.get(ip);
+  const now=Date.now();
+  /* poda: sin esto el Map crece sin límite */
+  if(attempts.size>5000) for(const [k,v] of attempts){ if(now>=v.resetAt) attempts.delete(k); }
+  const a=attempts.get(ip);
   if(a && now<a.resetAt && a.n>=10) return true;
   if(!a || now>=a.resetAt) attempts.set(ip,{n:0,resetAt:now+10*60*1000});
   return false;
@@ -64,12 +96,14 @@ function bump(ip){ const a=attempts.get(ip); if(a) a.n++; }
 
 /* ---------- auth API ---------- */
 app.post('/api/login', (req,res)=>{
-  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '?';
+  /* req.ip con trust proxy: la parte spoofeable de X-Forwarded-For no cuenta */
+  const ip = req.ip || req.socket.remoteAddress || '?';
   if(limited(ip)) return res.status(429).json({ error:'too_many_attempts' });
   const pw = String((req.body&&req.body.password)||'');
   let role = null;
   if(ADMIN_PW && tsEq(pw, ADMIN_PW)) role='admin';
   else if(STAFF_PW && tsEq(pw, STAFF_PW)) role='staff';
+  else if(DEV_OPEN) role='admin';
   if(!role){ bump(ip); return res.status(401).json({ error:'bad_password' }); }
   setCookie(res, req, signSession(role), SESS_TTL_MS/1000);
   db.audit(role,'login',null,null,null);
@@ -97,6 +131,8 @@ app.get('/api/storage', requireAuth, async (req,res)=>{
 app.get('/api/storage/:key', requireAuth, async (req,res)=>{
   const k=req.params.key;
   if(!validKey(k)) return res.status(400).json({ error:'bad_key' });
+  if(req.role!=='admin' && ADMIN_ONLY_READ.includes(k))
+    return res.status(403).json({ error:'admin_only', key:k });
   const r = await db.get(k);
   if(!r) return res.status(404).json({ error:'not_found' });
   res.json(r);
@@ -129,8 +165,10 @@ app.post('/api/ai/pair', requireAuth, async (req,res)=>{
   if(req.role!=='admin') return res.status(403).json({ error:'admin_only' });
   const KEY=process.env.OPENAI_API_KEY||'';
   if(!KEY) return res.status(501).json({ error:'no_api_key' });
-  const ip=req.headers['x-forwarded-for']||req.socket.remoteAddress||'?';
-  const now=Date.now(); const a=aiLimit.get(ip);
+  const ip=req.ip||req.socket.remoteAddress||'?';
+  const now=Date.now();
+  if(aiLimit.size>2000) for(const [k,v] of aiLimit){ if(now>=v.resetAt) aiLimit.delete(k); }
+  const a=aiLimit.get(ip);
   if(a && now<a.resetAt && a.n>=30) return res.status(429).json({ error:'rate_limited' });
   if(!a || now>=a.resetAt) aiLimit.set(ip,{n:0,resetAt:now+10*60*1000});
   aiLimit.get(ip).n++;
@@ -189,7 +227,15 @@ app.get('/api/audit', requireAuth, async (req,res)=>{
 
 /* ---------- salud + estáticos ---------- */
 app.get('/healthz', (req,res)=>res.json({ ok:true, db: db.backend() }));
-app.use(express.static(path.join(__dirname,'public'), { index:'index.html' }));
+/* El tablero embebe el modelo del negocio: solo se sirve con sesión válida.
+   Sin sesión se entrega la página de login (el shim sigue como red de
+   seguridad para sesiones que expiran en medio del uso). */
+app.get(['/','/index.html'], (req,res)=>{
+  res.setHeader('Cache-Control','no-store');
+  if(readSession(req)) return res.sendFile(path.join(__dirname,'public','index.html'));
+  res.sendFile(path.join(__dirname,'public','login.html'));
+});
+app.use(express.static(path.join(__dirname,'public'), { index:false }));
 
 const PORT = process.env.PORT || 3000;
 db.init().then(()=>{

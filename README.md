@@ -8,8 +8,9 @@ sesiones firmadas y **dos roles aplicados por el servidor** (admin / staff).
 ```
 server.js          Express: estáticos + /api/storage + login por roles
 lib/db.js          Clave-valor versionado: Postgres (Railway) o data.json (local)
-public/index.html  El tablero completo (kanjo v4, 10 tabs) con el shim inyectado
+public/index.html  El tablero completo (kanjo v4, 11 tabs) con el shim inyectado
 public/shim.js     window.storage contra la API: login, versiones, conflictos 409
+public/login.html  Página de acceso (el tablero solo se sirve con sesión)
 ```
 
 ## Paso a paso (una sola vez, ~10 minutos)
@@ -30,7 +31,7 @@ public/shim.js     window.storage contra la API: login, versiones, conflictos 40
    |---|---|
    | `APP_PASSWORD_ADMIN` | contraseña del dueño (fuerte) |
    | `APP_PASSWORD_STAFF` | contraseña del equipo (distinta) |
-   | `SESSION_SECRET` | opcional: 64 caracteres al azar; si falta se deriva de las contraseñas |
+   | `SESSION_SECRET` | **recomendada**: 64 caracteres al azar (`openssl rand -hex 32`). Si falta, se genera una efímera por proceso y las sesiones caen en cada deploy/restart. Nunca se deriva de las contraseñas. |
    | `OPENAI_API_KEY` | opcional: habilita ✦ Puntuar con IA en Maridaje 相性 (solo admin) |
    | `OPENAI_MODEL` | opcional, default `gpt-5.5`. El endpoint dispara pocas veces por mes: usá un modelo grande, cuesta centavos. Si el modelo rechaza `temperature` (razonadores), el servidor reintenta solo sin el parámetro. |
    | `OPENAI_BASE_URL` | opcional: para proxies o endpoints compatibles (default `https://api.openai.com`) |
@@ -51,11 +52,13 @@ ese archivo. Listo — todo el historial pasa a Postgres.
 ## Cómo funcionan los roles
 
 - La **contraseña define el rol** (el botón de roles del tablero queda informativo).
-- Staff puede **leer** todo lo que la app necesita para renderizar, y **escribir** las
-  claves operativas: servicios, compras, mermas, TC, reservas, clientes, stock, genka.
+- Staff puede **leer** todo lo que la app necesita para renderizar — con una excepción:
+  `kanjo:caja` (saldos y proyección de caja) es **admin-only también en lectura** —
+  y **escribir** las claves operativas: servicios, compras, mermas, TC, reservas,
+  clientes, stock, genka.
 - Staff **no puede escribir** (el servidor devuelve 403, aunque manipulen el navegador):
   `kanjo:baseline` (esquema), `kanjo:scenarios`, `kanjo:caja`, `kanjo:auth` (permisos),
-  `kanjo:sheeturl`. Tampoco puede borrar claves ni listar.
+  `kanjo:cierres`. Tampoco puede borrar claves ni listar.
 - La visibilidad de tabs se sigue configurando en *Resumen → Administración* y viaja
   en `kanjo:auth` — que solo un admin puede modificar.
 
@@ -95,11 +98,40 @@ APP_PASSWORD_ADMIN=admin123 APP_PASSWORD_STAFF=staff123 node server.js
   formularios del día (servicio, reservas, compra, merma) con un toque.
   El service worker cachea solo el shell estático; la API va siempre por red.
 
-## Notas honestas
+## Novedades v4 — hardening
 
-- El HTML se sirve antes del login (el overlay lo pone el shim). El archivo contiene los
-  *defaults* genéricos del modelo, no tus datos — los datos reales viven en Postgres,
-  detrás de la sesión. Si querés gatear también el estático, se agrega después.
+- **Baseline al arranque**: el esquema guardado se carga automáticamente al abrir la app
+  (antes había que apretar «Cargar baseline»: todos los tabs calculaban sobre defaults).
+- **Persistencia segura**: una clave que no cargó bien del servidor (error de red, 500)
+  queda en solo lectura hasta recargar — nunca más pisar datos reales con un estado
+  vacío. Los guardados que fallan avisan con un flash en vez de fingir éxito.
+- **Tablero solo con sesión**: `index.html` (que embebe el modelo del negocio) se sirve
+  únicamente con cookie válida; sin sesión aparece `login.html`.
+- **Sesiones**: secreto nunca derivado de contraseñas; sin `APP_PASSWORD_ADMIN` en
+  producción (con `DATABASE_URL`) el servidor no arranca. `trust proxy` + `req.ip` para
+  que el rate limit de login no sea burlable con `X-Forwarded-For`.
+- **Headers**: CSP, `X-Frame-Options: DENY`, `nosniff`, `no-store` en el HTML.
+- **Logout** en la barra (⎋ salir) — clave en tablets compartidas con sesiones de 14 días.
+- **Service worker v2**: `/` y `/shim.js` van red-primero — los deploys llegan a las
+  PWAs instaladas sin tener que reinstalar.
+- **Modelo**: el efectivo cargado (post-descuento) ya no se descuenta dos veces al
+  calcular la mezcla de pagos; las mermas congelan su costo unitario al registrarse
+  (los cambios de precio posteriores no reescriben la historia).
+- **CRM**: el buscador ya no pierde el foco en cada tecla.
+- **Google Sheets eliminado**: con Postgres como base, el sync con la sheet era un
+  vestigio — y el peor tipo de vestigio: un endpoint GAS que recibía la facturación
+  (incluido el flag de efectivo) fuera de tu control. Para el contador: **Turnos →
+  Exportar servicios / Resumen mensual** baja CSVs que se abren directo en Excel o
+  Sheets. Importante: **borrá la implementación vieja del Apps Script** (script.google.com
+  → tu proyecto → Implementaciones → archivar) — la URL sigue viva aunque la app ya no la use.
+- **`kanjo:cierres` admin-only también en lectura**: el P&L histórico congelado no
+  viaja a sesiones staff (el panel se oculta solo en Resumen).
+- **Higiene**: `data.json` local con escritura atómica (tmp+rename), poda automática
+  del audit log en Postgres (últimas ~4000 entradas) y de los mapas de rate limit.
+
+## Notas honestas
 - `express.json` acepta hasta 8 MB por escritura y el servidor limita cada valor a 4 MB —
   de sobra para años de servicios.
-- El sync con Google Sheets queda como export contable opcional; el GAS ya no es la base.
+- Si algún día el contador quiere una sheet "viva" en vez de CSVs, lo correcto es un
+  job del lado del servidor que empuje a la API de Sheets con credenciales propias —
+  no un endpoint GAS público. Hasta que exista esa necesidad real, menos es más.
