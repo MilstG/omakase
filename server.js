@@ -24,7 +24,7 @@ const DEV_OPEN = !ADMIN_PW && !process.env.DATABASE_URL;
 
 /* Claves que el staff puede LEER (la app las necesita para renderizar)
    pero NO escribir: modelo financiero, escenarios, caja, permisos y sync. */
-const ADMIN_ONLY_WRITE = ['kanjo:baseline','kanjo:scenarios','kanjo:caja','kanjo:auth','kanjo:cierres'];
+const ADMIN_ONLY_WRITE = ['kanjo:baseline','kanjo:scenarios','kanjo:caja','kanjo:auth','kanjo:cierres','kanjo:kata'];
 /* Claves que el staff tampoco puede LEER (saldos de caja, P&L congelado):
    ocultar el tab no alcanza si la API igual entrega el dato. */
 const ADMIN_ONLY_READ = ['kanjo:caja','kanjo:cierres'];
