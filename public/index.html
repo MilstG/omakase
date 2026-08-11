@@ -477,6 +477,13 @@
   .svrow .pf{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12.5px;text-align:right;min-width:62px}
   .svempty{font-size:12.5px;color:var(--ink-soft);line-height:1.6;padding:10px 2px}
   .subhead{font-family:'Zilla Slab',serif;font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--brass-deep);margin:13px 0 5px;padding-top:9px;border-top:1px solid var(--rule)}
+  .kthandle{display:none}
+  body.ktedit .kthandle{display:flex;align-items:center;gap:6px;background:#efe9dc;border:1px solid var(--rule);border-bottom:none;border-radius:3px 3px 0 0;padding:3px 9px;font-size:10px;color:var(--ink-soft)}
+  body.ktedit .kthandle button{border:none;background:none;color:var(--indigo);cursor:pointer;font-size:11px;padding:1px 4px}
+  body.ktedit .ktblock{cursor:grab}
+  body.ktedit .ktblock>.card,body.ktedit .ktblock>.panel{border-radius:0 0 3px 3px}
+  body.ktedit .ktcol{border:1px dashed var(--brass);border-radius:4px;padding:8px;background:rgba(168,115,56,.03)}
+  .ktblock.ktdragging{opacity:.45}
   .chkrow{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:9px 0 3px;cursor:pointer}
   .chkrow input[type=checkbox]{width:auto;accent-color:var(--indigo)}
   .chkrow .sub2{color:var(--ink-soft);font-size:11px}
@@ -651,6 +658,7 @@
     <button class="tab" data-tab="caja" onclick="switchTab('caja')">Caja <span class="tk">現金</span></button>
     <button class="tab" data-tab="reservas" onclick="switchTab('reservas')">Reservas <span class="tk">予約</span></button>
     <button class="tab" data-tab="crm" onclick="switchTab('crm')">Clientes <span class="tk">顧客</span></button>
+    <button class="tab" data-tab="kata" onclick="switchTab('kata')">Manual <span class="tk">型</span></button>
     <button class="roletab kjqlaunch" onclick="kjQuick()">⚡ carga rápida</button>
     <button class="roletab" id="roleBtn" onclick="kjRoleToggle()">⚙ roles</button>
     <button class="roletab" id="logoutBtn" onclick="kjLogout()" style="display:none" title="Cerrar sesión en este dispositivo">⎋ salir</button>
@@ -1268,6 +1276,68 @@
       <div class="tright" id="crmOut"></div>
     </div>
   </div><!-- /tab-crm -->
+
+  <div id="tab-kata" class="tabpanel">
+    <header class="top">
+      <div class="brand">
+        <div>
+          <h1>Kata <span class="kanji">型</span></h1>
+          <p class="sub">Manual de operaciones · la forma practicada de cada tarea</p>
+        </div>
+      </div>
+      <div class="kpis" id="ktKpis"></div>
+    </header>
+
+    <p class="assume">
+      <span>※</span>
+      <span>El <b>kata</b> es la forma correcta y repetida de hacer cada cosa. Acá el manual no es un documento: son <b>checklists ejecutables</b> — cada apertura y cierre de turno se marca en vivo, con hora y sesión. El último paso del cierre es <b>cargar los datos del servicio</b>, así el registro operativo y el modelo financiero cierran juntos. Las plantillas las edita el admin; la ejecución es de todo el equipo.</span>
+    </p>
+
+    <div class="adminonly" style="display:flex;justify-content:flex-end;margin:-4px 0 8px"><button class="minib" id="ktEditBtn" onclick="ktEditToggle()">✥ ordenar layout</button></div>
+    <div class="tgrid">
+      <div class="tleft ktcol" id="ktColL" data-col="left">
+        <div class="ktblock" data-kb="hoy"><div class="kthandle adminonly"><span style="color:var(--brass)">✥</span><span style="flex:1">arrastrar</span><button onclick="ktMoveBlock('hoy',-1)">↑</button><button onclick="ktMoveBlock('hoy',1)">↓</button><button onclick="ktSwapCol('hoy')">⇄</button></div>
+        <div class="card">
+          <div class="head" style="cursor:default"><span class="num">今</span><span class="ttl">Turno de hoy</span></div>
+          <div class="body">
+            <div class="row"><label>Fecha</label><div class="ifield"><input type="date" id="ktDate" onchange="renderKataHoy()"></div></div>
+            <div class="row"><label>Turno</label><div class="ifield"><select id="ktTurno" class="sel" onchange="renderKataHoy()"><option value="M">Mediodía</option><option value="N1">1° noche</option><option value="N2">2° noche</option></select></div></div>
+            <div id="ktHoy"></div>
+          </div>
+        </div></div>
+
+        <div class="ktblock" data-kb="notas"><div class="kthandle adminonly"><span style="color:var(--brass)">✥</span><span style="flex:1">arrastrar</span><button onclick="ktMoveBlock('notas',-1)">↑</button><button onclick="ktMoveBlock('notas',1)">↓</button><button onclick="ktSwapCol('notas')">⇄</button></div>
+        <div class="card">
+          <div class="head" style="cursor:default"><span class="num">申</span><span class="ttl">Novedades del turno</span></div>
+          <div class="body">
+            <p class="note">Lo que el turno siguiente tiene que saber: se rompió algo, faltó un insumo, un cliente especial. Queda con fecha, turno y sesión.</p>
+            <div class="gkaddline"><input type="text" id="ktNota" placeholder="ej: quedó poco hamachi — pedir mañana" style="flex:1;border:1px solid var(--rule);border-radius:4px;padding:5px 7px;font-family:'Inter',sans-serif;font-size:12px"><button class="minib" onclick="ktAddNota()">Anotar</button></div>
+            <div id="ktNotas"></div>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="tright ktcol" id="ktColR" data-col="right">
+        <div class="ktblock" data-kb="hist"><div class="kthandle adminonly"><span style="color:var(--brass)">✥</span><span style="flex:1">arrastrar</span><button onclick="ktMoveBlock('hist',-1)">↑</button><button onclick="ktMoveBlock('hist',1)">↓</button><button onclick="ktSwapCol('hist')">⇄</button></div>
+        <div class="panel">
+          <h3>Cumplimiento <span style="font-family:'Zilla Slab',serif">履</span> <span style="font-weight:400;color:var(--ink-soft);font-size:11px">· últimos 14 días</span></h3>
+          <div id="ktHist"></div>
+        </div></div>
+
+        <div class="ktblock adminonly" data-kb="tpls"><div class="kthandle adminonly"><span style="color:var(--brass)">✥</span><span style="flex:1">arrastrar</span><button onclick="ktMoveBlock('tpls',-1)">↑</button><button onclick="ktMoveBlock('tpls',1)">↓</button><button onclick="ktSwapCol('tpls')">⇄</button></div>
+        <div class="panel">
+          <h3>Plantillas <span style="font-family:'Zilla Slab',serif">型</span> <span style="font-weight:400;color:var(--ink-soft);font-size:11px">· solo admin — el servidor lo aplica</span></h3>
+          <p class="desc">Cada plantilla es una sección del manual hecha checklist. El <b>criterio</b> de cada ítem es la letra chica del manual: cómo se hace bien, visible en el momento de hacerlo.</p>
+          <div id="ktTpls"></div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="gkadd" onclick="ktAddTpl()">＋ Nueva plantilla</button>
+            <button class="gkadd" id="ktSeedBtn" onclick="ktSeed()" style="display:none">Cargar plantillas de ejemplo</button>
+          </div>
+        </div></div>
+      </div>
+    </div>
+  </div><!-- /tab-kata -->
+
 
 
 
@@ -2154,6 +2224,7 @@ function switchTab(name){
   if(name==='reservas') renderReservas();
   if(name==='resumen') renderResumen();
   if(name==='crm') renderCRM();
+  if(name==='kata') renderKata();
   window.scrollTo(0,0);
 }
 
@@ -4827,9 +4898,9 @@ function renderCRM(){
    Control operativo del lado del cliente: la aplicación real de permisos
    llega con el servidor (Railway). Esto ordena quién ve qué en el local.
    ===================================================================== */
-const TAB_LABELS={ resumen:'Resumen 週報', costos:'Esquema 勘定', turnos:'Turnos 番付', heika:'Precios 平価', yoso:'Pronóstico 予想', genka:'Costeo 原価', aisho:'Maridaje 相性', compras:'Compras 仕入', caja:'Caja 現金', reservas:'Reservas 予約', crm:'Clientes 顧客' };
+const TAB_LABELS={ resumen:'Resumen 週報', costos:'Esquema 勘定', turnos:'Turnos 番付', heika:'Precios 平価', yoso:'Pronóstico 予想', genka:'Costeo 原価', aisho:'Maridaje 相性', compras:'Compras 仕入', caja:'Caja 現金', reservas:'Reservas 予約', crm:'Clientes 顧客', kata:'Manual 型' };
 let auth={ pin:'', algo:'', modules:{} };
-function authDefaults(){ return { resumen:'staff', costos:'admin', turnos:'staff', heika:'admin', yoso:'admin', genka:'staff', aisho:'staff', compras:'staff', caja:'admin', reservas:'staff', crm:'staff' }; }
+function authDefaults(){ return { resumen:'staff', costos:'admin', turnos:'staff', heika:'admin', yoso:'admin', genka:'staff', aisho:'staff', compras:'staff', caja:'admin', reservas:'staff', crm:'staff', kata:'staff' }; }
 function authEnsure(a){
   const d={ pin:'', algo:'', modules:authDefaults() };
   if(!a||typeof a!=='object') return d;
@@ -4927,7 +4998,7 @@ async function kjLogout(){
 }
 
 /* ---- backup / restore total ---- */
-const KANJO_KEYS=['kanjo:baseline','kanjo:scenarios','kanjo:services','kanjo:fchealth','kanjo:genka','kanjo:compras','kanjo:mermas','kanjo:fxlog','kanjo:caja','kanjo:reservas','kanjo:stock','kanjo:crm','kanjo:auth','kanjo:cierres','kanjo:aisho'];
+const KANJO_KEYS=['kanjo:baseline','kanjo:scenarios','kanjo:services','kanjo:fchealth','kanjo:genka','kanjo:compras','kanjo:mermas','kanjo:fxlog','kanjo:caja','kanjo:reservas','kanjo:stock','kanjo:crm','kanjo:auth','kanjo:cierres','kanjo:aisho','kanjo:kata','kanjo:kataruns'];
 async function kjBackup(){
   const data={};
   for(const k of KANJO_KEYS){
@@ -5829,6 +5900,352 @@ function renderAisho(){
   setTimeout(awAutoAi, 60);
 }
 
+/* =====================================================================
+   KATA 型 · Manual de operaciones — checklists ejecutables
+   - kanjo:kata      → plantillas (solo admin escribe: enforcement en el server)
+   - kanjo:kataruns  → ejecuciones y novedades (staff escribe: es su trabajo)
+   Una ejecución (run) es una plantilla marcada en un (fecha, turno) concreto.
+   El ítem final del cierre no es un checkbox: se marca solo cuando el
+   servicio de ese (fecha, turno) existe en el Analista — el manual y los
+   datos cierran juntos o no cierra ninguno. */
+let kata={ tpl:[] };
+let kataRuns=[];
+const KT_BLOCKS=['hoy','notas','hist','tpls'];
+const KT_LAYOUT_DEF={ left:['hoy','notas'], right:['hist','tpls'] };
+function ktEnsure(k){
+  const d={ tpl:[], layout:{ left:[...KT_LAYOUT_DEF.left], right:[...KT_LAYOUT_DEF.right] } };
+  if(!k||typeof k!=='object') return d;
+  k=Object.assign({},d,k);
+  if(!Array.isArray(k.tpl)) k.tpl=[];
+  k.tpl.forEach(t=>{ if(!Array.isArray(t.items)) t.items=[]; if(!Array.isArray(t.turnos)) t.turnos=[]; });
+  /* saneo del layout: cada bloque exactamente una vez, en una columna */
+  const L=Array.isArray(k.layout&&k.layout.left)? k.layout.left:[], R=Array.isArray(k.layout&&k.layout.right)? k.layout.right:[];
+  const seen=new Set(), left=[], right=[];
+  L.forEach(b=>{ if(KT_BLOCKS.includes(b)&&!seen.has(b)){ seen.add(b); left.push(b); } });
+  R.forEach(b=>{ if(KT_BLOCKS.includes(b)&&!seen.has(b)){ seen.add(b); right.push(b); } });
+  KT_BLOCKS.forEach(b=>{ if(!seen.has(b)) (KT_LAYOUT_DEF.left.includes(b)? left:right).push(b); });
+  k.layout={ left, right };
+  return k;
+}
+async function loadKata(){ kata=ktEnsure(null); await kjLoadKey('kanjo:kata', v=>{ kata=ktEnsure(v); }); }
+async function loadKataRuns(){ await kjLoadKey('kanjo:kataruns', v=>{ if(Array.isArray(v)) kataRuns=v; }); }
+function ktPersistTpl(){ persistSafe('kanjo:kata', kata); }
+function ktPersistRuns(){ persistSafe('kanjo:kataruns', kataRuns); }
+function ktRole(){ return window.KANJO_SERVER_ROLE || (kjIsAdmin()?'admin':'staff'); }
+
+/* ---- plantillas aplicables a un turno ---- */
+function ktTplsFor(turno){
+  return kata.tpl.filter(t=>t.items.length && (!t.turnos.length || t.turnos.includes(turno)));
+}
+function ktRun(date,turno,tplId){ return kataRuns.find(r=>r.date===date&&r.turno===turno&&r.tplId===tplId); }
+function ktServiceLoaded(date,turno){ return services.some(s=>s.date===date&&s.turno===turno); }
+
+/* ---- ejecución: marcar / desmarcar ---- */
+function ktToggle(date,turno,tplId,itemId){
+  let r=ktRun(date,turno,tplId);
+  if(!r){ r={ id:rid(), date, turno, tplId, checks:{} }; kataRuns.push(r); }
+  if(r.checks[itemId]) delete r.checks[itemId];
+  else r.checks[itemId]={ at:new Date().toISOString(), by:ktRole() };
+  ktPersistRuns(); renderKataHoy(); ktRenderHist(); ktKpis();
+}
+
+/* ---- novedades del turno ---- */
+function ktAddNota(){
+  const inp=document.getElementById('ktNota');
+  const txt=(inp.value||'').trim(); if(!txt) return;
+  const date=document.getElementById('ktDate').value||fmtDate(new Date());
+  const turno=document.getElementById('ktTurno').value;
+  kataRuns.push({ id:rid(), date, turno, tplId:'_nota', t:txt.slice(0,240), at:new Date().toISOString(), by:ktRole() });
+  inp.value='';
+  ktPersistRuns(); ktRenderNotas(); flash('Novedad anotada ✓');
+}
+function ktDelNota(id){
+  kataRuns=kataRuns.filter(r=>r.id!==id);
+  ktPersistRuns(); ktRenderNotas();
+}
+function ktRenderNotas(){
+  const box=document.getElementById('ktNotas'); if(!box) return;
+  const admin=kjIsAdmin();
+  const notas=kataRuns.filter(r=>r.tplId==='_nota').sort((a,b)=>(b.at||'').localeCompare(a.at||'')).slice(0,12);
+  if(!notas.length){ box.innerHTML='<div class="svempty">Sin novedades registradas. Lo que se avisa acá no depende de que se crucen en el pase.</div>'; return; }
+  box.innerHTML=notas.map(n=>`<div style="display:flex;gap:8px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--rule)">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-soft);white-space:nowrap">${escapeHtml((n.date||'').slice(5))} ${escapeHtml(TURNO_SHORT[n.turno]||'')}</span>
+    <span style="font-size:12.5px;flex:1">${escapeHtml(n.t||'')}<span class="gcat">${escapeHtml(n.by||'')} · ${escapeHtml((n.at||'').replace('T',' ').slice(11,16))}</span></span>
+    ${admin?`<button class="editrow" onclick="ktDelNota('${n.id}')">×</button>`:''}
+  </div>`).join('');
+}
+
+/* ---- panel Hoy: checklists del (fecha, turno) elegido ---- */
+function ktProgress(t,r,date,turno){
+  const isCierre=t.mom==='cierre';
+  const total=t.items.length + (isCierre?1:0);
+  let done=t.items.filter(i=>r&&r.checks[i.id]).length;
+  if(isCierre && ktServiceLoaded(date,turno)) done++;
+  return { done, total, pct: total? Math.round(done/total*100):0 };
+}
+function renderKataHoy(){
+  const box=document.getElementById('ktHoy'); if(!box) return;
+  const date=document.getElementById('ktDate').value||fmtDate(new Date());
+  const turno=document.getElementById('ktTurno').value;
+  const tpls=ktTplsFor(turno);
+  if(!tpls.length){
+    box.innerHTML='<div class="svempty">No hay plantillas con ítems para este turno. '+(kjIsAdmin()?'Creá una en el panel <b>Plantillas</b> o cargá las de ejemplo.':'Pedile al admin que configure las checklists.')+'</div>';
+    return;
+  }
+  const MOM_ORDER={apertura:0, servicio:1, cierre:2};
+  box.innerHTML=tpls.slice().sort((a,b)=>(MOM_ORDER[a.mom]??9)-(MOM_ORDER[b.mom]??9)).map(t=>{
+    const r=ktRun(date,turno,t.id);
+    const pr=ktProgress(t,r,date,turno);
+    const bar=`<div style="height:4px;background:var(--rule);border-radius:2px;margin:6px 0 2px"><div style="height:4px;width:${pr.pct}%;background:${pr.pct>=100?'var(--good)':'var(--indigo)'};border-radius:2px;transition:width .25s"></div></div>`;
+    const rows=t.items.map(i=>{
+      const c=r&&r.checks[i.id];
+      return `<label class="chkrow" style="border-bottom:1px solid var(--rule);padding:8px 0">
+        <input type="checkbox" ${c?'checked':''} onchange="ktToggle('${date}','${turno}','${t.id}','${i.id}')">
+        <span style="flex:1;${c?'color:var(--ink-soft)':''}">${escapeHtml(i.t)}${i.c?`<span class="gcat">${escapeHtml(i.c)}</span>`:''}</span>
+        ${c?`<span style="font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--ink-soft);white-space:nowrap">${escapeHtml((c.at||'').replace('T',' ').slice(11,16))} · ${escapeHtml(c.by||'')}</span>`:''}
+      </label>`;
+    }).join('');
+    let cargaRow='';
+    if(t.mom==='cierre'){
+      const ok=ktServiceLoaded(date,turno);
+      cargaRow=`<div class="chkrow" style="padding:8px 0;cursor:default">
+        <span style="font-size:14px;line-height:1;color:${ok?'var(--good)':'var(--warn)'}">${ok?'✓':'○'}</span>
+        <span style="flex:1;${ok?'color:var(--ink-soft)':''}"><b>Cargar los datos del servicio</b><span class="gcat">${ok?'servicio registrado en el Analista de turnos ✓':'se marca solo cuando el servicio de este turno existe en el Analista'}</span></span>
+        ${ok?'':`<button class="minib" onclick="kjQuickGo('turnos','svCovers')">⚡ cargar ahora</button>`}
+      </div>`;
+    }
+    return `<div style="margin-top:14px">
+      <div class="hslab"><span><b style="font-family:'Zilla Slab',serif;font-size:14px;color:var(--ink)">${escapeHtml(t.n)}</b> <span style="font-size:10px;text-transform:uppercase;letter-spacing:.06em">${escapeHtml(t.mom)}</span></span><b>${pr.done}/${pr.total}</b></div>
+      ${bar}${rows}${cargaRow}
+    </div>`;
+  }).join('');
+}
+
+/* ---- historial de cumplimiento ---- */
+function ktRenderHist(){
+  const box=document.getElementById('ktHist'); if(!box) return;
+  const today=new Date();
+  const rows=[];
+  for(let d=0; d<14; d++){
+    const dt=new Date(today); dt.setDate(dt.getDate()-d);
+    const date=fmtDate(dt);
+    TURNOS.forEach(tu=>{
+      const tpls=ktTplsFor(tu.id);
+      if(!tpls.length) return;
+      const hasActivity=tpls.some(t=>ktRun(date,tu.id,t.id)) || ktServiceLoaded(date,tu.id);
+      if(!hasActivity) return;
+      const agg=tpls.reduce((a,t)=>{ const pr=ktProgress(t,ktRun(date,tu.id,t.id),date,tu.id); a.done+=pr.done; a.total+=pr.total; return a; },{done:0,total:0});
+      const pct=agg.total? Math.round(agg.done/agg.total*100):0;
+      rows.push({date, turno:tu.id, pct, done:agg.done, total:agg.total});
+    });
+  }
+  if(!rows.length){ box.innerHTML='<div class="svempty">Sin actividad todavía. Cuando el equipo empiece a marcar aperturas y cierres, acá se ve qué turnos se hicieron completos y cuáles a medias.</div>'; return; }
+  box.innerHTML='<table class="gkins"><thead><tr><th style="text-align:left">Servicio</th><th>Checklist</th><th style="text-align:left;width:44%"></th></tr></thead><tbody>'+
+    rows.map(r=>`<tr>
+      <td style="text-align:left">${escapeHtml(DOW_SHORT[dowOf(r.date)])} ${escapeHtml(r.date.slice(5))}<span class="gcat">${escapeHtml(TURNO_LABEL[r.turno]||r.turno)}</span></td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${r.pct>=100?'var(--good)':(r.pct>=60?'var(--ink)':'var(--bad)')}">${r.done}/${r.total}</td>
+      <td><div style="height:5px;background:var(--rule);border-radius:2px"><div style="height:5px;width:${r.pct}%;background:${r.pct>=100?'var(--good)':(r.pct>=60?'var(--indigo)':'var(--vermilion)')};border-radius:2px"></div></div></td>
+    </tr>`).join('')+'</tbody></table>'+
+    '<p class="desc" style="margin:8px 0 0">100% = todos los ítems marcados <b>y</b> el servicio cargado en el Analista. Un cierre sin datos no es un cierre.</p>';
+}
+
+/* ---- KPIs ---- */
+function ktKpis(){
+  const box=document.getElementById('ktKpis'); if(!box) return;
+  const today=new Date(); let done=0, total=0, svcOk=0, svcTot=0;
+  for(let d=0; d<14; d++){
+    const dt=new Date(today); dt.setDate(dt.getDate()-d);
+    const date=fmtDate(dt);
+    TURNOS.forEach(tu=>{
+      const tpls=ktTplsFor(tu.id); if(!tpls.length) return;
+      const active=tpls.some(t=>ktRun(date,tu.id,t.id)) || ktServiceLoaded(date,tu.id);
+      if(!active) return;
+      svcTot++;
+      const agg=tpls.reduce((a,t)=>{ const pr=ktProgress(t,ktRun(date,tu.id,t.id),date,tu.id); a.done+=pr.done; a.total+=pr.total; return a; },{done:0,total:0});
+      done+=agg.done; total+=agg.total;
+      if(agg.total&&agg.done>=agg.total) svcOk++;
+    });
+  }
+  const pct=total? Math.round(done/total*100):null;
+  box.innerHTML=`
+    <div class="kpi"><div class="l">Cumplimiento 14d</div><div class="v">${pct==null?'—':pct+'%'}</div></div>
+    <div class="kpi"><div class="l">Turnos completos</div><div class="v">${svcTot?svcOk+'/'+svcTot:'—'}</div></div>
+    <div class="kpi"><div class="l">Plantillas activas</div><div class="v">${kata.tpl.filter(t=>t.items.length).length}</div></div>`;
+}
+
+/* ---- editor de plantillas (admin) ---- */
+function ktAddTpl(){
+  kata.tpl.push({ id:rid(), n:'Nueva plantilla', mom:'apertura', turnos:[], items:[] });
+  ktPersistTpl(); ktRenderTpls();
+}
+function ktDelTpl(id){
+  const t=kata.tpl.find(x=>x.id===id); if(!t) return;
+  const ok=window.confirm? window.confirm('¿Borrar la plantilla «'+t.n+'»? Las ejecuciones ya registradas no se tocan.') : true;
+  if(!ok) return;
+  kata.tpl=kata.tpl.filter(x=>x.id!==id);
+  ktPersistTpl(); ktRenderTpls(); renderKataHoy(); ktKpis();
+}
+function ktTplSet(id,field,val){
+  const t=kata.tpl.find(x=>x.id===id); if(!t) return;
+  if(field==='n') t.n=String(val).slice(0,60);
+  if(field==='mom') t.mom=val;
+  ktPersistTpl(); renderKataHoy(); ktKpis();
+}
+function ktTplTurno(id,turno,on){
+  const t=kata.tpl.find(x=>x.id===id); if(!t) return;
+  t.turnos=on? [...new Set([...t.turnos,turno])] : t.turnos.filter(x=>x!==turno);
+  ktPersistTpl(); renderKataHoy();
+}
+function ktAddItem(tplId){
+  const t=kata.tpl.find(x=>x.id===tplId); if(!t) return;
+  const inp=document.getElementById('ktNi-'+tplId), crit=document.getElementById('ktNc-'+tplId);
+  const txt=(inp.value||'').trim(); if(!txt) return;
+  t.items.push({ id:rid(), t:txt.slice(0,120), c:(crit.value||'').trim().slice(0,160) });
+  inp.value=''; crit.value='';
+  ktPersistTpl(); ktRenderTpls(); renderKataHoy(); ktKpis();
+}
+function ktDelItem(tplId,itemId){
+  const t=kata.tpl.find(x=>x.id===tplId); if(!t) return;
+  t.items=t.items.filter(i=>i.id!==itemId);
+  ktPersistTpl(); ktRenderTpls(); renderKataHoy(); ktKpis();
+}
+function ktMoveItem(tplId,itemId,dir){
+  const t=kata.tpl.find(x=>x.id===tplId); if(!t) return;
+  const i=t.items.findIndex(x=>x.id===itemId); const j=i+dir;
+  if(i<0||j<0||j>=t.items.length) return;
+  [t.items[i],t.items[j]]=[t.items[j],t.items[i]];
+  ktPersistTpl(); ktRenderTpls(); renderKataHoy();
+}
+function ktRenderTpls(){
+  const box=document.getElementById('ktTpls'); if(!box) return;
+  const seed=document.getElementById('ktSeedBtn');
+  if(seed) seed.style.display = kata.tpl.length? 'none':'';
+  if(!kata.tpl.length){ box.innerHTML='<div class="svempty">Todavía no hay plantillas. Cargá las de ejemplo y editalas con lo que releves del equipo — el manual bueno describe lo que ya se hace, no lo que suena bien.</div>'; return; }
+  box.innerHTML=kata.tpl.map(t=>{
+    const rows=t.items.map((i,ix)=>`<div style="display:flex;gap:6px;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--rule)">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-soft)">${ix+1}</span>
+      <span style="flex:1;font-size:12.5px">${escapeHtml(i.t)}${i.c?`<span class="gcat">${escapeHtml(i.c)}</span>`:''}</span>
+      <button class="editrow" title="subir" onclick="ktMoveItem('${t.id}','${i.id}',-1)">↑</button>
+      <button class="editrow" title="bajar" onclick="ktMoveItem('${t.id}','${i.id}',1)">↓</button>
+      <button class="editrow" onclick="ktDelItem('${t.id}','${i.id}')">×</button>
+    </div>`).join('');
+    return `<div style="border:1px solid var(--rule);border-radius:3px;padding:10px 12px;margin-bottom:10px">
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <input type="text" value="${escapeHtml(t.n)}" onchange="ktTplSet('${t.id}','n',this.value)" style="font-family:'Zilla Slab',serif;font-size:14px;font-weight:600;border:none;background:transparent;color:var(--ink);flex:1;min-width:140px">
+        <select class="sel" style="width:auto" onchange="ktTplSet('${t.id}','mom',this.value)">
+          ${['apertura','servicio','cierre'].map(m=>`<option value="${m}" ${t.mom===m?'selected':''}>${m}</option>`).join('')}
+        </select>
+        <button class="editrow" onclick="ktDelTpl('${t.id}')">×</button>
+      </div>
+      <div style="display:flex;gap:10px;margin:5px 0 7px;font-size:11px;color:var(--ink-soft)">
+        <span>Turnos:</span>
+        ${TURNOS.map(tu=>`<label style="display:flex;gap:3px;align-items:center;cursor:pointer"><input type="checkbox" style="accent-color:var(--indigo)" ${!t.turnos.length||t.turnos.includes(tu.id)?'checked':''} onchange="ktTplTurno('${t.id}','${tu.id}',this.checked)">${tu.short}</label>`).join('')}
+        <span style="margin-left:auto">${t.turnos.length? '':'todos'}</span>
+      </div>
+      ${rows}
+      <div class="gkaddline">
+        <input type="text" id="ktNi-${t.id}" placeholder="nuevo ítem — ej: Verificar temperatura de cámara" style="flex:2;border:1px solid var(--rule);border-radius:4px;padding:5px 7px;font-family:'Inter',sans-serif;font-size:12px">
+        <input type="text" id="ktNc-${t.id}" placeholder="criterio (opcional) — ej: entre 0 y 4°C" style="flex:1.4;border:1px solid var(--rule);border-radius:4px;padding:5px 7px;font-family:'Inter',sans-serif;font-size:12px">
+        <button class="minib" onclick="ktAddItem('${t.id}')">＋</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ---- plantillas de ejemplo: punto de partida, no verdad revelada ---- */
+function ktSeed(){
+  if(kata.tpl.length) return;
+  const I=(t,c)=>({ id:rid(), t, c:c||'' });
+  kata.tpl=[
+    { id:rid(), n:'Apertura', mom:'apertura', turnos:[], items:[
+      I('Verificar temperaturas de heladeras y cámara','entre 0 y 4°C — si está fuera de rango, avisar antes de tocar nada'),
+      I('Controlar el pescado recibido / stock del día','olor, ojos, agallas, firmeza — ante la duda, no se sirve'),
+      I('Mise en place completa según reservas del día','revisar restricciones y alergias anotadas en Reservas'),
+      I('Arroz: lavado, cocción y sazón del shari',''),
+      I('Repasar reservas del turno y armado de la barra','quién se sienta dónde, ocasiones especiales'),
+      I('Caja inicial contada y lista',''),
+      I('Salón y baños en condiciones',''),
+    ]},
+    { id:rid(), n:'Cierre', mom:'cierre', turnos:[], items:[
+      I('Guardar y filmar todo el producto, rotular con fecha','lo de hoy adelante, PEPS'),
+      I('Registrar mermas del servicio','qué se tiró y por qué — va a Compras → Merma'),
+      I('Limpieza de barra, tablas y cuchillos',''),
+      I('Apagar equipos que corresponda / verificar gas',''),
+      I('Arqueo de caja y separación de propinas',''),
+      I('Anotar novedades para el turno siguiente','acá abajo, en Novedades del turno'),
+    ]},
+  ];
+  ktPersistTpl(); ktRenderTpls(); renderKataHoy(); ktKpis();
+  flash('Plantillas de ejemplo cargadas — editalas con lo que hace tu equipo ✓');
+}
+
+/* ---- layout del tab: dos columnas de bloques que el admin ordena a gusto ----
+   El orden vive en kanjo:kata (solo admin escribe): lo que arma el itamae
+   es lo que ve todo el equipo. Flechas y ⇄ cubren touch, donde el drag
+   nativo de HTML5 no existe. */
+function ktBlockCol(id){ return kata.layout.left.includes(id)? 'left':'right'; }
+function ktApplyLayout(){
+  const cols={ left:document.getElementById('ktColL'), right:document.getElementById('ktColR') };
+  if(!cols.left||!cols.right) return;
+  const nodes={}; document.querySelectorAll('#tab-kata .ktblock').forEach(n=>{ nodes[n.dataset.kb]=n; });
+  ['left','right'].forEach(c=>{ kata.layout[c].forEach(b=>{ if(nodes[b]) cols[c].appendChild(nodes[b]); }); });
+}
+function ktLayoutPersist(){ ktPersistTpl(); }
+function ktMoveBlock(id,dir){
+  const a=kata.layout[ktBlockCol(id)], i=a.indexOf(id), j=i+dir;
+  if(i<0||j<0||j>=a.length) return;
+  [a[i],a[j]]=[a[j],a[i]];
+  ktApplyLayout(); ktLayoutPersist();
+}
+function ktSwapCol(id){
+  const c=ktBlockCol(id), o=c==='left'?'right':'left';
+  kata.layout[c]=kata.layout[c].filter(x=>x!==id);
+  kata.layout[o].push(id);
+  ktApplyLayout(); ktLayoutPersist();
+}
+function ktEditToggle(){
+  const on=!document.body.classList.contains('ktedit');
+  document.body.classList.toggle('ktedit', on);
+  const b=document.getElementById('ktEditBtn');
+  if(b) b.textContent=on? '✥ ordenando… listo':'✥ ordenar layout';
+  document.querySelectorAll('#tab-kata .ktblock').forEach(n=>{ n.draggable=on; });
+  if(!on) flash('Layout guardado — así lo ve todo el equipo ✓');
+}
+let ktDragId=null;
+function ktBindDnd(){
+  document.querySelectorAll('#tab-kata .ktblock').forEach(n=>{
+    n.addEventListener('dragstart',e=>{
+      if(!document.body.classList.contains('ktedit')){ e.preventDefault(); return; }
+      ktDragId=n.dataset.kb; n.classList.add('ktdragging');
+      try{ e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',ktDragId); }catch(x){}
+    });
+    n.addEventListener('dragend',()=>{ ktDragId=null; n.classList.remove('ktdragging'); });
+  });
+  document.querySelectorAll('#tab-kata .ktcol').forEach(c=>{
+    c.addEventListener('dragover',e=>{ if(ktDragId) e.preventDefault(); });
+    c.addEventListener('drop',e=>{
+      if(!ktDragId) return; e.preventDefault();
+      const col=c.dataset.col, from=ktBlockCol(ktDragId);
+      kata.layout[from]=kata.layout[from].filter(x=>x!==ktDragId);
+      const tgt=e.target.closest? e.target.closest('.ktblock'):null;
+      if(tgt && tgt.dataset.kb!==ktDragId){
+        const a=kata.layout[col], i=a.indexOf(tgt.dataset.kb);
+        const r=tgt.getBoundingClientRect(), after=e.clientY>r.top+r.height/2;
+        a.splice(Math.max(0,i)+(after?1:0),0,ktDragId);
+      } else kata.layout[col].push(ktDragId);
+      ktDragId=null;
+      ktApplyLayout(); ktLayoutPersist();
+    });
+  });
+}
+function renderKata(){
+  const d=document.getElementById('ktDate');
+  if(d && !d.value) d.value=fmtDate(new Date());
+  if(!renderKata._dnd){ ktBindDnd(); renderKata._dnd=true; }
+  ktApplyLayout();
+  ktKpis(); renderKataHoy(); ktRenderNotas(); ktRenderHist(); ktRenderTpls();
+}
+
 /* ----------------------------- init ----------------------------- */
 initChartTips();
 renderInputs();
@@ -5840,7 +6257,7 @@ Promise.all([
   loadGenka().then(()=>{ meEnsureMix(); }),
   loadCompras(), loadMermas(), loadFxlog(),
   loadCaja(), loadReservas(),
-  loadStock(), loadCRM(), loadAuth(), loadCierres(), loadAisho()
+  loadStock(), loadCRM(), loadAuth(), loadCierres(), loadAisho(), loadKata(), loadKataRuns()
 ]).then(()=>{
   renderInputs(); renderOutputs();             /* re-render con la baseline real */
   loadScenarios();
