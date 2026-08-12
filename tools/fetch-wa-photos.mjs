@@ -155,6 +155,7 @@ async function searchThumb(q){
 }
 
 async function main(){
+  console.log('══ fetch-wa-photos v3 — fuente primaria: Openverse · fallback: Wikimedia Commons ══');
   await mkdir(OUT, { recursive:true });
   let credits = {};
   try{ credits = JSON.parse(await readFile(path.join(OUT,'credits.json'),'utf8')); }catch(e){}
