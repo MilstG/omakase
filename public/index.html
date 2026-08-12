@@ -744,6 +744,14 @@
   #waMadd{position:fixed;inset:0;background:rgba(38,34,28,.45);z-index:9995;display:none;align-items:center;justify-content:center}
   #waMadd.open{display:flex}
   .wambox{width:400px;max-width:92vw;background:var(--paper);border:1px solid var(--rule);border-radius:5px;padding:18px 20px 20px;box-shadow:0 14px 40px rgba(0,0,0,.25)}
+  .wambox.wide{width:620px;max-height:86vh;overflow-y:auto;}
+  .wacosrow{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px dotted var(--rule);font-size:12px}
+  .wacosrow .dot{width:8px;height:8px;border-radius:50%;flex:none}
+  .wacosrow .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .wacosrow input{width:84px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:12px;padding:4px 6px;border:1px solid var(--rule);border-radius:3px;background:#fff}
+  .wacosrow .pv{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--ink-soft);width:110px;text-align:right;flex:none}
+  .wacoshdr{font-family:'Zilla Slab',serif;font-weight:600;font-size:13px;margin:12px 0 4px;color:var(--brass-deep)}
+  
   .wambox h3{font-family:'Zilla Slab',serif;font-weight:700;font-size:18px;margin:0 0 2px}
   .wambox .ms{font-size:11px;color:var(--ink-soft);margin-bottom:14px}
   .wamrow{margin-bottom:11px}
@@ -1520,6 +1528,7 @@
         <label class="wachk"><input type="checkbox" id="waStars1" onchange="WAW1.render()"> solo firmas ★</label>
         <button class="waadd adminonly" onclick="waOpenAdd('w1','l')">+ plato</button>
         <button class="waadd adminonly" onclick="waOpenAdd('w1','r')">+ bebida</button>
+        <button class="waadd adminonly" onclick="waOpenCostos()">値 Costos</button>
       </div>
       <div class="wastage">
         <svg id="waSvg1" viewBox="0 0 940 940" xmlns="http://www.w3.org/2000/svg"></svg>
@@ -1554,7 +1563,7 @@
             <div class="wagnrow"><label>Calidad del maridaje</label>
               <div class="watog" style="width:100%"><button id="wagnQc" class="on" onclick="wagnQ('comun')" style="flex:1"><span class="k">並</span>Común</button><button id="wagnQp" onclick="wagnQ('prem')" style="flex:1"><span class="k">特</span>Premium</button></div>
             </div>
-            <div class="wagnrow"><label>Presupuesto por cubierto (USD, neto)</label><input class="n" type="number" id="wagnB" value="40" min="5" step="5"></div>
+            <div class="wagnrow"><label>Presupuesto por cubierto (USD, neto)</label><input class="n" type="number" id="wagnB" value="12" min="1" step="1"></div>
             <button class="wagnbtn" id="wagnGo" onclick="wagnGenerate()"><span class="k">献</span>Generar maridaje</button>
           </div>
           <div>
@@ -7193,6 +7202,7 @@ function waOpenProfile(W,id,kind){
       <div class="wadrh"><span class="k">合</span>Sus maridajes</div>
       ${rows.map(r=>`<div class="wadrpair" onclick="waOpenPairing(WA_WHEELS['${W.key}'],'${r.l}','${r.r}')">
          <span class="sy s${r.lv}">${SYM[r.lv]}</span><span class="nm">${r.o.n}</span><span class="go">abrir ficha →</span></div>`).join('')||'<p class="note">Sin maridajes ◎/★ en el set activo.</p>'}
+      ${W.key==='w1'&&kind==='r'?waCostoHTML(m.n):''}
       <div class="wadrbtns adminonly">
         ${m.n.ai?`<button class="wadrbtn ok" onclick="waBless('${W.key}','${id}','${kind}')">✓ Visto bueno</button>`:''}
         <button class="wadrbtn del" onclick="waRemove('${W.key}','${id}','${kind}')">− Quitar de la carta</button>
@@ -7200,6 +7210,30 @@ function waOpenProfile(W,id,kind){
       <p class="wadrfoot">Carta propia de Wa 輪 — el salón consulta; agregar, quitar y aprobar es de admin.</p>
     </div>`;
   waOpenDrawer();
+}
+function waCostoHTML(b){
+  const [ymin,ymax]=WAGN_YIELD[b.cat]||[1,1];
+  const esTe=b.cat==='te';
+  const val=(typeof b.botella==='number')?b.botella:'';
+  const p=wagnPrice(b);
+  return `<div class="wadrh adminonly"><span class="k">値</span>Costo (admin)</div>
+    <div class="wadralt adminonly" style="border-left-color:var(--brass-deep)">
+      Costo por ${esTe?'servida':'botella'} (USD neto de factura):
+      <input id="waCostoInp" type="number" min="0" step="0.5" value="${val}" placeholder="${esTe?'p.ej. 0.80':'p.ej. 11.50'}" style="width:90px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:12px;padding:4px 6px;border:1px solid var(--rule);border-radius:3px;background:#fff">
+      <button class="wadrbtn" onclick="waSaveCosto('${b.id}')">Guardar</button>
+      <div style="margin-top:5px;font-size:11px;color:var(--ink-soft)">${esTe?'':'rinde '+ymin+'–'+ymax+' pours → '}pour: ${p?wagnFmt(p):'<b>sin costo cargado</b>'}</div>
+    </div>`;
+}
+function waSaveCosto(id){
+  if(!waAdmin()) return;
+  const raw=(document.getElementById('waCostoInp')||{}).value;
+  const v=raw===''?null:Math.max(0,+raw||0);
+  let hit=null;
+  ['comun','prem'].forEach(t=>WAX.bebs[t].forEach(b=>{ if(b.id===id){ hit=b; if(v==null) delete b.botella; else b.botella=v; } }));
+  if(!hit) return;
+  waPersist();
+  flash(v==null?'Costo borrado — vuelve al default estimado':'Costo guardado: $'+v.toFixed(2)+' la '+(hit.cat==='te'?'servida':'botella'));
+  waOpenProfile(WAW1,id,'r');
 }
 function waOpenPairing(W,lId,rId){
   const ln=W.L.nodes.left.find(x=>x.id===lId),rn=W.L.nodes.right.find(x=>x.id===rId);
@@ -7287,7 +7321,7 @@ function waOpenAdd(wk,side){
   document.getElementById('waMadd').classList.add('open');
   setTimeout(()=>{ const el=document.getElementById('waMName'); if(el) el.focus(); },50);
 }
-function waCloseAdd(){ const m=document.getElementById('waMadd'); if(m) m.classList.remove('open'); waAddCtx=null; }
+function waCloseAdd(){ const m=document.getElementById('waMadd'); if(m) m.classList.remove('open'); const bx=document.getElementById('waMbox'); if(bx) bx.classList.remove('wide'); waAddCtx=null; }
 
 async function waAiScoreNuevo(nuevo,contra){
   try{
@@ -7372,6 +7406,104 @@ async function waDoAdd(){
   }
 }
 
+/* ---- carga rápida de costos (admin): toda la cava en una pantalla ---- */
+function waCostosPreview(b,val){
+  const tmp=Object.assign({},b); 
+  if(val===''||val==null) delete tmp.botella; else tmp.botella=Math.max(0,+val||0);
+  const p=wagnPrice(tmp);
+  return p?('pour '+wagnFmt(p)):'—';
+}
+function waOpenCostos(){
+  if(!waAdmin()) return;
+  const qPrev=WAGN.q;
+  const row=(b,t)=>{
+    const esTe=b.cat==='te';
+    const val=(typeof b.botella==='number')?b.botella:'';
+    return `<div class="wacosrow" data-id="${b.id}" data-tier="${t}">
+      <span class="dot" style="background:${WA_CAT1[b.cat].c}"></span>
+      <span class="nm">${b.n}${esTe?' <span style="color:var(--ink-soft);font-size:10px">(por servida)</span>':''}</span>
+      <input type="number" min="0" step="0.5" value="${val}" placeholder="USD"
+        oninput="WAGN.q='${t==='prem'?'prem':'comun'}';this.nextElementSibling.textContent=waCostosPreview(WAX.bebs['${t}'].find(x=>x.id==='${b.id}'),this.value)">
+      <span class="pv">${(()=>{WAGN.q=t;const s=waCostosPreview(b,val);WAGN.q=qPrev;return s;})()}</span>
+    </div>`;
+  };
+  const cats=['sake','vino','cerveza','te'];
+  const bloque=t=>cats.map(c=>{
+    const bs=WAX.bebs[t].filter(b=>b.cat===c);
+    return bs.length?`<div class="wacoshdr">${t==='prem'?'特':'並'} ${WA_CAT1[c].n}</div>`+bs.map(b=>row(b,t)).join(''):'';
+  }).join('');
+  const conCosto=WAX.bebs.comun.concat(WAX.bebs.prem).filter(b=>typeof b.botella==='number').length;
+  const totalB=WAX.bebs.comun.length+WAX.bebs.prem.length;
+  document.getElementById('waMbox').innerHTML=`
+    <h3>値 Costos de la cava</h3>
+    <div class="ms">Costo por botella en USD neto de tu factura (té: por servida). Vacío = default estimado ≈. ${conCosto}/${totalB} con costo real.</div>
+    ${bloque('comun')}${bloque('prem')}
+    <div class="wamai" id="waRefNota" style="display:none"></div>
+    <div class="wambtns">
+      <button class="wambtn" id="waRefBtn" onclick="waAiPrecios()">✦ Referencias IA (web)</button>
+      <button class="wambtn" onclick="waCloseAdd()">Cancelar</button>
+      <button class="wambtn go" onclick="waSaveCostos()">Guardar todos</button>
+    </div>`;
+  document.getElementById('waMbox').classList.add('wide');
+  document.getElementById('waMadd').classList.add('open');
+}
+async function waAiPrecios(){
+  if(!waAdmin()) return;
+  const rows=[...document.querySelectorAll('#waMbox .wacosrow')].filter(r=>r.querySelector('input').value==='');
+  if(!rows.length){ flash('Todos los campos ya tienen valor — la IA no pisa lo tuyo'); return; }
+  const btn=document.getElementById('waRefBtn'); btn.disabled=true;
+  const nota=document.getElementById('waRefNota'); nota.style.display='block';
+  let hechas=0, llenas=0, busco=true;
+  const lote=8;
+  try{
+    for(let i=0;i<rows.length;i+=lote){
+      const grupo=rows.slice(i,i+lote);
+      btn.textContent='✦ Buscando '+(Math.min(i+lote,rows.length))+'/'+rows.length+'…';
+      const bebidas=grupo.map(r=>{
+        const b=WAX.bebs[r.dataset.tier].find(x=>x.id===r.dataset.id);
+        return {id:b.id,n:b.n,cat:b.cat,tier:r.dataset.tier==='prem'?'premium':'común'};
+      });
+      const resp=await fetch('/api/ai/wa/precios',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({bebidas})});
+      if(resp.status===501){ flash('Sin OPENAI_API_KEY en el servidor'); break; }
+      if(resp.status===429){ flash('Límite de IA alcanzado — esperá unos minutos y seguí'); break; }
+      if(!resp.ok){ flash('La IA no respondió ('+resp.status+')'); break; }
+      const j=await resp.json();
+      busco=busco&&j.busqueda!==false;
+      grupo.forEach(r=>{
+        const p=(j.precios||{})[r.dataset.id];
+        const inp=r.querySelector('input'), pv=r.querySelector('.pv');
+        if(p&&p.usd!=null){
+          inp.value=p.usd;
+          inp.style.borderColor='var(--indigo)'; inp.style.color='var(--indigo)';
+          inp.title='✦ '+(p.match==='equivalente'?'equivalente · ':'')+p.fuente+(p.ars?' · $'+p.ars.toLocaleString('es-AR')+' ARS c/IVA':'');
+          pv.innerHTML='<span style="color:var(--indigo)">✦ '+(p.match==='equivalente'?'equiv.':'ref.')+'</span>';
+          llenas++;
+        } else if(p){
+          pv.innerHTML='<span style="color:var(--warn)">sin ref.</span>';
+        }
+        hechas++;
+      });
+    }
+  } finally {
+    btn.disabled=false; btn.textContent='✦ Referencias IA (web)';
+    nota.innerHTML='✦ '+llenas+' referencia'+(llenas===1?'':'s')+' sugerida'+(llenas===1?'':'s')+(busco?' con búsqueda web':' <b>sin búsqueda (estimación del modelo)</b>')
+      +'. Son <b>precios retail online</b> — tu costo de factura suele ser menor. Ajustá los números en índigo antes de Guardar: nada se guarda solo. Pasá el mouse por un campo para ver la fuente.';
+  }
+}
+function waSaveCostos(){
+  if(!waAdmin()) return;
+  let cargados=0;
+  document.querySelectorAll('#waMbox .wacosrow').forEach(r=>{
+    const b=WAX.bebs[r.dataset.tier].find(x=>x.id===r.dataset.id); if(!b) return;
+    const raw=r.querySelector('input').value;
+    if(raw===''){ delete b.botella; }
+    else { b.botella=Math.max(0,+raw||0); cargados++; }
+  });
+  waPersist(); waCloseAdd();
+  document.getElementById('waMbox').classList.remove('wide');
+  flash('Costos guardados: '+cargados+' con costo real de factura');
+}
+
 /* ---- generador de maridajes ---- */
 const WAGN={q:'comun',cats:{sake:true,vino:true,cerveza:true,te:true},salt:0};
 const WAGN_FAM=[
@@ -7383,8 +7515,20 @@ const WAGN_FAM=[
  ['arroz',['arroz','shari','nigiri','tamago','miso','chawan','temaki','maki','gohan']],
  ['blancos',['hirame','lenguado','tai','besugo','suzuki','robalo','róbalo','kinmedai','chernia','mero','blanc','pesca']]
 ];
-const WAGN_PRICE={sake:[6,14],vino:[7,16],cerveza:[4,9],te:[2,5]};   /* USD estimado por pour, tabla interna */
-const wagnPrice=b=>WAGN_PRICE[b.cat][WAGN.q==='prem'?1:0]+waHash(b.id)%3;
+/* Costo por pour = costo de botella (USD neto de TU factura) ÷ rinde en rango
+   (vino 5–6 · sake 8–12 · cerveza 2–3; té = costo por servida). NO HAY precios
+   inventados: sin costo cargado, wagnPrice devuelve null y el presupuesto del
+   generador queda INACTIVO hasta que toda la selección tenga costo real.
+   El maridaje (◎/★) no depende de precios — eso sale de la carta.
+   `b.costo` numérico (costo directo por pour) pisa a `b.botella`. */
+const WAGN_YIELD={sake:[8,12],vino:[5,6],cerveza:[2,3],te:[1,1]};
+function wagnPrice(b){
+  if(typeof b.costo==='number'&&b.costo>=0) return {lo:b.costo,hi:b.costo};
+  if(!(typeof b.botella==='number'&&b.botella>0)) return null;   /* sin dato real → sin número */
+  const [ymin,ymax]=WAGN_YIELD[b.cat];
+  return {lo:Math.round(b.botella/ymax*100)/100, hi:Math.round(b.botella/ymin*100)/100};
+}
+const wagnFmt=p=>p.lo===p.hi?('$'+p.hi.toFixed(2)):('$'+p.lo.toFixed(2)+'–'+p.hi.toFixed(2));
 function wagnClassify(txt){
   const t=(txt||'').toLowerCase();
   for(const [fam,kws] of WAGN_FAM) if(kws.some(k=>t.includes(k))) return fam;
@@ -7429,8 +7573,10 @@ function wagnRun(){
   WAGN.salt++;
   const inputs=[...document.querySelectorAll('#wagnPasos input')].map(i=>i.value.trim());
   const K=Math.max(1,Math.min(inputs.length,+document.getElementById('wagnK').value||4));
-  const budget=Math.max(5,+document.getElementById('wagnB').value||40);
+  const budget=Math.max(1,+document.getElementById('wagnB').value||12);
   const carta=WAX.bebs[WAGN.q].filter(b=>WAGN.cats[b.cat]);
+  const sinCosto=carta.filter(b=>!wagnPrice(b));
+  const budgetOn=sinCosto.length===0;
   const out=document.getElementById('wagnOut');
   out.style.display='block';
   if(!carta.length){ out.innerHTML='<div class="wagnwarn">Elegí al menos una categoría de bebida.</div>'; return; }
@@ -7441,7 +7587,7 @@ function wagnRun(){
       const lv=match?waLevel(b,match):((b.g&&b.g[fam])||0);
       return {b,lv,pr:wagnPrice(b)};
     }).filter(c=>c.lv>=2)
-      .sort((a,c)=>c.lv-a.lv||a.pr-c.pr||(waHash(a.b.id+WAGN.salt)%7)-(waHash(c.b.id+WAGN.salt)%7));
+      .sort((a,c)=>c.lv-a.lv||((a.pr&&c.pr)?a.pr.hi-c.pr.hi:0)||(waHash(a.b.id+WAGN.salt)%7)-(waHash(c.b.id+WAGN.salt)%7));
     return {i,txt:txt||('Paso '+(i+1)),fam,match,cands};
   });
   const ranked=[...pasos].sort((a,b)=>((b.cands[0]||{}).lv||0)-((a.cands[0]||{}).lv||0)||a.i-b.i);
@@ -7449,22 +7595,23 @@ function wagnRun(){
   const used={}, picks=[];
   pasos.forEach(p=>{
     if(!pourSet.has(p.i)) return;
-    const list=[...p.cands].sort((a,c)=>c.lv-a.lv||((used[a.b.id]||0)-(used[c.b.id]||0))||a.pr-c.pr);
+    const list=[...p.cands].sort((a,c)=>c.lv-a.lv||((used[a.b.id]||0)-(used[c.b.id]||0))||((a.pr&&c.pr)?a.pr.hi-c.pr.hi:0));
     const A=list[0]; if(!A) return;
     used[A.b.id]=(used[A.b.id]||0)+1;
     const B=list.find(x=>x.b.id!==A.b.id&&x.b.cat!==A.b.cat)||list.find(x=>x.b.id!==A.b.id)||null;
     picks.push({p,A,B});
   });
   let guard=30;
-  const total=()=>picks.reduce((s,x)=>s+x.A.pr,0);
-  while(total()>budget&&guard-->0){
-    const worst=[...picks].sort((a,b)=>b.A.pr-a.A.pr)[0]; if(!worst) break;
-    const cheaper=worst.p.cands.filter(c=>c.pr<worst.A.pr&&c.b.id!==worst.A.b.id).sort((a,b)=>b.lv-a.lv||a.pr-b.pr)[0];
+  const totalHi=()=>picks.reduce((s,x)=>s+x.A.pr.hi,0);
+  const totalLo=()=>picks.reduce((s,x)=>s+x.A.pr.lo,0);
+  while(budgetOn&&totalHi()>budget&&guard-->0){
+    const worst=[...picks].sort((a,b)=>b.A.pr.hi-a.A.pr.hi)[0]; if(!worst) break;
+    const cheaper=worst.p.cands.filter(c=>c.pr.hi<worst.A.pr.hi&&c.b.id!==worst.A.b.id).sort((a,b)=>b.lv-a.lv||a.pr.hi-b.pr.hi)[0];
     if(!cheaper) break;
     if(worst.B&&worst.B.b.id===cheaper.b.id) worst.B=worst.p.cands.find(c=>c.b.id!==cheaper.b.id&&c.b.id!==worst.A.b.id)||null;
     worst.A=cheaper;
   }
-  const tot=total(), over=tot>budget;
+  const totHi=budgetOn?Math.round(totalHi()*100)/100:0, totLo=budgetOn?Math.round(totalLo()*100)/100:0, over=budgetOn&&totHi>budget;
   const stars=picks.filter(x=>x.A.lv===3).length;
   const SYM=['','','◎','★'];
   const whyOf=(x,p)=>{
@@ -7476,7 +7623,7 @@ function wagnRun(){
     <div class="wagplan ${cls}" onclick="wagnOpenBeb('${x.b.id}')">
       <span class="tag">${tag}</span><span class="dot" style="background:${WA_CAT1[x.b.cat].c}"></span>
       <span class="bn">${x.b.n}</span><span class="sy s${x.lv}">${SYM[x.lv]}</span>
-      <span class="pr">${x.pr}</span>
+      <span class="pr">${x.pr?wagnFmt(x.pr):''}</span>
     </div><div class="wagwhy">${whyOf(x,p)}</div>`
    :`<div class="wagwhy" style="font-style:italic">Sin plan B con estas categorías — sumá otra, o el pour queda sin respaldo.</div>`;
 
@@ -7484,7 +7631,9 @@ function wagnRun(){
     <div class="wagnkpis">
       <div class="wagnkpi"><div class="l">Pours</div><div class="v">${picks.length} / ${inputs.length}</div></div>
       <div class="wagnkpi"><div class="l">Firmas ★</div><div class="v" style="color:var(--vermilion)">${stars}</div></div>
-      <div class="wagnkpi"><div class="l">Costo plan A</div><div class="v" style="color:${over?'var(--bad)':'var(--good)'}">${tot} / ${budget}</div></div>
+      ${budgetOn
+      ?`<div class="wagnkpi"><div class="l">Costo plan A (min–max)</div><div class="v" style="color:${over?'var(--bad)':'var(--good)'};font-size:15px">$${totLo.toFixed(2)}–$${totHi.toFixed(2)} / $${budget}</div></div>`
+      :`<div class="wagnkpi"><div class="l">Presupuesto</div><div class="v" style="font-size:12px;color:var(--warn)">inactivo · ${sinCosto.length} bebida${sinCosto.length===1?'':'s'} sin costo real <button class="waadd adminonly" style="margin-left:6px" onclick="waOpenCostos()">値 cargar</button></div></div>`}
       <div class="wagnkpi"><div class="l">Calidad</div><div class="v" style="font-size:14px">${WAGN.q==='prem'?'特 Premium':'並 Común'}</div></div>
       <div class="wagnkpi" style="margin-left:auto;border:none;padding-right:0"><button class="waadd" onclick="wagnRun()">⟳ Regenerar</button></div>
     </div>
@@ -7496,8 +7645,9 @@ function wagnRun(){
         <div>${pick?planHtml(pick.A,p,'Plan A','pa')+planHtml(pick.B,p,'Plan B','pb'):`<div class="wagnnop">— sin pour: el paso respira solo${p.cands.length?'':' (sin candidatos ◎+ en las categorías elegidas)'}</div>`}</div>
       </div>`;
     }).join('')}
-    ${over?`<div class="wagnwarn"><b>Presupuesto corto:</b> ni degradando pours se llega a ${budget}. Opciones: bajar a ${Math.max(1,picks.length-1)} pours, sumar té a las categorías, o subir el presupuesto a ~${tot}.</div>`:''}
-    <p class="wadrfoot" style="margin-top:12px">Precios: estimación interna por pour (tabla por categoría y nivel).<span class="wagenai">✦ las notas salen de la carta de Wa — las firmas de la casa mandan</span> · click en cualquier bebida abre su perfil, con la alternativa argentina 代 como tercer respaldo.</p>`;
+    ${!budgetOn?`<div class="wagnwarn"><b>Presupuesto inactivo:</b> el flight se armó solo por afinidad (◎/★ de la carta). Falta costo real de: ${sinCosto.slice(0,6).map(b=>b.n).join(', ')}${sinCosto.length>6?'…':''} — cargalos en <b>値 Costos</b> y el presupuesto se activa solo.</div>`:''}
+    ${over?`<div class="wagnwarn"><b>Presupuesto corto:</b> ni degradando pours se llega a $${budget}. Opciones: bajar a ${Math.max(1,picks.length-1)} pours, sumar té a las categorías, o subir el presupuesto a ~$${totHi.toFixed(0)} (peor caso de rinde).</div>`:''}
+    <p class="wadrfoot" style="margin-top:12px">${budgetOn?'Costo por pour = tu factura ÷ rinde (vino 5–6 · sake 8–12 · cerveza 2–3), validado contra el peor caso — todas con costo real ✓.':'El maridaje sale de la carta; los costos, solo de tu factura — acá no se inventan números.'}<span class="wagenai">✦ las notas salen de la carta de Wa — las firmas de la casa mandan</span> · click en cualquier bebida abre su perfil, con la alternativa argentina 代 como tercer respaldo.</p>`;
   try{ out.scrollIntoView({behavior:'smooth',block:'nearest'}); }catch(e){}
 }
 function wagnOpenBeb(id){
