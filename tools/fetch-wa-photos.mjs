@@ -65,16 +65,37 @@ const Q = {
 const UA = { 'User-Agent': 'kanjo-wa-photo-fetch/1.0 (uso interno de un restaurante; una corrida)' };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-async function searchThumb(q){
+/* fetch con reintentos: Commons devuelve 429/503 seguido desde IPs de datacenter */
+async function fetchRetry(url, opts, tries=4){
+  let wait=2000;
+  for(let i=0;i<tries;i++){
+    try{
+      const r = await fetch(url, opts);
+      if(r.status===429 || r.status===503 || r.status>=500){
+        if(i===tries-1) throw new Error('commons '+r.status);
+        console.warn('  … '+r.status+', reintento en '+(wait/1000)+'s');
+        await sleep(wait); wait*=3; continue;
+      }
+      return r;
+    }catch(e){
+      if(i===tries-1) throw e;
+      console.warn('  … '+e.message+', reintento en '+(wait/1000)+'s');
+      await sleep(wait); wait*=3;
+    }
+  }
+}
+
+async function searchOnce(q){
   const u = new URL(API);
   u.search = new URLSearchParams({
-    action:'query', format:'json', generator:'search',
+    action:'query', format:'json', generator:'search', maxlag:'5',
     gsrsearch:`filetype:bitmap ${q}`, gsrnamespace:'6', gsrlimit:'5',
     prop:'imageinfo', iiprop:'url|extmetadata', iiurlwidth:'640'
   });
-  const r = await fetch(u, { headers: UA });
+  const r = await fetchRetry(u, { headers: UA });
   if(!r.ok) throw new Error('commons '+r.status);
   const j = await r.json();
+  if(j.error && j.error.code==='maxlag'){ await sleep(5000); return searchOnce(q); }
   const pages = Object.values(j?.query?.pages || {}).sort((a,b)=>(a.index||9)-(b.index||9));
   for(const p of pages){
     const ii = p.imageinfo && p.imageinfo[0];
@@ -88,6 +109,20 @@ async function searchThumb(q){
       artist: ((md.Artist && md.Artist.value) || '').replace(/<[^>]+>/g,'').trim().slice(0,120),
       title: p.title || ''
     };
+  }
+  return null;
+}
+
+/* si la búsqueda completa no da nada, probar versiones más cortas del query */
+async function searchThumb(q){
+  const variants=[q];
+  const words=q.split(' ');
+  if(words.length>2) variants.push(words.slice(0,2).join(' '));
+  if(words.length>1) variants.push(words[0]);
+  for(const v of variants){
+    const hit = await searchOnce(v);
+    if(hit) return hit;
+    await sleep(400);
   }
   return null;
 }
@@ -106,17 +141,18 @@ async function main(){
     try{
       const hit = await searchThumb(q);
       if(!hit){ fail.push(id); console.warn('✗', id, '(sin resultados para:', q+')'); continue; }
-      const img = await fetch(hit.thumb, { headers: UA });
+      const img = await fetchRetry(hit.thumb, { headers: UA });
       if(!img.ok) throw new Error('descarga '+img.status);
       await writeFile(dest, Buffer.from(await img.arrayBuffer()));
       credits[id] = { file: hit.title, page: hit.page, license: hit.license, artist: hit.artist, q };
       ok++;
       console.log('✓', id, '←', hit.title, hit.license ? '['+hit.license+']' : '');
     }catch(e){ fail.push(id); console.warn('✗', id, e.message); }
-    await sleep(350);   /* modales con la API de Commons */
+    await sleep(1100);  /* modales con la API de Commons — los runners de GitHub comparten IP y Commons los limita fuerte */
   }
   await writeFile(path.join(OUT,'credits.json'), JSON.stringify(credits,null,1));
   console.log(`\nListo: ${ok} bajadas · ${skip} ya estaban · ${fail.length} fallaron${fail.length?' → '+fail.join(', '):''}`);
+  if(fail.length) console.log('El script es incremental: corriéndolo de nuevo baja SOLO las que faltan.');
   console.log('Revisá a ojo las fotos (Commons a veces devuelve algo raro), reemplazá las que no te gusten');
   console.log('con cualquier .jpg propio del mismo nombre, y commiteá public/img/wa/.');
 }
