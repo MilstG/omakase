@@ -1,0 +1,37 @@
+{
+ "salmon": {
+  "file": "File:Sashimi of São Paulo.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Sashimi_of_S%C3%A3o_Paulo.jpg",
+  "license": "CC BY-SA 4.0",
+  "artist": "Wilfredor",
+  "q": "salmon sashimi"
+ },
+ "chutoro": {
+  "file": "File:Ventrèche de thon.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Ventr%C3%A8che_de_thon.jpg",
+  "license": "CC BY-SA 3.0",
+  "artist": "gerard cohen",
+  "q": "chutoro tuna sushi"
+ },
+ "kohada": {
+  "file": "File:Kohada (mid-sized konoshiro gizzard shad) Nigiri.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Kohada_(mid-sized_konoshiro_gizzard_shad)_Nigiri.jpg",
+  "license": "CC BY-SA 4.0",
+  "artist": "Zheng Zhou",
+  "q": "kohada sushi"
+ },
+ "daikon": {
+  "file": "File:Daikon.Japan.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Daikon.Japan.jpg",
+  "license": "CC BY-SA 3.0",
+  "artist": "Chris 73",
+  "q": "daikon radish"
+ },
+ "negi": {
+  "file": "File:Allium fistulosum MHNT.BOT.2011.3.23.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Allium_fistulosum_MHNT.BOT.2011.3.23.jpg",
+  "license": "CC BY-SA 3.0",
+  "artist": "Roger Culos",
+  "q": "negi welsh onion"
+ }
+}
