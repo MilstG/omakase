@@ -280,6 +280,73 @@ app.post('/api/ai/wa', requireAuth, async (req,res)=>{
   }catch(e){ console.warn('[ai:wa]', e.message); res.status(502).json({ error:'upstream_error' }); }
 });
 
+/* ---------- IA: Wa 輪 — referencia de precios con búsqueda web ----------
+   Busca online (Argentina) el precio retail de hasta 8 bebidas por llamada y
+   devuelve una REFERENCIA en ARS y USD neto estimado. Es techo retail, no costo
+   de factura: el cliente lo muestra como sugerencia editable, nunca lo guarda solo.
+   Admin-only, auditado, comparte el límite de 30/10min. */
+app.post('/api/ai/wa/precios', requireAuth, async (req,res)=>{
+  if(req.role!=='admin') return res.status(403).json({ error:'admin_only' });
+  const KEY=process.env.OPENAI_API_KEY||'';
+  if(!KEY) return res.status(501).json({ error:'no_api_key' });
+  const ip=req.ip||req.socket.remoteAddress||'?';
+  const now=Date.now();
+  const a=aiLimit.get(ip);
+  if(a && now<a.resetAt && a.n>=30) return res.status(429).json({ error:'rate_limited' });
+  if(!a || now>=a.resetAt) aiLimit.set(ip,{n:0,resetAt:now+10*60*1000});
+  aiLimit.get(ip).n++;
+  const { bebidas } = req.body||{};
+  if(!Array.isArray(bebidas)||!bebidas.length||bebidas.length>8) return res.status(400).json({ error:'bad_request' });
+  const lista=bebidas.map(b=>`${String(b.id).slice(0,24)}: ${String(b.n).slice(0,80)} [${String(b.cat||'').slice(0,12)}${b.tier?' '+String(b.tier).slice(0,10):''}]`).join('\n');
+  const instr='Sos un sommelier en Buenos Aires. Buscá en la web el precio ONLINE ACTUAL en Argentina (vinotecas, tiendas, supermercados online) de cada bebida listada, o de su equivalente más cercano disponible localmente. Buscá también la cotización del dólar MEP de hoy. Respondé SOLO un objeto JSON, sin markdown: {"precios":{"<id>":{"ars":precio retail en pesos con IVA o null,"usd":precio convertido a USD y dividido por 1.21 (neto de IVA), redondeado a 2 decimales, o null,"fuente":"tienda/sitio y aclaración breve","match":"exacto|equivalente|no encontrado"}}}. Si un producto no se consigue en Argentina, buscá el equivalente que sugiere el estilo y aclaralo en fuente. Nunca inventes precios: si no encontrás nada creíble, null.';
+  const AI_BASE=(process.env.OPENAI_BASE_URL||'https://api.openai.com').replace(/\/+$/,'');
+  const MODEL=process.env.OPENAI_MODEL||'gpt-5.5';
+  try{
+    /* Responses API con web_search; si el upstream no lo soporta, fallback a chat sin búsqueda */
+    let raw='', conBusqueda=true;
+    let r=await fetch(AI_BASE+'/v1/responses',{
+      method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+KEY },
+      body:JSON.stringify({ model:MODEL, tools:[{type:'web_search'}], input:[
+        { role:'system', content:instr },
+        { role:'user', content:'Bebidas:\n'+lista }
+      ]})});
+    if(r.ok){
+      const j=await r.json();
+      raw=j.output_text||'';
+      if(!raw && Array.isArray(j.output))
+        raw=j.output.flatMap(o=>Array.isArray(o.content)?o.content:[]).map(c=>c.text||'').join('');
+    } else {
+      conBusqueda=false;
+      const t=await r.text().catch(()=>'' );
+      console.warn('[ai:wa:precios] responses '+r.status+' — fallback sin búsqueda:', t.slice(0,140));
+      const r2=await fetch(AI_BASE+'/v1/chat/completions',{
+        method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+KEY },
+        body:JSON.stringify({ model:MODEL, response_format:{type:'json_object'},
+          messages:[{role:'system',content:instr+' (No tenés búsqueda web disponible: estimá desde tu conocimiento del mercado argentino y marcá cada fuente como "estimación del modelo, sin búsqueda".)'},
+                    {role:'user',content:'Bebidas:\n'+lista}] })});
+      if(!r2.ok){ const t2=await r2.text().catch(()=>''); console.warn('[ai:wa:precios]', r2.status, t2.slice(0,160)); return res.status(502).json({ error:'upstream_'+r2.status }); }
+      const j2=await r2.json();
+      raw=(j2.choices&&j2.choices[0]&&j2.choices[0].message&&j2.choices[0].message.content)||'';
+    }
+    const m=String(raw).replace(/```json|```/g,'').match(/\{[\s\S]*\}/);
+    if(!m) return res.status(502).json({ error:'no_json' });
+    const obj=JSON.parse(m[0]);
+    if(!obj.precios) return res.status(502).json({ error:'no_precios' });
+    const out={};
+    for(const [k,v] of Object.entries(obj.precios)){
+      if(!v||typeof v!=='object') continue;
+      out[String(k).slice(0,24)]={
+        ars: typeof v.ars==='number'&&v.ars>0?Math.round(v.ars):null,
+        usd: typeof v.usd==='number'&&v.usd>0?Math.round(v.usd*100)/100:null,
+        fuente: String(v.fuente||'').slice(0,160),
+        match: ['exacto','equivalente','no encontrado'].includes(v.match)?v.match:'equivalente'
+      };
+    }
+    db.audit(req.role,'ai_wa_precios',null,null,null);
+    res.json({ precios:out, busqueda:conBusqueda });
+  }catch(e){ console.warn('[ai:wa:precios]', e.message); res.status(502).json({ error:'upstream_error' }); }
+});
+
 app.get('/api/audit', requireAuth, async (req,res)=>{
   if(req.role!=='admin') return res.status(403).json({ error:'admin_only' });
   res.json({ entries: await db.auditList(req.query.limit) });
