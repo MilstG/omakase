@@ -75,6 +75,23 @@ APP_PASSWORD_ADMIN=admin123 APP_PASSWORD_STAFF=staff123 node server.js
 # → http://localhost:3000  (sin DATABASE_URL usa data.json)
 ```
 
+## Novedades v4
+
+- **Wa 輪 (Rueda)**: dos ruedas de maridaje de carta **propia e independiente**
+  (no toca Genka ni Aishō) — la cava (37 platos × 24 bebidas por nivel, toggle
+  común/premium) y la despensa (28 pescados × 28 sabores de la cocina). Click en
+  un producto abre su perfil con foto y alternativa conseguible en Argentina
+  (bebidas); click en un hilo, la ficha del maridaje con el porqué. El admin
+  agrega/quita productos y `POST /api/ai/wa` (solo admin, auditado, rate-limited)
+  puntúa lo nuevo, redacta perfil y notas — todo queda ✦ sin revisar hasta el
+  visto bueno. Incluye **generador de maridajes**: pasos + ingredientes +
+  categorías + calidad + presupuesto → flight con plan A y plan B por pour.
+  Persiste en `kanjo:wa` (escritura admin-only; staff lee).
+- **Fotos de Wa**: `node tools/fetch-wa-photos.mjs` baja ~100 fotos de licencia
+  libre de Wikimedia Commons a `public/img/wa/` (créditos en `credits.json`).
+  Correrlo una vez en local y commitear la carpeta — la CSP solo permite
+  imágenes propias, no hay dependencias externas en producción.
+
 ## Novedades v3
 
 - **Maridaje 相性 (Aishō)**: matriz de afinidad menú × bebidas (sake, té, vino común/premium),

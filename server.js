@@ -24,7 +24,7 @@ const DEV_OPEN = !ADMIN_PW && !process.env.DATABASE_URL;
 
 /* Claves que el staff puede LEER (la app las necesita para renderizar)
    pero NO escribir: modelo financiero, escenarios, caja, permisos y sync. */
-const ADMIN_ONLY_WRITE = ['kanjo:baseline','kanjo:scenarios','kanjo:caja','kanjo:auth','kanjo:cierres','kanjo:kata'];
+const ADMIN_ONLY_WRITE = ['kanjo:baseline','kanjo:scenarios','kanjo:caja','kanjo:auth','kanjo:cierres','kanjo:kata','kanjo:wa'];
 /* Claves que el staff tampoco puede LEER (saldos de caja, P&L congelado):
    ocultar el tab no alcanza si la API igual entrega el dato. */
 const ADMIN_ONLY_READ = ['kanjo:caja','kanjo:cierres'];
@@ -218,6 +218,66 @@ app.post('/api/ai/pair', requireAuth, async (req,res)=>{
     if(modeP && typeof obj.arch==='string') out.arch=String(obj.arch).slice(0,20);
     res.json(out);
   }catch(e){ console.warn('[ai]', e.message); res.status(502).json({ error:'upstream_error' }); }
+});
+
+/* ---------- IA: Wa 輪 — alta de producto en la carta de maridaje ----------
+   Puntúa un producto nuevo contra el lado opuesto completo, redacta perfil y
+   notas elaboradas, y para bebidas propone una alternativa conseguible en
+   Argentina. Mismo régimen que /api/ai/pair: solo admin, auditado, límite
+   compartido de 30 llamadas cada 10 minutos por IP. */
+app.post('/api/ai/wa', requireAuth, async (req,res)=>{
+  if(req.role!=='admin') return res.status(403).json({ error:'admin_only' });
+  const KEY=process.env.OPENAI_API_KEY||'';
+  if(!KEY) return res.status(501).json({ error:'no_api_key' });
+  const ip=req.ip||req.socket.remoteAddress||'?';
+  const now=Date.now();
+  if(aiLimit.size>2000) for(const [k,v] of aiLimit){ if(now>=v.resetAt) aiLimit.delete(k); }
+  const a=aiLimit.get(ip);
+  if(a && now<a.resetAt && a.n>=30) return res.status(429).json({ error:'rate_limited' });
+  if(!a || now>=a.resetAt) aiLimit.set(ip,{n:0,resetAt:now+10*60*1000});
+  aiLimit.get(ip).n++;
+  const { nuevo, contra } = req.body||{};
+  if(!nuevo || !nuevo.n || !Array.isArray(contra) || !contra.length || contra.length>80)
+    return res.status(400).json({ error:'bad_request' });
+  const esBebida = nuevo.tipo==='bebida';
+  const lista=contra.map(c=>`${String(c.id).slice(0,24)}: ${String(c.n).slice(0,60)}${c.fam?' ['+String(c.fam).slice(0,24)+']':''}${c.cat?' ['+String(c.cat).slice(0,24)+(c.tier?' '+String(c.tier).slice(0,10):'')+']':''}`).join('\n');
+  const sys='Sos un sommelier y cocinero especializado en omakase japonés en Buenos Aires. Respondé SOLO un objeto JSON válido, sin markdown: '
+    +'{"scores":{"<id>":0-3,...para todos los ids...},"notas":{"<id>":"por qué funciona, 1-2 oraciones con el mecanismo gastronómico o químico",...solo para scores>=2...},"perfil":"perfil del producto nuevo, 2-3 oraciones con sustancia (técnica, origen, cómo marida)"'
+    +(esBebida?',"alt":{"n":"alternativa equivalente que se consiga en Argentina (etiqueta o estilo local/importación estable)","w":"por qué es un reemplazo digno, 1-2 oraciones"}':'')
+    +'}. Escala: 0 no va, 1 funciona, 2 muy bien, 3 maridaje de firma (máximo 2 o 3 treses). Castellano rioplatense. Nada de tanino alto con pescado graso (metálico); la bebida del postre nunca menos dulce que el plato.';
+  const usr='Producto NUEVO en la carta ('+String(nuevo.tipo||'producto').slice(0,12)+'):\n'
+    +String(nuevo.n).slice(0,80)+' — '+String(nuevo.d||'sin descripción').slice(0,240)
+    +(nuevo.cat?'\nCategoría: '+String(nuevo.cat).slice(0,24):'')
+    +(nuevo.tier?'\nNivel: '+String(nuevo.tier).slice(0,10):'')
+    +(nuevo.fam?'\nFamilia: '+String(nuevo.fam).slice(0,24):'')
+    +'\n\nPuntualo contra cada uno de estos (id: nombre [familia/categoría]):\n'+lista;
+  const AI_BASE=(process.env.OPENAI_BASE_URL||'https://api.openai.com').replace(/\/+$/,'');
+  const MODEL=process.env.OPENAI_MODEL||'gpt-5.5';
+  const isReasoner=/^(gpt-5|o\d)/i.test(MODEL);
+  const payload={ model:MODEL, response_format:{type:'json_object'},
+    messages:[{role:'system',content:sys},{role:'user',content:usr}] };
+  if(isReasoner) payload.reasoning_effort=process.env.OPENAI_REASONING_EFFORT||'medium';
+  else payload.temperature=0.4;
+  const callAI=body=>fetch(AI_BASE+'/v1/chat/completions',{
+    method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+KEY },
+    body:JSON.stringify(body) });
+  try{
+    let r=await callAI(payload);
+    if(r.status===400){
+      const t=await r.text().catch(()=>'');
+      console.warn('[ai:wa] 400, reintento sin sampling params:', t.slice(0,160));
+      r=await callAI({ model:payload.model, response_format:payload.response_format, messages:payload.messages });
+    }
+    if(!r.ok){ const t=await r.text().catch(()=>''); console.warn('[ai:wa]', r.status, t.slice(0,200)); return res.status(502).json({ error:'upstream_'+r.status }); }
+    const j=await r.json();
+    const raw=(j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content)||'';
+    const obj=JSON.parse(String(raw).replace(/```json|```/g,'').trim());
+    if(!obj.scores) return res.status(502).json({ error:'no_scores' });
+    db.audit(req.role,'ai_wa',null,null,null);
+    const out={ scores:obj.scores, notas:obj.notas||{}, perfil:typeof obj.perfil==='string'?obj.perfil.slice(0,600):'' };
+    if(esBebida && obj.alt && obj.alt.n) out.alt={ n:String(obj.alt.n).slice(0,120), w:String(obj.alt.w||'').slice(0,400) };
+    res.json(out);
+  }catch(e){ console.warn('[ai:wa]', e.message); res.status(502).json({ error:'upstream_error' }); }
 });
 
 app.get('/api/audit', requireAuth, async (req,res)=>{
