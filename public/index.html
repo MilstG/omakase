@@ -642,6 +642,160 @@
   .gkverdict.bad{background:#f4e8e4;border-color:var(--vermilion)}
   .gkhdr{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-soft);font-weight:600;margin:14px 0 6px}
 
+
+  /* =====================================================================
+     TAB · WA 輪 — ruedas de maridaje
+     ===================================================================== */
+  .warotag{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--good);border:1px solid var(--good);border-radius:2px;padding:2px 8px;align-self:flex-end}
+  .wactl{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--rule);background:var(--panel)}
+  .watog{display:inline-flex;border:1px solid var(--rule);border-radius:3px;overflow:hidden}
+  .watog button{font-family:'Inter',sans-serif;font-size:11.5px;font-weight:500;padding:7px 16px;border:none;background:var(--paper);color:var(--ink-soft);cursor:pointer}
+  .watog button + button{border-left:1px solid var(--rule)}
+  .watog button.on{background:var(--ink);color:var(--paper);font-weight:600}
+  .watog button.on .k{color:var(--brass)}
+  .watog .k{font-family:'Zilla Slab',serif;margin-right:5px}
+  .wacats{display:flex;gap:6px;flex-wrap:wrap}
+  .wacat{display:inline-flex;align-items:center;gap:6px;font-size:11px;border:1px solid var(--rule);background:#fff;border-radius:2px;padding:4px 9px;cursor:pointer;color:var(--ink-soft);user-select:none;font-family:'Inter',sans-serif}
+  .wacat i{width:9px;height:9px;border-radius:50%;display:inline-block}
+  .wacat.on{color:var(--ink);font-weight:600;border-color:var(--ink-soft)}
+  .wacat:not(.on){opacity:.45}
+  .wacat:not(.on) i{background:var(--rule)!important}
+  .wachk{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink-soft);cursor:pointer;user-select:none}
+  .wachk input{width:auto;accent-color:var(--vermilion)}
+  .waadd{font-size:11px;border:1px dashed var(--rule);border-radius:2px;background:none;color:var(--indigo);padding:5px 10px;cursor:pointer;font-family:'Inter',sans-serif}
+  .waadd:hover{border-color:var(--indigo);background:#fff}
+  .wastage{position:relative;background:var(--panel);padding:6px 0 2px}
+  .wastage svg{width:100%;height:auto;display:block;max-width:940px;margin:0 auto;overflow:visible}
+  .wanode{cursor:pointer}
+  .wanode text{font-family:'Inter',sans-serif;font-size:10.5px;fill:var(--ink)}
+  .wanode circle{stroke:#fff;stroke-width:1}
+  .wanode.dim{opacity:.16}
+  .wanode.lit text{font-weight:700}
+  .wanode .aiflag{fill:var(--indigo);font-size:9px}
+  .wagk{font-family:'Zilla Slab',serif;font-size:15px;fill:var(--brass-deep);font-weight:600}
+  .wachord{fill:none;pointer-events:none;transition:opacity .15s}
+  .wachord.lv2{stroke-width:1.5;opacity:.15}
+  .wachord.lv3{stroke:var(--vermilion);stroke-width:2.8;opacity:.6}
+  .wachord.wai{stroke-dasharray:5 3}
+  .wachord.dim{opacity:.03}
+  .wachord.lit{opacity:.92}
+  .wachord.lv3.lit{opacity:1;stroke-width:3.4}
+  .wahit{fill:none;stroke:transparent;stroke-width:9;cursor:pointer}
+  .wacenter{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:240px;text-align:center;pointer-events:none}
+  .wacenter .ck{font-family:'Zilla Slab',serif;font-size:34px;color:var(--brass);line-height:1;opacity:.5}
+  .wacenter .cn{font-family:'Zilla Slab',serif;font-weight:700;font-size:17px;margin-top:6px;line-height:1.25}
+  .wacenter .cs{font-size:10.5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+  .wacenter .cp{font-size:11.5px;line-height:1.6;margin-top:8px}
+  .wacenter .cp .s3{color:var(--vermilion);font-weight:700}
+  .wacenter .cp .s2{color:var(--indigo);font-weight:700}
+  .wacenter .stats{display:flex;justify-content:center;gap:16px;margin-top:10px}
+  .wacenter .stats .v{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:19px}
+  .wacenter .stats .l{font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft)}
+  .walegend{display:flex;gap:14px;flex-wrap:wrap;font-size:10.5px;color:var(--ink-soft);padding:10px 14px;border-top:1px dotted var(--rule);align-items:center}
+  .walegend span{display:inline-flex;align-items:center;gap:6px}
+  .walegend i{width:18px;height:3px;border-radius:2px;display:inline-block}
+  .walegend .dot{width:9px;height:9px;border-radius:50%}
+  /* drawer */
+  #waOvl{position:fixed;inset:0;background:rgba(38,34,28,.35);z-index:9980;opacity:0;pointer-events:none;transition:opacity .2s}
+  #waOvl.open{opacity:1;pointer-events:auto}
+  #waDrawer{position:fixed;top:0;right:0;bottom:0;width:400px;max-width:94vw;background:var(--paper);border-left:1px solid var(--rule);box-shadow:-10px 0 30px rgba(0,0,0,.16);z-index:9990;transform:translateX(102%);transition:transform .22s;overflow-y:auto}
+  #waDrawer.open{transform:none}
+  .wadrx{position:absolute;top:10px;right:12px;background:rgba(236,229,214,.88);border:1px solid var(--rule);border-radius:2px;font-size:16px;line-height:1;cursor:pointer;padding:5px 9px;z-index:2;color:var(--ink)}
+  .wadrphoto{position:relative;height:200px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .wadrphoto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .wadrphoto .bigk{font-family:'Zilla Slab',serif;font-size:110px;color:#fff;opacity:.28;line-height:1;user-select:none}
+  .wadrphoto .ph{position:absolute;bottom:8px;left:12px;font-size:8.5px;letter-spacing:.09em;text-transform:uppercase;color:#fff;opacity:.85;text-shadow:0 1px 4px rgba(0,0,0,.6);z-index:1}
+  .wadrbody{padding:16px 18px 26px}
+  .wadrcat{display:inline-flex;align-items:center;gap:6px;font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;border:1px solid var(--rule);border-radius:2px;padding:2px 8px;color:var(--ink-soft);background:#fff}
+  .wadrcat i{width:8px;height:8px;border-radius:50%;display:inline-block}
+  .waaich{display:inline-block;font-size:8.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--indigo);border:1px solid var(--indigo);border-radius:2px;padding:1px 6px;margin-left:6px;background:#fff;vertical-align:2px}
+  .wadrname{font-family:'Zilla Slab',serif;font-weight:700;font-size:23px;margin:8px 0 2px;line-height:1.15}
+  .wadrdesc{font-size:12.5px;line-height:1.68;margin-top:8px}
+  .wadrh{font-family:'Zilla Slab',serif;font-weight:600;font-size:13px;margin:18px 0 6px;padding-top:12px;border-top:1px solid var(--rule);display:flex;align-items:center;gap:7px}
+  .wadrh .k{color:var(--brass-deep)}
+  .wadrpair{display:flex;align-items:baseline;gap:8px;font-size:12px;padding:5px 0;border-bottom:1px dotted var(--rule);cursor:pointer}
+  .wadrpair:hover{background:var(--panel)}
+  .wadrpair:last-child{border-bottom:none}
+  .wadrpair .sy{width:14px;text-align:center;font-weight:700}
+  .wadrpair .sy.s3{color:var(--vermilion)}.wadrpair .sy.s2{color:var(--indigo)}
+  .wadrpair .nm{flex:1}
+  .wadrpair .go{font-size:10px;color:var(--ink-soft)}
+  .wadrduo{display:flex;align-items:stretch;gap:0}
+  .wadrduo .dp{flex:1;height:120px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .wadrduo .dp .bigk{font-size:56px}
+  .wadrduo .x{width:44px;text-align:center;font-family:'Zilla Slab',serif;font-size:22px;color:var(--brass-deep);flex:none;background:var(--paper);display:flex;align-items:center;justify-content:center;border-left:1px solid var(--rule);border-right:1px solid var(--rule)}
+  .wadrlvl{display:inline-flex;align-items:center;gap:7px;font-size:11px;margin-top:10px;border:1px solid var(--rule);border-radius:2px;background:#fff;padding:4px 10px}
+  .wadrlvl b.s3{color:var(--vermilion);font-size:14px}
+  .wadrlvl b.s2{color:var(--indigo);font-size:14px}
+  .wadrwhy{background:var(--panel-2);border-left:3px solid var(--brass-deep);border-radius:0 3px 3px 0;padding:11px 13px;font-size:12.5px;line-height:1.68;margin-top:12px}
+  .wadrwhy b{color:var(--brass-deep)}
+  .wadrwhy.wai{border-left-color:var(--indigo)}
+  .wadrwhy.wai b{color:var(--indigo)}
+  .wadrfoot{font-size:10.5px;color:var(--ink-soft);line-height:1.5;margin-top:14px;padding-top:10px;border-top:1px dotted var(--rule)}
+  .wadralt{background:#fff;border:1px solid var(--rule);border-left:3px solid var(--good);border-radius:0 3px 3px 0;padding:10px 13px;margin-top:6px;font-size:12px;line-height:1.6}
+  .wadralt .an{font-weight:600;color:var(--good)}
+  .wadralt.wai{border-left-color:var(--indigo)}
+  .wadralt.wai .an{color:var(--indigo)}
+  .wadrbtns{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+  .wadrbtn{font-size:11px;border:1px solid var(--rule);border-radius:2px;background:#fff;padding:6px 11px;cursor:pointer;font-family:'Inter',sans-serif;color:var(--ink)}
+  .wadrbtn.ok{border-color:var(--good);color:var(--good);font-weight:600}
+  .wadrbtn.del{border-color:var(--bad);color:var(--bad)}
+  /* modal alta */
+  #waMadd{position:fixed;inset:0;background:rgba(38,34,28,.45);z-index:9995;display:none;align-items:center;justify-content:center}
+  #waMadd.open{display:flex}
+  .wambox{width:400px;max-width:92vw;background:var(--paper);border:1px solid var(--rule);border-radius:5px;padding:18px 20px 20px;box-shadow:0 14px 40px rgba(0,0,0,.25)}
+  .wambox h3{font-family:'Zilla Slab',serif;font-weight:700;font-size:18px;margin:0 0 2px}
+  .wambox .ms{font-size:11px;color:var(--ink-soft);margin-bottom:14px}
+  .wamrow{margin-bottom:11px}
+  .wamrow label{display:block;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:4px}
+  .wamrow input,.wamrow select,.wamrow textarea{width:100%;font-family:'Inter',sans-serif;font-size:13px;padding:7px 9px;border:1px solid var(--rule);border-radius:3px;background:#fff;color:var(--ink);text-align:left}
+  .wamrow textarea{resize:vertical;min-height:52px;line-height:1.5}
+  .wamai{font-size:10.5px;color:var(--indigo);line-height:1.5;background:#fff;border:1px dashed var(--indigo);border-radius:3px;padding:8px 10px;margin-top:4px}
+  .wambtns{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+  .wambtn{font-size:12px;border:1px solid var(--rule);border-radius:3px;background:#fff;padding:8px 14px;cursor:pointer;font-family:'Inter',sans-serif;color:var(--ink)}
+  .wambtn.go{background:var(--indigo);border-color:var(--indigo);color:#fff;font-weight:600}
+  .wambtn.go:disabled{opacity:.55;cursor:wait}
+  /* generador */
+  .wagnform{display:grid;grid-template-columns:220px 1fr;gap:18px;align-items:start}
+  @media(max-width:820px){.wagnform{grid-template-columns:1fr}}
+  .wagnside{display:flex;flex-direction:column;gap:11px}
+  .wagnrow label{display:block;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:4px}
+  .wagnrow input.n{font-family:'JetBrains Mono',monospace;width:100%;text-align:right;background:#fff;border:1px solid var(--rule);border-radius:3px;padding:6px 9px;font-size:13px}
+  .wagnpasos{display:flex;flex-direction:column;gap:6px}
+  .wagnpaso{display:flex;align-items:center;gap:8px}
+  .wagnpaso .pn{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-soft);width:22px;text-align:right;flex:none}
+  .wagnpaso input{flex:1;width:auto;font-family:'Inter',sans-serif;font-size:12.5px;padding:6px 9px;border:1px solid var(--rule);border-radius:3px;background:#fff;text-align:left}
+  .wagnpaso .fam{font-family:'Zilla Slab',serif;font-size:13px;color:var(--brass-deep);width:18px;text-align:center;flex:none}
+  .wagnbtn{font-family:'Inter',sans-serif;font-size:13px;font-weight:600;background:var(--ink);color:var(--paper);border:none;border-radius:3px;padding:11px 16px;cursor:pointer;width:100%}
+  .wagnbtn:disabled{opacity:.6;cursor:wait}
+  .wagnbtn .k{font-family:'Zilla Slab',serif;color:var(--brass);margin-right:6px}
+  .wagnout{margin-top:18px;border-top:2px solid var(--ink);padding-top:14px}
+  .wagnkpis{display:flex;gap:0;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+  .wagnkpi{padding:2px 16px;border-left:1px solid var(--rule)}
+  .wagnkpi:first-child{border-left:none;padding-left:0}
+  .wagnkpi .l{font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft)}
+  .wagnkpi .v{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:17px}
+  .wagnstep{display:grid;grid-template-columns:190px 1fr;gap:12px;padding:10px 0;border-bottom:1px dotted var(--rule);align-items:start}
+  @media(max-width:700px){.wagnstep{grid-template-columns:1fr}}
+  .wagnstep:last-of-type{border-bottom:none}
+  .wagsp .n{font-size:12.5px;font-weight:600}
+  .wagsp .n .num{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--ink-soft);margin-right:6px}
+  .wagsp .f{font-size:10px;color:var(--ink-soft)}
+  .wagsp .f .k{font-family:'Zilla Slab',serif;color:var(--brass-deep)}
+  .wagnnop{font-size:11px;color:var(--ink-soft);font-style:italic;padding-top:2px}
+  .wagplan{display:flex;gap:9px;align-items:baseline;font-size:12.5px;padding:2px 0;cursor:pointer;border-radius:2px}
+  .wagplan:hover{background:var(--panel-2)}
+  .wagplan .tag{font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--rule);border-radius:2px;padding:1px 6px;color:var(--ink-soft);flex:none;background:#fff}
+  .wagplan.pa .tag{border-color:var(--brass-deep);color:var(--brass-deep);font-weight:700}
+  .wagplan .dot{width:8px;height:8px;border-radius:50%;flex:none;align-self:center}
+  .wagplan .bn{font-weight:600}
+  .wagplan .sy{font-weight:700}
+  .wagplan .sy.s3{color:var(--vermilion)}.wagplan .sy.s2{color:var(--indigo)}
+  .wagplan .pr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-soft);margin-left:auto;flex:none}
+  .wagwhy{font-size:11px;color:var(--ink-soft);line-height:1.5;padding:1px 0 4px 0}
+  .wagnwarn{font-size:11.5px;background:#f1e9d6;border-left:3px solid var(--warn);padding:8px 11px;border-radius:0 2px 2px 0;margin-top:10px;line-height:1.5}
+  .wagenai{display:inline-block;font-size:8.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--indigo);border:1px solid var(--indigo);border-radius:2px;padding:1px 6px;background:#fff;vertical-align:2px;margin-left:8px}
+
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -659,6 +813,7 @@
     <button class="tab" data-tab="reservas" onclick="switchTab('reservas')">Reservas <span class="tk">予約</span></button>
     <button class="tab" data-tab="crm" onclick="switchTab('crm')">Clientes <span class="tk">顧客</span></button>
     <button class="tab" data-tab="kata" onclick="switchTab('kata')">Manual <span class="tk">型</span></button>
+    <button class="tab" data-tab="wa" onclick="switchTab('wa')">Rueda <span class="tk">輪</span></button>
     <button class="roletab kjqlaunch" onclick="kjQuick()">⚡ carga rápida</button>
     <button class="roletab" id="roleBtn" onclick="kjRoleToggle()">⚙ roles</button>
     <button class="roletab" id="logoutBtn" onclick="kjLogout()" style="display:none" title="Cerrar sesión en este dispositivo">⎋ salir</button>
@@ -1337,6 +1492,101 @@
       </div>
     </div>
   </div><!-- /tab-kata -->
+
+  <div id="tab-wa" class="tabpanel">
+    <header class="top">
+      <div class="brand">
+        <div>
+          <h1>Wa <span class="kanji">輪</span></h1>
+          <p class="sub">Ruedas de maridaje · cava y despensa contra el producto, en círculo</p>
+        </div>
+      </div>
+      <span class="warotag">読 el salón lee · 主 el admin edita la carta — nada toca Genka ni Aishō</span>
+    </header>
+
+    <p class="assume">
+      <span>※</span>
+      <span>Carta <b>propia e independiente</b> (puede o no coincidir con Aishō) y de <b>consulta pura</b>: nada de acá impacta en la creación de menús. <b>Click en un producto</b> abre su perfil con foto y explicación; <b>click en un hilo</b>, la ficha del maridaje con el porqué. Con <b>+ agregar</b> (admin) la IA puntúa lo nuevo contra todo el otro lado y la rueda se re-teje — queda <b>✦ sin revisar</b> (hilos punteados) hasta el visto bueno.</span>
+    </p>
+
+    <div class="card">
+      <div class="head"><span class="num">酒</span><span class="ttl">La cava</span><span class="tag mix" id="waHs1" style="margin-left:8px;text-transform:none;letter-spacing:0"></span></div>
+      <div class="wactl">
+        <div class="watog">
+          <button id="waTgStd" class="on" onclick="waSetTier('comun')"><span class="k">並</span>Común</button>
+          <button id="waTgPrem" onclick="waSetTier('prem')"><span class="k">特</span>Premium</button>
+        </div>
+        <div class="wacats" id="waChips1"></div>
+        <label class="wachk"><input type="checkbox" id="waStars1" onchange="WAW1.render()"> solo firmas ★</label>
+        <button class="waadd adminonly" onclick="waOpenAdd('w1','l')">+ plato</button>
+        <button class="waadd adminonly" onclick="waOpenAdd('w1','r')">+ bebida</button>
+      </div>
+      <div class="wastage">
+        <svg id="waSvg1" viewBox="0 0 940 940" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="wacenter" id="waCtr1"></div>
+      </div>
+      <div class="walegend" id="waLeg1"></div>
+    </div>
+
+    <div class="card">
+      <div class="head"><span class="num">味</span><span class="ttl">La despensa</span><span class="tag mix" id="waHs2" style="margin-left:8px;text-transform:none;letter-spacing:0"></span></div>
+      <div class="wactl">
+        <div class="wacats" id="waChips2"></div>
+        <label class="wachk"><input type="checkbox" id="waStars2" onchange="WAW2.render()"> solo firmas ★</label>
+        <button class="waadd adminonly" onclick="waOpenAdd('w2','l')">+ pescado / marisco</button>
+        <button class="waadd adminonly" onclick="waOpenAdd('w2','r')">+ sabor</button>
+      </div>
+      <div class="wastage">
+        <svg id="waSvg2" viewBox="0 0 940 940" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="wacenter" id="waCtr2"></div>
+      </div>
+      <div class="walegend" id="waLeg2"></div>
+    </div>
+
+    <div class="card">
+      <div class="head"><span class="num">献</span><span class="ttl">Generador de maridajes</span><span class="tag mix" style="margin-left:8px;text-transform:none;letter-spacing:0">definí el menú y el marco — el motor arma el mejor flight, con plan B</span></div>
+      <div class="body">
+        <div class="wagnform">
+          <div class="wagnside">
+            <div class="wagnrow"><label>Cantidad de pasos</label><input class="n" type="number" id="wagnN" value="8" min="2" max="16" onchange="wagnSteps()"></div>
+            <div class="wagnrow"><label>Pasos con bebida (pours)</label><input class="n" type="number" id="wagnK" value="4" min="1" max="16"></div>
+            <div class="wagnrow"><label>Bebidas a incluir</label><div class="wacats" id="wagnCats"></div></div>
+            <div class="wagnrow"><label>Calidad del maridaje</label>
+              <div class="watog" style="width:100%"><button id="wagnQc" class="on" onclick="wagnQ('comun')" style="flex:1"><span class="k">並</span>Común</button><button id="wagnQp" onclick="wagnQ('prem')" style="flex:1"><span class="k">特</span>Premium</button></div>
+            </div>
+            <div class="wagnrow"><label>Presupuesto por cubierto (USD, neto)</label><input class="n" type="number" id="wagnB" value="40" min="5" step="5"></div>
+            <button class="wagnbtn" id="wagnGo" onclick="wagnGenerate()"><span class="k">献</span>Generar maridaje</button>
+          </div>
+          <div>
+            <div class="wagnrow"><label>Ingredientes de cada paso <span style="text-transform:none;letter-spacing:0">(texto libre o de la carta — la familia se detecta sola)</span></label></div>
+            <div class="wagnpasos" id="wagnPasos"></div>
+            <datalist id="wagnDL"></datalist>
+          </div>
+        </div>
+        <div class="wagnout" id="wagnOut" style="display:none"></div>
+      </div>
+    </div>
+
+    <div class="gklay" style="display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start">
+      <div class="card" style="margin-bottom:0">
+        <div class="head"><span class="num">写</span><span class="ttl">Repositorio de fotos</span></div>
+        <div class="body">
+          <p class="note" style="font-size:11.5px">Las fotos viven en <span class="mono" style="font-size:10.5px">public/img/wa/&lt;id&gt;.jpg</span>, commiteadas al repo — sin subida manual ni dependencias externas (la CSP solo permite imágenes propias). Se generan una vez con <span class="mono" style="font-size:10.5px">node tools/fetch-wa-photos.mjs</span>, que baja ~100 fotos de licencia libre de Wikimedia Commons y deja los créditos en <span class="mono" style="font-size:10.5px">credits.json</span>. Producto sin foto: cae al kanji de su familia.</p>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div class="head"><span class="num">✦</span><span class="ttl">La IA propone, el itamae decide</span></div>
+        <div class="body">
+          <p class="note" style="font-size:11.5px">Al agregar un producto, <span class="mono" style="font-size:10.5px">POST /api/ai/wa</span> (solo admin, auditado, rate-limited) lo puntúa contra el otro lado completo, redacta perfil y notas — y para bebidas, una <b>alternativa conseguible en Argentina</b>. Todo lo generado queda <b style="color:var(--indigo)">✦ sin revisar</b> hasta el visto bueno. Sin OPENAI_API_KEY, el alta usa la heurística de familia y avisa. Quitar un producto borra sus hilos, notas y perfil.</p>
+        </div>
+      </div>
+    </div>
+  </div><!-- /tab-wa -->
+
+  <div id="waOvl" onclick="waCloseDrawer()"></div>
+  <aside id="waDrawer"><button class="wadrx" onclick="waCloseDrawer()">✕</button><div id="waDrc"></div></aside>
+  <div id="waMadd"><div class="wambox" id="waMbox"></div></div>
+
 
 
 
@@ -2225,6 +2475,7 @@ function switchTab(name){
   if(name==='resumen') renderResumen();
   if(name==='crm') renderCRM();
   if(name==='kata') renderKata();
+  if(name==='wa') renderWa();
   window.scrollTo(0,0);
 }
 
@@ -4898,9 +5149,9 @@ function renderCRM(){
    Control operativo del lado del cliente: la aplicación real de permisos
    llega con el servidor (Railway). Esto ordena quién ve qué en el local.
    ===================================================================== */
-const TAB_LABELS={ resumen:'Resumen 週報', costos:'Esquema 勘定', turnos:'Turnos 番付', heika:'Precios 平価', yoso:'Pronóstico 予想', genka:'Costeo 原価', aisho:'Maridaje 相性', compras:'Compras 仕入', caja:'Caja 現金', reservas:'Reservas 予約', crm:'Clientes 顧客', kata:'Manual 型' };
+const TAB_LABELS={ resumen:'Resumen 週報', costos:'Esquema 勘定', turnos:'Turnos 番付', heika:'Precios 平価', yoso:'Pronóstico 予想', genka:'Costeo 原価', aisho:'Maridaje 相性', compras:'Compras 仕入', caja:'Caja 現金', reservas:'Reservas 予約', crm:'Clientes 顧客', kata:'Manual 型', wa:'Rueda 輪' };
 let auth={ pin:'', algo:'', modules:{} };
-function authDefaults(){ return { resumen:'staff', costos:'admin', turnos:'staff', heika:'admin', yoso:'admin', genka:'staff', aisho:'staff', compras:'staff', caja:'admin', reservas:'staff', crm:'staff', kata:'staff' }; }
+function authDefaults(){ return { resumen:'staff', costos:'admin', turnos:'staff', heika:'admin', yoso:'admin', genka:'staff', aisho:'staff', compras:'staff', caja:'admin', reservas:'staff', crm:'staff', kata:'staff', wa:'staff' }; }
 function authEnsure(a){
   const d={ pin:'', algo:'', modules:authDefaults() };
   if(!a||typeof a!=='object') return d;
@@ -6246,6 +6497,1016 @@ function renderKata(){
   ktKpis(); renderKataHoy(); ktRenderNotas(); ktRenderHist(); ktRenderTpls();
 }
 
+function waSeedCarta(){ return {
+ foods:[
+  {g:'grasos',k:'脂',gl:'Grasos',items:[
+   {id:'salmon',n:'Salmón'},{id:'chutoro',n:'Chūtoro'},{id:'otoro',n:'Ōtoro'},{id:'akami',n:'Akami'},{id:'hamachi',n:'Hamachi'},
+   {id:'saba',n:'Saba'},{id:'iwashi',n:'Iwashi'},{id:'kohada',n:'Kohada'},{id:'sanma',n:'Sanma'}]},
+  {g:'blancos',k:'白',gl:'Blancos',items:[
+   {id:'hirame',n:'Hirame'},{id:'tai',n:'Tai'},{id:'suzuki',n:'Suzuki'},{id:'kinmedai',n:'Kinmedai'},{id:'chernia',n:'Chernia'},{id:'lenguado',n:'Lenguado'}]},
+  {g:'mariscos',k:'貝',gl:'Mariscos',items:[
+   {id:'ebi',n:'Ebi'},{id:'langostino',n:'Langostino austral'},{id:'centolla',n:'Centolla'},{id:'hotate',n:'Hotate'},{id:'ostra',n:'Ostra'},
+   {id:'tako',n:'Tako'},{id:'ika',n:'Ika'},{id:'anago',n:'Anago'},{id:'unagi',n:'Unagi'}]},
+  {g:'huevas',k:'塩',gl:'Huevas',items:[{id:'uni',n:'Uni'},{id:'ikura',n:'Ikura'},{id:'tobiko',n:'Tobiko'}]},
+  {g:'arroz',k:'米',gl:'Arroz',items:[{id:'nigiri',n:'Shari · nigiri'},{id:'tamago',n:'Tamago'},{id:'misosoup',n:'Sopa miso'},{id:'chawan',n:'Chawanmushi'}]},
+  {g:'fuego',k:'火',gl:'Fuego',items:[{id:'tempura',n:'Tempura'},{id:'aburi',n:'Aburi · soplete'},{id:'wagyu',n:'Wagyu'},{id:'karaage',n:'Karaage'}]},
+  {g:'dulce',k:'甘',gl:'Dulce',items:[{id:'mochi',n:'Mochi · matcha'},{id:'helado',n:'Helado de goma'}]}
+ ],
+ fish:[
+  {g:'grasos',k:'脂',gl:'Grasos',items:[
+   {id:'salmon',n:'Salmón'},{id:'chutoro',n:'Chūtoro'},{id:'otoro',n:'Ōtoro'},{id:'akami',n:'Akami'},{id:'hamachi',n:'Hamachi'},
+   {id:'saba',n:'Saba'},{id:'iwashi',n:'Iwashi'},{id:'kohada',n:'Kohada'},{id:'sanma',n:'Sanma'}]},
+  {g:'blancos',k:'白',gl:'Blancos',items:[
+   {id:'hirame',n:'Hirame'},{id:'tai',n:'Tai'},{id:'suzuki',n:'Suzuki'},{id:'kinmedai',n:'Kinmedai'},{id:'chernia',n:'Chernia'},{id:'lenguado',n:'Lenguado'},{id:'mero',n:'Mero'}]},
+  {g:'mariscos',k:'貝',gl:'Mariscos',items:[
+   {id:'ebi',n:'Ebi'},{id:'langostino',n:'Langostino austral'},{id:'centolla',n:'Centolla'},{id:'hotate',n:'Hotate'},{id:'ostra',n:'Ostra'},
+   {id:'tako',n:'Tako'},{id:'ika',n:'Ika'},{id:'anago',n:'Anago'},{id:'unagi',n:'Unagi'}]},
+  {g:'huevas',k:'塩',gl:'Huevas',items:[{id:'uni',n:'Uni'},{id:'ikura',n:'Ikura'},{id:'tobiko',n:'Tobiko'}]}
+ ],
+ bebs:{
+  comun:[
+   {id:'s1',cat:'sake',n:'Gekkeikan Junmai',g:{arroz:2,grasos:2,mariscos:1},stars:['nigiri']},
+   {id:'s2',cat:'sake',n:'Hakutsuru Ginjo',g:{blancos:2,mariscos:2},stars:['hirame']},
+   {id:'s3',cat:'sake',n:'Nigori',g:{dulce:2},plus:{uni:2},stars:['mochi']},
+   {id:'s4',cat:'sake',n:'Honjōzō caliente',g:{fuego:2,arroz:2},stars:['misosoup']},
+   {id:'s5',cat:'sake',n:'Kimoto rústico',g:{grasos:2},plus:{saba:2},stars:['sanma']},
+   {id:'s6',cat:'sake',n:'Umeshu',g:{dulce:2},plus:{karaage:2},stars:['helado']},
+   {id:'v1',cat:'vino',n:'Chandon Extra Brut',g:{huevas:2,fuego:2},stars:['ikura']},
+   {id:'v2',cat:'vino',n:'Riesling Río Negro',g:{blancos:2,mariscos:2},stars:['ostra']},
+   {id:'v3',cat:'vino',n:'Pinot patagónico',g:{grasos:2},stars:['aburi']},
+   {id:'v4',cat:'vino',n:'Albariño Chapadmalal',g:{blancos:2,mariscos:2},stars:['centolla']},
+   {id:'v5',cat:'vino',n:'Semillón valle frío',g:{blancos:2},plus:{lenguado:2}},
+   {id:'v6',cat:'vino',n:'Chardonnay sin madera',g:{mariscos:2},plus:{langostino:3}},
+   {id:'c1',cat:'cerveza',n:'Lager de arroz',g:{fuego:2,arroz:1},plus:{ebi:2},stars:['tempura']},
+   {id:'c2',cat:'cerveza',n:'Witbier',g:{mariscos:2},plus:{tai:2}},
+   {id:'c3',cat:'cerveza',n:'Kölsch',g:{blancos:2},plus:{kohada:2}},
+   {id:'c4',cat:'cerveza',n:'Amber ale',g:{fuego:2},plus:{unagi:3,wagyu:2}},
+   {id:'c5',cat:'cerveza',n:'Session IPA',g:{fuego:2},plus:{karaage:3}},
+   {id:'c6',cat:'cerveza',n:'Stout seca',g:{dulce:2},plus:{ostra:3}},
+   {id:'t1',cat:'te',n:'Sencha',g:{grasos:2},stars:['salmon']},
+   {id:'t2',cat:'te',n:'Genmaicha',g:{arroz:2},stars:['tamago']},
+   {id:'t3',cat:'te',n:'Hōjicha',g:{fuego:2,dulce:2},stars:['wagyu']},
+   {id:'t4',cat:'te',n:'Mugicha frío',g:{fuego:1},plus:{tempura:2,tako:2}},
+   {id:'t5',cat:'te',n:'Kukicha',g:{blancos:2,arroz:1}},
+   {id:'t6',cat:'te',n:'Sobacha',g:{dulce:1},plus:{anago:2}}
+  ],
+  prem:[
+   {id:'S1',cat:'sake',n:'Dassai 45',g:{blancos:2,huevas:2,mariscos:2},stars:['uni']},
+   {id:'S2',cat:'sake',n:'Kubota Manju',g:{grasos:2,arroz:2},stars:['otoro']},
+   {id:'S3',cat:'sake',n:'Dewazakura Ōka',g:{blancos:2,mariscos:2},stars:['kinmedai']},
+   {id:'S4',cat:'sake',n:'Kokuryū Ryū',g:{grasos:2,fuego:2},stars:['chutoro']},
+   {id:'S5',cat:'sake',n:'Koshu añejo',g:{fuego:2,dulce:2},stars:['unagi']},
+   {id:'S6',cat:'sake',n:'Yuzushu artesanal',g:{dulce:2,mariscos:1},plus:{helado:2}},
+   {id:'V1',cat:'vino',n:'Champagne B. de Blancs',g:{huevas:2,mariscos:2},stars:['ikura']},
+   {id:'V2',cat:'vino',n:'Chablis 1er Cru',g:{mariscos:2,blancos:2},stars:['ostra']},
+   {id:'V3',cat:'vino',n:'Riesling Kabinett',g:{grasos:2},plus:{saba:3}},
+   {id:'V4',cat:'vino',n:'Pinot de Borgoña',g:{grasos:2,fuego:2},stars:['wagyu']},
+   {id:'V5',cat:'vino',n:'Sancerre',g:{blancos:2,mariscos:2},stars:['hotate']},
+   {id:'V6',cat:'vino',n:'Tardío patagónico',g:{dulce:2},stars:['mochi']},
+   {id:'C1',cat:'cerveza',n:'Hitachino White',g:{mariscos:2},plus:{ebi:3}},
+   {id:'C2',cat:'cerveza',n:'Sour de yuzu',g:{grasos:2},stars:['iwashi']},
+   {id:'C3',cat:'cerveza',n:'Gueuze lambic',g:{huevas:2},stars:['tobiko']},
+   {id:'C4',cat:'cerveza',n:'Tripel belga',g:{fuego:2},plus:{tempura:3}},
+   {id:'C5',cat:'cerveza',n:'Saison de guarda',g:{mariscos:2},plus:{centolla:2}},
+   {id:'C6',cat:'cerveza',n:'Baltic porter',g:{dulce:2},plus:{wagyu:2}},
+   {id:'T1',cat:'te',n:'Gyokuro',g:{huevas:2,blancos:2},stars:['chawan']},
+   {id:'T2',cat:'te',n:'Matcha ceremonial',g:{dulce:2},stars:['mochi']},
+   {id:'T3',cat:'te',n:'Shincha 1ª cosecha',g:{grasos:2},stars:['kohada']},
+   {id:'T4',cat:'te',n:'Oolong añejo',g:{fuego:2},stars:['aburi']},
+   {id:'T5',cat:'te',n:'Hōjicha kuki',g:{fuego:2},plus:{karaage:2}},
+   {id:'T6',cat:'te',n:'Genmaicha c/ matcha',g:{arroz:2},stars:['nigiri']}
+  ]
+ },
+ ings:[
+  {g:'aroma',k:'香',gl:'Cítricos y aromáticos',items:[
+   {id:'yuzu',n:'Yuzu',g:{grasos:2,blancos:2},stars:['hamachi']},
+   {id:'sudachi',n:'Sudachi',g:{blancos:2,mariscos:2},stars:['sanma']},
+   {id:'shiso',n:'Shiso',g:{grasos:2},plus:{iwashi:3}},
+   {id:'myoga',n:'Myōga',g:{blancos:2},plus:{saba:2}},
+   {id:'gari',n:'Gari',g:{grasos:2},plus:{kohada:2}},
+   {id:'umeboshi',n:'Umeboshi',g:{},plus:{iwashi:2,suzuki:2}}]},
+  {g:'pica',k:'辛',gl:'Picantes',items:[
+   {id:'wasabi',n:'Wasabi',g:{grasos:2,blancos:2},stars:['akami']},
+   {id:'karashi',n:'Karashi',g:{},plus:{tako:2}},
+   {id:'sansho',n:'Sanshō',g:{},plus:{unagi:3,anago:2}},
+   {id:'shichimi',n:'Shichimi',g:{},plus:{ika:2,tako:2}},
+   {id:'momiji',n:'Momiji oroshi',g:{blancos:2},plus:{tako:2}}]},
+  {g:'ferm',k:'醸',gl:'Fermentados y umami',items:[
+   {id:'shoyu',n:'Shōyu',g:{grasos:2,huevas:2},stars:['akami']},
+   {id:'miso',n:'Miso',g:{},plus:{saba:3,mero:2}},
+   {id:'ponzu',n:'Ponzu',g:{blancos:2,mariscos:2},stars:['hirame']},
+   {id:'mirin',n:'Mirin',g:{},plus:{anago:2,unagi:2}},
+   {id:'dashi',n:'Dashi',g:{blancos:2,mariscos:2},stars:['tai']},
+   {id:'katsuo',n:'Katsuobushi',g:{mariscos:2},plus:{tako:2}},
+   {id:'kombu',n:'Kombu',g:{blancos:2},stars:['lenguado']}]},
+  {g:'sai',k:'菜',gl:'Vegetales y base',items:[
+   {id:'daikon',n:'Daikon',g:{grasos:2},plus:{sanma:2}},
+   {id:'negi',n:'Negi',g:{grasos:2},plus:{chutoro:3}},
+   {id:'kyuri',n:'Kyūri',g:{mariscos:2},plus:{tako:3}},
+   {id:'nasu',n:'Nasu',g:{},plus:{unagi:2}},
+   {id:'renkon',n:'Renkon',g:{mariscos:2},plus:{ebi:2}},
+   {id:'takenoko',n:'Takenoko',g:{blancos:2},plus:{tai:2}},
+   {id:'shiitake',n:'Shiitake',g:{},plus:{ika:2}},
+   {id:'goma',n:'Goma',g:{grasos:2},plus:{hamachi:3}},
+   {id:'nori',n:'Nori',g:{huevas:2},plus:{uni:3}},
+   {id:'tofu',n:'Tōfu',g:{},plus:{ebi:2}}]}
+ ]
+}; }
+
+const WA_P={
+ salmon:'Graso, dulce y de color imposible de ignorar: la puerta de entrada al omakase para la mayoría del salón. La casa lo cura corto en sal y azúcar para tensar la carne y concentrar el sabor; su grasa abundante pide siempre algo que corte — acidez, astringencia o burbuja.',
+ chutoro:'El medio del atún, donde el músculo magro y la ventresca se encuentran: grasa suficiente para fundirse, carne suficiente para saber a atún. Es el bocado más pedido de la barra y el que mejor mide a una bebida — si lo tapa, sobra; si lo deja solo, falta.',
+ otoro:'Ventresca pura: el corte más graso del animal, que se deshace a temperatura de boca. Su opulencia castiga cualquier compañía torpe; solo toleran acompañarlo la acidez muy fina, el umami profundo o el silencio.',
+ akami:'El lomo magro del atún: hierro, mineralidad y un sabor largo sin nada de grasa que lo disimule. Es el corte del purista y la razón de ser del zuke — la marinada en shōyu que los itamae de Edo usaban para conservarlo.',
+ hamachi:'Pez limón de cultivo japonés: grasa elegante, textura firme y un final dulce casi lácteo. Es el pescado que mejor responde al cítrico — la combinación con yuzu es prácticamente un plato nacional.',
+ saba:'Caballa curada en sal y vinagre de arroz (shime saba): el azul más intenso del menú, con acidez propia incorporada por la cura. Esa acidez es la clave de sus maridajes — lo que la acompaña tiene que abrazarla o amortiguarla, nunca competirle.',
+ iwashi:'Sardina: el sabor más franco y marino de la barra, con grasa de temporada y un amargor azul que no pide permiso. Brilla con hierbas, cítricos y acidez — todo lo que lo aliviane sin domesticarlo.',
+ kohada:'Sábalo manchado curado en sal y vinagre: el nigiri que mide al itamae, porque la cura exacta cambia con cada pieza. Piel plateada, amargor fino y acidez de oficio — el bocado más "Edo" del menú.',
+ sanma:'Paparda del Pacífico, el pescado del otoño japonés: se sirve entero a la parrilla, con el amargor de sus vísceras como parte del plato. Ese amargor noble es su firma y el desafío de cualquier maridaje.',
+ hirame:'Lenguado japonés de invierno: carne firme, translúcida, de dulzor tenue y textura elástica. Es el lienzo blanco por excelencia — cualquier bebida o condimento que grite lo borra del plato.',
+ tai:'Besugo japonés, el pescado ceremonial de las celebraciones: elegancia, textura tersa y un dulzor noble. En Japón se dice que "hasta podrido, es tai" — su prestigio resiste todo menos un maridaje perfumado de más.',
+ suzuki:'Róbalo de verano: carne limpia, ligera, con un dejo de pepino fresco. Pide compañías de su misma estación — cítricos verdes, acidez baja, nada de peso.',
+ kinmedai:'Alfonsino de aguas profundas: piel roja que se escalda (yushimo) para liberar su grasa fina justo debajo. Dulzor notable y textura sedosa — un blanco que coquetea con los grasos.',
+ chernia:'La estrella de la pesca local: carne firme, jugosa, de sabor limpio, que banca crudo, curado y fuego por igual. Es el argumento de que el omakase porteño no necesita importar todo.',
+ lenguado:'Del Atlántico bonaerense: delicado, de láminas finas, ideal para curas cortas en kombu que le prestan profundidad sin robarle identidad. El pescado local que más gana con técnica japonesa.',
+ mero:'El blanco más goloso: carne blanca con grasa entreverada real. Se comporta como un puente entre las familias — acepta miso, fuego y fermentos que a otros blancos los tapan.',
+ ebi:'Langostino cocido al estilo clásico del nigiri: dulzor franco, textura tersa, color de bandera. La cocción despierta azúcares que el crudo esconde — por eso sus maridajes son distintos a los del langostino crudo.',
+ langostino:'Crudo y austral: dulzor intenso, textura cremosa casi de manteca, sabor a agua fría. Producto bandera argentino que en la barra compite de igual a igual con cualquier ebi japonés.',
+ centolla:'De los canales fueguinos: dulce, salina, de hebra delicadísima. Uno de los mariscos más finos del planeta y el argumento definitivo del maridaje local — pide compañías de tiza, sal y burbuja.',
+ hotate:'Vieira patagónica: dulzor limpio y textura de manteca fría. Cruda es glicina pura (el aminoácido dulce del mar); sopleteada, suma caramelo. En ambas versiones, ama la mineralidad.',
+ ostra:'Salinidad pura: el mar en un sorbo, con un final metálico noble de zinc y cobre. El maridaje con ostras es un género en sí mismo — de Chablis al stout, todos los caminos buscan lo mismo: no interrumpir el mar.',
+ tako:'Pulpo cocido lento hasta el punto exacto entre dulzor y mordida. Su textura es el evento — por eso sus mejores parejas aportan crocante, vinagre o frescor, nunca más blandura.',
+ ika:'Calamar crudo trabajado en incisiones finísimas que lo vuelven sedoso y liberan su dulzor. Casi neutro en sabor, es todo textura — un lienzo que agradece sal, cítrico y umami puntual.',
+ anago:'Anguila de mar cocida al vapor y laqueada apenas: una nube salina que se deshace, mucho más delicada que su prima de río. El tare suave manda en sus maridajes.',
+ unagi:'Anguila de río asada y laqueada con tare: caramelo, humo y grasa en capas. Es el plato más "salsa" del menú y por eso maridar unagi es maridar su laca — dulzor tostado que pide espejo o corte.',
+ uni:'Erizo: crema marina, yodo y un dulzor mineral que divide al salón entre fanáticos y escépticos. Químicamente es una bomba de glutamato — el umami más concentrado de la barra.',
+ ikura:'Huevas de salmón maceradas en shōyu y sake: esferas que explotan en sal, grasa y mar. La intensidad en miniatura — cada maridaje es una estrategia para resetear el paladar entre estallidos.',
+ tobiko:'Huevas de pez volador: crocante seriado, sal franca, un toque ahumado. Menos grasa que la ikura y más textura — sus parejas juegan con el estallido, no contra él.',
+ nigiri:'El shari: arroz avinagrado, apenas dulce, servido a temperatura de cuerpo. Es la columna vertebral del menú y la trampa de todo maridaje — su vinagre ya aporta acidez, así que sumarle más es agredirlo.',
+ tamago:'Tortilla dulce de huevo y dashi, cocida capa por capa: la firma silenciosa del itamae, que en Tokio se pide primero para juzgar la casa. Dulzor de mirin y umami de caldo en un solo bocado.',
+ misosoup:'Caldo de miso sobre dashi: umami caliente que puntúa el recorrido y recalibra el paladar. Es de los pocos pasos donde el vino casi nunca funciona — el fermento pide fermento.',
+ chawan:'Flan salado de huevo y dashi cocido al vapor: la seda del menú. Su sabor es el del caldo madre — por eso sus maridajes son los del dashi, en versión más delicada.',
+ tempura:'Fritura de velo: masa helada sobre aceite justo, crocante que dura segundos. El maridaje aquí es mecánico — carbónico y acidez que barran el aceite antes de que el paladar lo registre.',
+ aburi:'El soplete sobre el nigiri: la grasa superficial se funde, aparece humo y un amargor tostado de Maillard. Un crudo que se volvió medio cocido — sus maridajes viven en esa frontera.',
+ wagyu:'Grasa marmolada que funde a temperatura de boca: el paso de tierra del menú. Su untuosidad extrema pide tanino sedoso, tostado profundo o astringencia — algo que lo ordene sin pelearle.',
+ karaage:'Pollo marinado en shōyu, jengibre y sake, frito dos veces: el placer culpable elevado a técnica. Jugo, sal y crocante — territorio natural de la cerveza.',
+ mochi:'Arroz glutinoso con matcha: dulzor vegetal, amargor fino de té y una textura que es el postre en sí misma. Cierra el recorrido mirando al mismo Japón que lo abrió.',
+ helado:'Helado de sésamo negro: tostado profundo, apenas dulce, con un amargor elegante de fruto seco. El postre para adultos del menú — sus maridajes juegan al espejo tostado o al contraste ácido.',
+ /* --- cava común --- */
+ s1:'Junmai clásico de Kioto: arroz, umami y cuerpo, sin pulido extremo ni perfume que distraiga. Es el sake "de trabajo" de la barra — va frío con los crudos y tibio con lo caliente, y en ambos registros acompaña sin protagonizar.',
+ s2:'Ginjo floral y limpio, fermentado en frío para extraer ésteres de pera y flor blanca. El sake de los crudos delicados: su intensidad calibrada a media voz es exactamente la de un pescado blanco.',
+ s3:'Sake sin filtrar: el almidón en suspensión le da cuerpo cremoso, dulzor suave y textura de nube. Funciona como puente entre el salado y el dulce — y es de los pocos alcoholes que abrazan al uni sin pelearle el yodo.',
+ s4:'Honjōzō servido caliente (atsukan): seco, directo, de estructura simple que el calor vuelve reconfortante. La temperatura es el maridaje — espeja los pasos calientes del menú como ninguna bebida fría puede.',
+ s5:'Elaborado con el método kimoto: la levadura madre natural aporta acidez láctica, rusticidad y un fondo salvaje. Es el sake con carácter de la carta — el único que le habla de igual a igual al pescado azul a la parrilla.',
+ s6:'Licor de ciruela sobre base de sake: dulce y ácido en tensión perfecta. En Japón abre o cierra la comida; acá lo usamos donde su acidez frutal suma — fritura, postre y sobremesa.',
+ v1:'Espumante patagónico de método tradicional, seco de verdad: burbuja fina y tensión cítrica. El CO₂ es su herramienta de trabajo — barre sal, grasa y aceite del paladar entre bocado y bocado.',
+ v2:'Riesling de Río Negro: cítrico vertical, acidez de acero, cero madera. El frío patagónico le da la acidez natural alta que el pescado necesita — es el "limón noble" de la cava.',
+ v3:'Pinot noir joven servido fresco (12–14°): fruta roja, tanino de seda, nada de roble nuevo. El único tinto con pase libre a la barra — su tanino suave no dispara el gusto metálico que el hierro del pescado provoca con tintos grandes.',
+ v4:'Del único terroir marítimo del país: la brisa de Chapadmalal deja salinidad literal en la copa. Vino de mar para productos de mar — el maridaje es geográfico antes que técnico.',
+ v5:'Semillón de valle frío: austero, mineral, de perfil bajo y guarda corta. La opción para los blancos delicados cuando el riesling resulta demasiado protagonista.',
+ v6:'Chardonnay sin paso por madera: fruta blanca, filo y pureza. Sin manteca ni vainilla que empalaguen — la versión del chardonnay que sí funciona con crudo.',
+ c1:'Lager estilo japonés con arroz en la maceración: seca, carbónica, de final limpísimo. Diseñada para ser invisible con la comida — su virtud es desaparecer llevándose el aceite de la fritura.',
+ c2:'Trigo belga con cáscara de naranja y coriandro: suave, turbia, aromática sin estridencia. Su cítrico especiado conversa naturalmente con el marisco dulce.',
+ c3:'Rubia de Colonia, fermentación limpia y cuerpo esbelto: la cerveza que más se parece a un vino blanco. Delicadeza alemana para pescados que susurran.',
+ c4:'Ale ámbar de caramelo y tostado suave: el puente líquido con las salsas tare. Donde hay laca dulce y humo, el amber duplica la apuesta.',
+ c5:'IPA liviana: amargor y cítrico de lúpulo sin nocaut alcohólico. El amargor es el corte — funciona como el gari, resetea el paladar frente a la grasa frita.',
+ c6:'Stout seca irlandesa: café y cacao sin nada de dulzor, cuerpo sorprendentemente ligero. Guarda uno de los maridajes más viejos y contraintuitivos del mundo: las ostras.',
+ t1:'Té verde japonés al vapor: herbal, con umami vegetal y una astringencia fina de catequinas. Esa astringencia es funcional — se liga a las grasas y las arrastra, el "corte" sin alcohol.',
+ t2:'Té verde con arroz tostado: el aroma a cereal abraza al shari en lugar de competirle. Es el maridaje estructural del sushi — arroz sobre arroz, humilde e infalible.',
+ t3:'Té verde tostado a fuego alto: pierde el filo herbal y gana caramelo, madera y humo dulce. La sobremesa japonesa por excelencia y el compañero natural de todo lo que pasó por fuego.',
+ t4:'Cebada tostada en frío: el refresco sin cafeína del verano japonés. Cereal tostado, cero tanino — limpia y refresca sin intervenir en el sabor.',
+ t5:'Té de tallos y ramitas: dulce, suave, mineral, con menos cafeína y menos astringencia que la hoja. La delicadeza hecha infusión — para los pasos que piden compañía casi muda.',
+ t6:'Infusión de trigo sarraceno tostado: nuez, cereal y un dulzor de fondo, sin cafeína. El aroma a fruto seco le da juego con lo laqueado y lo dulce-salado.',
+ /* --- cava premium --- */
+ S1:'Junmai daiginjo de Yamaguchi pulido al 45%: fruta blanca, precisión y un final que no ensucia nada. El pulido extremo elimina las proteínas que dan rusticidad — queda solo la seda, ideal para el yodo y lo delicado.',
+ S2:'El daiginjo insignia de Niigata: seco, profundo, de mineralidad nevada e interminable. El estilo tanrei karakuchi (limpio y seco) en su máxima expresión — estructura silenciosa para los bocados más golosos.',
+ S3:'Ginjo de Yamagata con nariz de flor de cerezo y final limpio: primavera embotellada. Su perfume calibrado no tapa — levanta lo que toca.',
+ S4:'De Fukui, tierra de cangrejo y pescado de invierno: estructura, umami y espalda ancha. El sake para los pasos intensos que a un daiginjo delicado lo pasarían por encima.',
+ S5:'Sake añejado años en bodega: notas de jerez, caramelo salino, nuez y soja dulce. Un puente único entre el mundo del sake y el de los vinos oxidativos — hecho para las lacas y el humo.',
+ S6:'Licor de yuzu sobre base de sake artesanal: perfume cítrico eléctrico con el dulzor justo. La acidez perfumada que despierta postres y mariscos por igual.',
+ V1:'Chardonnay puro de la Côte des Blancs: tiza, tensión, burbuja finísima y años sobre lías. La gran gastronomía líquida — su acidez y su CO₂ hacen el trabajo mecánico, su crianza aporta el pan tostado que abraza el umami.',
+ V2:'Chablis de parcela sobre suelo kimmeridgiano — piedra caliza hecha de ostras fósiles. Huele a piedra mojada y concha marina: el maridaje con ostras es literalmente geológico.',
+ V3:'Riesling del Mosela con dulzor residual y acidez de acero en equilibrio de funambulista. Ese azúcar controlado es una herramienta: amortigua vinagres y curas que a un vino seco lo vuelven agresivo.',
+ V4:'Pinot noir de la Côte de Nuits: rosa, cereza, sotobosque y un tanino que es puro terciopelo. El tinto más grande que puede entrar a esta barra — reservado para el paso de tierra.',
+ V5:'Sauvignon blanc del Loira sobre sílex: pedernal, humo frío y cítrico noble. La mineralidad afilada que las vieiras y los blancos finos piden.',
+ V6:'Cosecha tardía patagónica: miel, damasco y azahar con final fresco. La regla de oro del postre — nunca menos dulce que el plato — cumplida con elegancia local.',
+ C1:'White ale japonesa de Ibaraki: coriandro, naranja y una delicadeza casi de té. La prueba de que la cerveza puede jugar el partido de la sutileza.',
+ C2:'Cerveza ácida con yuzu: limonada adulta, salina y eléctrica. La acidez cítrica en formato carbónico — el pescado azul encontró su refresco.',
+ C3:'Lámbica de fermentación espontánea, mezcla de añadas: acidez salvaje, funk de granja y cero azúcar. Un vino de cereal — su acidez compleja limpia lo que sea, hasta la sal más concentrada.',
+ C4:'Trapense dorada belga: fruta de levadura, especia y un alcohol escondido con maestría. Cuerpo y perfume para frituras con pedigrí.',
+ C5:'Saison de guarda en botella: seca, especiada, de burbuja viva y final rústico elegante. La cerveza más gastronómica del estilo belga — hecha para la mesa, no para la barra.',
+ C6:'Porter báltica fermentada como lager: chocolate, regaliz y café en cuerpo pulido, sin el frutado de una stout inglesa. El tostado profundo con modales.',
+ T1:'Té de sombra: las plantas se cubren semanas antes de la cosecha y la hoja concentra teanina — umami puro, casi caldo. Se sirve a 55° y en sorbos cortos: es la infusión más cercana al dashi que existe.',
+ T2:'Molido a piedra y batido al momento: la hoja entera en suspensión, intensidad vegetal total, amargor noble y final dulce. La ceremonia hecha bebida — y el espejo perfecto de los postres de su propia harina.',
+ T3:'Primera cosecha de primavera: el sencha en su punto más vivo, con la astringencia fresca y el vegetal vibrante. Para las curas y los azules ligeros, un cuchillo recién afilado.',
+ T4:'Oolong tostado y añejado años: fruta seca, madera dulce, un fondo de miel oscura sin azúcar. El té que puede pararse frente al humo del soplete sin pestañear.',
+ T5:'Hōjicha de tallos: el tostado más etéreo, con dulzor natural y cuerpo liviano. La versión de gala de la sobremesa.',
+ T6:'Genmaicha reforzado con matcha: cereal tostado más clorofila intensa. El maridaje estructural del sushi con el volumen un punto más arriba.',
+ /* --- despensa --- */
+ yuzu:'Cítrico japonés de cáscara aromática: entre la lima, la mandarina y una flor que ninguno de los dos tiene. Se usa la piel más que el jugo — sus aceites esenciales perfuman la grasa sin acidificar de más, por eso es el cítrico del pescado graso fino.',
+ sudachi:'Cítrico verde pequeño, más ácido y punzante que el yuzu: el limón del pescado de otoño. Se exprime al momento sobre lo asado — su acidez viva es el contrapeso clásico del amargor a parrilla.',
+ shiso:'Hoja de perilla: menta, albahaca y un dejo de comino en una sola hoja. Sus aldehídos perfumados doman los azules intensos y refrescan lo graso — es la hierba puente entre el mar fuerte y el paladar.',
+ myoga:'Brote floral del jengibre japonés: crocante, fresco, con perfume de rosa y jengibre a media voz. La guarnición que aliviana curas y azules sin el picor del jengibre adulto.',
+ gari:'Jengibre joven encurtido en vinagre dulce: el botón de reset del paladar entre pieza y pieza. Su combinación de picor suave, acidez y azúcar limpia grasa y sal en un solo gesto.',
+ umeboshi:'Ciruela fermentada en sal con shiso rojo: ácido y salino en niveles extremos, con umami de fermento largo. Una gota reordena un plato entero — se usa como condimento de precisión, nunca como volumen.',
+ wasabi:'Rallado fresco de rizoma: picor volátil que sube por la nariz, se apaga en segundos y deja el paladar limpio y dulce. A diferencia del ají (capsaicina, que se acumula), sus isotiocianatos se evaporan — pica y perdona. La pareja original del atún desde el Edo del 1800.',
+ karashi:'Mostaza japonesa pura, sin vinagre ni azúcar: picor franco, directo y corto. El condimento del oden y el tonkatsu que en la barra despierta a los cocidos densos.',
+ sansho:'Pimienta japonesa: cítrica, floral y adormecedora — el sanshool duerme levemente los labios y "resetea" los receptores. Por eso corta la laca dulce del unagi como ninguna otra especia: es su pareja obligada hace siglos.',
+ shichimi:'Mezcla de siete especias: chile, sésamo, cáscara de mandarina, nori, sanshō, amapola y cáñamo. Picor con perfume — suma capas, no solo fuego.',
+ momiji:'Daikon rallado macerado con chile: "oroshi de otoño" por su color de hoja roja. Frescor acuoso con picor de fondo — el acompañante ritual del ponzu y los blancos delicados.',
+ shoyu:'Salsa de soja fermentada años en cedro: la columna del umami japonés, con más de 300 compuestos aromáticos. Cura, sazona y profundiza — su glutamato es el amplificador universal del pescado.',
+ miso:'Pasta de soja y kōji fermentada: sal, dulzor y una profundidad de años. En cocción abraza y doma a los pescados más bravos; en caldo, recalibra el paladar a mitad del recorrido.',
+ ponzu:'Shōyu con cítrico y dashi: ácido, salino y umami en un solo líquido. La salsa que hace todo el trabajo del maridaje ella sola — por eso los blancos delicados la aman: aporta lo que ellos no tienen.',
+ mirin:'Sake dulce de cocina: azúcares de arroz que dan brillo, cuerpo y caramelo a las lacas. Es la mitad dulce de todo tare — donde hay mirin, hay Maillard esperando.',
+ dashi:'Caldo de kombu y katsuobushi: el umami invisible detrás de toda la cocina japonesa. Su química es célebre — glutamato del alga más inosinato del bonito multiplican la percepción de umami hasta ocho veces. No suma sabor: suma profundidad.',
+ katsuo:'Virutas de bonito seco, fermentado y ahumado durante meses: mar y humo concentrados en láminas que bailan con el calor. Inosinato puro — el multiplicador de umami en escamas.',
+ kombu:'Alga madre del umami: glutamato en estado natural. Además de caldo, cura — el kobujime envuelve el pescado en alga y en horas le presta profundidad, tersura y guarda. Técnica de conservación vuelta alta cocina.',
+ daikon:'Nabo japonés: rallado (oroshi) es frescor acuoso con enzimas que ayudan a digerir grasa — por eso acompaña ritualmente al pescado azul asado. Encurtido o cocido, cambia de personalidad por completo.',
+ negi:'Cebolla de verdeo japonesa: dulzor punzante con un fondo sulfuroso que el atún graso agradece. La mitad verde perfuma, la blanca endulza — el negitoro existe porque esta alianza es perfecta.',
+ kyuri:'Pepino japonés: crocante, agua y frescor vegetal puro. En sunomono es la otra mitad del pulpo; en la barra, el respiro verde entre intensidades.',
+ nasu:'Berenjena japonesa: esponja de umami que solo revela su dulzor con fuego y grasa. Con miso o con tare, juega en el mismo equipo dulce-salado que la anguila.',
+ renkon:'Raíz de loto: crocante geométrico, almidón limpio y un dulzor tenue. Textura antes que sabor — el contrapunto arquitectónico del marisco blando.',
+ takenoko:'Brote de bambú de primavera: dulzor vegetal, textura entre pera y espárrago, perfume de estación. En Japón comparte temporada y plato con el tai — la primavera se sirve junta.',
+ shiitake:'Hongo de umami concentrado: fresco es carne vegetal; seco, una bomba de guanilato que multiplica cualquier caldo. El tercer pilar del umami japonés, junto al alga y al bonito.',
+ goma:'Sésamo tostado, entero o en pasta: grasa vegetal, perfume a nuez y un amargor fino. En salsa (goma-dare) envuelve pescados grasos al estilo de Kyūshū; espolvoreado, es textura y aroma.',
+ nori:'Alga tostada: yodo, mar y crocante que dura segundos contra la humedad. El envoltorio del gunkan y el eco marino de todo lo que toca — con las huevas y el uni, mar sobre mar.',
+ tofu:'Soja cuajada: neutralidad sedosa diseñada para cargar los sabores ajenos. En la barra funciona de lienzo — dashi, katsuobushi y negi lo visten en segundos.'
+};
+
+const WA_T1={
+ 'sake|grasos':'El sake y la grasa de pescado se llevan bien por una razón bioquímica: el fermentado de arroz casi no tiene hierro ni taninos, los dos disparadores del gusto metálico que arruina al vino tinto con el pescado azul. Su umami y su acidez láctica suave acompañan la grasa en lugar de pelearla, y la ordenan sin secarla.',
+ 'sake|blancos':'La regla del pescado blanco es intensidad pareja: la bebida no puede ser más protagonista que un sabor que susurra. Un sake pulido opera exactamente a ese volumen — perfume calibrado, textura sedosa y un final que no deja rastro sobre el dulzor tenue de la carne.',
+ 'sake|mariscos':'Dulzor sobre dulzor: la glicina y la alanina del marisco (sus aminoácidos dulces) se espejan con los azúcares residuales y aminoácidos del sake. Es un refuerzo mutuo, no un contraste — los dos hablan el mismo idioma químico.',
+ 'sake|huevas':'El yodo concentrado de las huevas dispara notas metálicas con casi cualquier vino; el sake, sin hierro ni sulfitos agresivos, lo abraza. Su umami envuelve la sal y deja que la explosión sea placer y no agresión.',
+ 'sake|arroz':'Continuidad de cereal: el sake es arroz fermentado y el shari es arroz avinagrado — el mismo grano en dos estados. El maridaje fundacional del sushi, que ningún sommelier ha logrado mejorar en dos siglos.',
+ 'sake|fuego':'Servido tibio, el sake espeja la temperatura del plato — un principio que la sommellerie occidental subestima: la coincidencia térmica es maridaje. El umami tostado del arroz conversa con el Maillard del fuego.',
+ 'sake|dulce':'El postre exige que la bebida sea al menos tan dulce como el plato; el sake dulce o sin filtrar cumple con textura además de azúcar. Cremosidad contra cremosidad: el cierre en espejo.',
+ 'vino|grasos':'La grasa forma una película sobre el paladar; la acidez del vino la emulsiona — es literalmente el mismo principio que el limón sobre el pescado. La condición es la ausencia de madera y tanino: roble más grasa marina más hierro es la fórmula exacta del gusto metálico.',
+ 'vino|blancos':'Acidez cítrica limpia, mineralidad y, si el terroir ayuda, un toque salino que espeja el mar. El blanco delicado pide un vino que actúe de limón noble — presente, exacto y callado.',
+ 'vino|mariscos':'Mineralidad contra dulzor marino: el maridaje atlántico clásico. Los suelos calcáreos y la brisa de mar dejan en el vino los mismos minerales que el marisco trae de fábrica — se reconocen al tocarse.',
+ 'vino|huevas':'La sal franca pide dos cosas: acidez que la equilibre y CO₂ que barra el paladar entre explosión y explosión. La condición es que el espumante sea seco de verdad — azúcar residual contra sal produce un amargor extraño.',
+ 'vino|fuego':'La burbuja y la acidez barren el aceite y la grasa fundida por vía mecánica, mientras la fruta fresca acompaña el humo sin competirle. La fritura y el espumante son un clásico universal por física, no por moda.',
+ 'vino|dulce':'La regla de oro es innegociable: la bebida debe ser al menos tan dulce como el plato — un vino seco contra azúcar se percibe amargo y ácido, es fisiología del gusto. Cumplida la regla, la acidez del vino evita el empalago.',
+ 'cerveza|grasos':'El carbónico y el amargor del lúpulo cortan la grasa por vía mecánica: la burbuja la despega del paladar y el amargor la contrasta. Sin taninos de por medio, el pescado azul no corre riesgo metálico.',
+ 'cerveza|blancos':'Solo entran las cervezas de fermentación limpia y cuerpo esbelto: las que se comportan como un vino blanco de cebada. Delicadeza contra delicadeza — cualquier lúpulo protagonista rompe el equilibrio.',
+ 'cerveza|mariscos':'El trigo, el cítrico y las especias de levadura conversan con el dulzor del marisco cocido: es el maridaje de puerto del norte de Europa traducido a la barra. La burbuja mantiene el paladar despierto.',
+ 'cerveza|huevas':'Acidez salvaje contra sal concentrada: la fermentación espontánea produce ácidos láctico y acético complejos que limpian la sal sin azúcar de por medio. Tensión pura que resetea cada estallido.',
+ 'cerveza|arroz':'Lager con arroz sobre shari: cereal con cereal, la versión carbonatada de la continuidad de grano. Seca y limpia, desaparece dejando el paladar listo.',
+ 'cerveza|fuego':'Cerveza y fritura o parrilla: el clásico popular que funciona por tres vías a la vez — carbónico que barre, amargor que corta y caramelo de malta que espeja el tostado. El maridaje más democrático del mundo, elevado.',
+ 'cerveza|dulce':'Los tostados profundos de la malta — café, cacao, regaliz — funcionan como un espresso junto al postre: contraste seco que limpia el azúcar. La versión líquida del principio del café de sobremesa.',
+ 'te|grasos':'Las catequinas del té verde son astringentes funcionales: se ligan a los lípidos y las proteínas de la saliva y arrastran la grasa del paladar — el "corte" sin una gota de alcohol. Japón lo sabe hace mil años: el té es el maridaje original del pescado graso.',
+ 'te|blancos':'El umami vegetal del té a baja temperatura opera a volumen de susurro: acompaña sin tapar, y su teanina dulce espeja el dulzor tenue de la carne blanca. Dos delicadezas que se escuchan.',
+ 'te|mariscos':'El tostado suave del té conversa con los azúcares caramelizados del marisco cocido, y su mineralidad con la sal marina. Sin alcohol que anestesie, la textura del marisco queda en primer plano.',
+ 'te|huevas':'El té de sombra es teanina y glutamato: caldo vegetal. Contra el yodo y el glutamato de las huevas, el efecto es sinergia umami — la misma química del dashi aplicada a la taza.',
+ 'te|arroz':'Genmaicha sobre shari: arroz tostado sobre arroz avinagrado, el maridaje estructural del sushi. No suma ni contrasta — completa.',
+ 'te|fuego':'Tostado sobre tostado: el hōjicha y el oolong tostado espejan el humo y el Maillard del plato sin sumar peso ni alcohol. El fuego reconoce al fuego.',
+ 'te|dulce':'El té cierra y limpia sin agregar azúcar: su amargor fino y su tostado hacen de contrapunto adulto del postre. La sobremesa japonesa — el final que despide sin empalagar.'
+};
+const WA_T2={
+ 'aroma|grasos':'Los aceites esenciales cítricos y herbales perfuman la grasa y la alivianan por vía aromática: el paladar percibe frescor antes que untuosidad. Es el principio del yuzu sobre el azul — no acidifica, ilumina.',
+ 'aroma|blancos':'Perfume a media voz sobre sabor a media voz: el aromático delicado levanta el dulzor tenue del blanco sin taparlo. La dosis es todo — una ralladura, no un baño.',
+ 'aroma|mariscos':'Cítrico contra dulzor marino: la acidez fresca subraya la glicina del marisco y el perfume evoca la brisa que lo trajo. El maridaje de puerto en versión aromática.',
+ 'pica|grasos':'El picor volátil limpia la película grasa y despierta el bocado siguiente: es el gari y el wasabi haciendo de directores de orquesta. A diferencia del ají, el picor japonés pica y perdona — no se acumula.',
+ 'pica|blancos':'Una punta exacta de picor da relieve a la carne más delicada sin quemarla: el contraste mínimo que evita la monotonía. Cirugía, no fuego.',
+ 'pica|mariscos':'Picante franco contra dulzor marino: el contraste clásico de la cocina de puesto japonesa. El dulzor del marisco redondea el picor y el picor despierta el dulzor — círculo virtuoso.',
+ 'ferm|grasos':'Umami sobre grasa: el glutamato del fermento profundiza el sabor del pescado graso sin acidificarlo ni secarlo. Es la lógica del zuke y del misoni — el fermento cura, conserva y engrandece.',
+ 'ferm|blancos':'La cura o el caldo prestan profundidad al pescado que susurra: el fermento aporta el umami que la carne magra no tiene. Técnica de conservación vuelta amplificador de sabor.',
+ 'ferm|mariscos':'La sinergia umami es química real: el glutamato del fermento y el inosinato del mar juntos multiplican la percepción de umami hasta ocho veces — no se suman, se potencian. Por eso el dashi existe.',
+ 'ferm|huevas':'Fermento salino sobre hueva salina: intensidad controlada, ida y vuelta. El umami del fermento redondea la sal y la sal despierta el fermento — el gunkan es este principio con arroz abajo.',
+ 'sai|grasos':'El vegetal fresco o rallado desengrasa y estructura: las enzimas del daikon ayudan literalmente a digerir la grasa, y el crocante da el contrapunto de textura. El acompañamiento ritual del azul asado tiene base fisiológica.',
+ 'sai|blancos':'Vegetales de dulzor limpio junto a carnes de dulzor limpio: estación sobre estación. En Japón el maridaje también es calendario — lo que crece junto, se sirve junto.',
+ 'sai|mariscos':'Crocante vegetal contra textura marina: el contraste está en la mordida antes que en el sabor. Renkon, kyūri y takenoko son arquitectura comestible para el marisco blando.',
+ 'sai|huevas':'La base vegetal o el alga cargan y ordenan la explosión salina: el nori aporta su propio yodo (mar sobre mar) y el vegetal fresco, el respiro entre estallidos.'
+};
+
+const WA_N={
+ 's1|nigiri':'Arroz sobre arroz: el junmai es shari fermentado — mismos azúcares, mismo umami de grano, misma alma. El vinagre del arroz encuentra en la acidez láctica del sake su continuación natural, y ningún otro líquido del planeta puede decir eso. Es el maridaje fundacional del sushi y la vara contra la que se mide todo lo demás.',
+ 's2|hirame':'Dos susurros que se escuchan entre sí: el ginjo florece a la misma intensidad exacta que el hirame — ni un decibel más. Sus ésteres de pera y flor blanca levantan el dulzor tenue del pescado sin tocarlo, y el final limpio deja la textura elástica como protagonista.',
+ 's3|mochi':'Textura cremosa sobre textura glutinosa: el almidón en suspensión del nigori y el arroz batido del mochi son parientes directos. El dulzor suave del sake nunca queda por debajo del postre (la regla de oro) y el amargor del matcha hace de contrapunto para los dos.',
+ 's4|misosoup':'Atsukan y sopa de miso: umami tibio sobre umami tibio, el maridaje térmico perfecto. Los dos son fermentos de grano servidos calientes — se reconocen como hermanos. Es el momento del menú donde el vino no tiene nada que decir y el sake caliente lo dice todo.',
+ 's5|sanma':'La rusticidad láctica del kimoto es de los pocos tragos que le hablan de igual a igual al amargor de vísceras del sanma a la parrilla. El método de levadura madre aporta una acidez salvaje y un fondo animal que abrazan el humo y el amargor noble en vez de esconderse de ellos.',
+ 's6|helado':'El umeshu opera en tensión ácido-dulce y el helado de sésamo negro en tensión tostado-amargo: cruzados, cada uno resuelve lo que al otro le falta. La ciruela refresca el tostado, el sésamo aterriza la fruta. Postre que no empalaga por diseño.',
+ 'v1|ikura':'Sal explosiva más burbuja seca: el CO₂ barre el paladar entre estallido y estallido y la acidez equilibra la sal — la física completa del maridaje en un solo gesto. Champagne e ikura es un clásico mundial; esta es la vía patagónica, con la condición innegociable de que sea extra brut: azúcar residual contra sal produce amargor.',
+ 'v2|ostra':'El riesling hace de limón noble: acidez de acero, cítrico vertical y cero madera sobre la salinidad pura de la ostra. El frío de Río Negro pone la acidez natural que el mar pide — mismo trabajo que la gota de limón, pero con mineralidad que conversa en lugar de solo cortar.',
+ 'v3|aburi':'La grasa que el soplete funde encuentra en el pinot fresco el único tinto admisible en la barra: tanino de seda que no dispara el gusto metálico, fruta roja que abraza el humo, servicio a 12–14° que respeta el pescado. El aburi es un crudo vestido de asado — y el pinot es un tinto vestido de blanco.',
+ 'v4|centolla':'Dos mares argentinos en un bocado: la salinidad literal de Chapadmalal (el único terroir marítimo del país) sobre el dulzor delicadísimo de la centolla fueguina. El albariño aporta la tensión y la brisa; la centolla, la hebra dulce. Maridaje de geografía antes que de técnica — y bandera de la casa.',
+ 'v6|langostino':'Fruta blanca sin una astilla de madera sobre la crema dulce del langostino austral: pureza contra pureza. El chardonnay desnudo tiene la textura justa para acompañar la untuosidad del crudo sin taparla — la versión con roble arruinaría en un segundo lo que el frío austral tardó años en construir.',
+ 'c1|tempura':'Carbónico agresivo contra fritura de velo: la lager barre el aceite del paladar antes de que lo registres — pura mecánica de burbuja. El arroz de su maceración la deja seca y limpia, y su neutralidad es la virtud: la tempura es textura, y la cerveza se limita a mantenerla crocante bocado tras bocado.',
+ 'c4|unagi':'Caramelo de malta sobre caramelo de tare: el amber duplica la laca del unagi en versión líquida — mismo Maillard, mismo dulzor tostado. Donde un vino pelearía con la salsa, la cerveza la espeja, y el carbónico evita que tanto dulzor-salado se vuelva pesado.',
+ 'c5|karaage':'IPA cítrica y pollo frito: el amargor del lúpulo corta la grasa de la doble fritura y sus aceites cítricos perfuman la marinada de jengibre y shōyu. Es la esquina de izakaya elevada — el maridaje más honesto del menú.',
+ 'c6|ostra':'Stout y ostras: el pacto de Dublín, vigente desde el 1800. El tostado seco de la malta contra la salinidad y el metal noble de la ostra — contraste total que funciona porque ninguno tiene azúcar: dos sabores adultos que se respetan. Contraintuitivo, histórico e infalible.',
+ 't1|salmon':'La astringencia de primavera del sencha emulsiona la grasa dulce del salmón: las catequinas se ligan a los lípidos y los arrastran — el corte por vía del té, sin una gota de alcohol. Japón marida pescado graso con té verde hace mil años; esto no es una ocurrencia, es tradición con base química.',
+ 't2|tamago':'Arroz tostado sobre dashi dulce: el genmaicha y el tamago comparten el mismo confort de cereal y umami suave — es el desayuno japonés hecho maridaje. El tostado del arroz abraza el dulzor del mirin y el caldo de la tortilla sin interrumpir su textura de nube.',
+ 't3|wagyu':'Hōjicha profundo contra grasa marmolada: el tostado del té desengrasa por astringencia y espeja el humo del fuego, todo sin alcohol ni tanino agresivo. Donde el vino tinto necesita estructura para el wagyu, el té llega por la vía contraria: liviandad con amargor noble.',
+ 'S1|uni':'El daiginjo pulido al 45% es seda sin impurezas — y el uni es glutamato en crema. El pulido extremo eliminó justo las proteínas que chocarían con el yodo: queda fruta blanca y precisión envolviendo la bomba de umami. El maridaje de gala de la barra.',
+ 'S2|otoro':'El daiginjo más seco de la carta contra la grasa más golosa del animal: tensión de altísimo nivel. La mineralidad nevada de Niigata (tanrei karakuchi: limpio y seco) atraviesa la ventresca fundida y la ordena — el único final posible es largo, salino y perfecto.',
+ 'S3|kinmedai':'Flor de cerezo sobre piel escaldada: dos delicadezas de estación que se encuentran a media voz. El perfume del ginjo de Yamagata levanta la grasa fina que el yushimo liberó bajo la piel del alfonsino — primavera líquida sobre invierno profundo.',
+ 'S4|chutoro':'Estructura de Fukui para el bocado insignia: el Kokuryū tiene la espalda ancha de umami que el chūtoro necesita — un daiginjo delicado quedaría pasado por encima. Peso contra peso, profundidad contra profundidad, sin que ninguno grite.',
+ 'S5|unagi':'El koshu añejo huele a jerez, nuez y caramelo salino: el espejo exacto del tare ahumado del unagi. Años de bodega construyeron en el sake los mismos compuestos que el fuego y el mirin construyen en la laca — dos caminos largos que llegan al mismo lugar.',
+ 'V1|ikura':'Tiza y burbuja finísima contra la explosión salina: la versión de gala del clásico. Los años sobre lías del Blanc de Blancs suman pan tostado que abraza el umami de la hueva, la acidez de la Côte des Blancs equilibra la sal, y el CO₂ hace el reset entre estallidos. La gastronomía líquida completa.',
+ 'V2|ostra':'El Chablis crece sobre ostras fósiles — suelo kimmeridgiano, caliza de conchas marinas de 150 millones de años. Huele a piedra mojada y concha antes de tocar el plato: el maridaje con ostras no es una idea, es geología. El más literal de toda la carta.',
+ 'V3|saba':'Off-dry contra vinagre: el dulzor residual del Kabinett amortigua la cura del shime saba, que a cualquier vino seco lo vuelve agresivo y metálico. La acidez de acero del Mosela acompaña la del vinagre de arroz en paralelo, sin chocar. Jugada de sommelier: el azúcar como herramienta, no como golosina.',
+ 'V4|wagyu':'Borgoña y wagyu: tanino de terciopelo sobre grasa fundente — tierra con tierra, el paso donde la barra deja el mar. La acidez del pinot corta la grasa marmolada, el tanino sedoso la estructura sin secar, y la rosa y el sotobosque hacen el resto. El único momento del menú que pide un gran tinto.',
+ 'V5|hotate':'Pedernal del Loira sobre manteca de vieira patagónica: el sílex aporta el humo frío y el filo mineral que el dulzor de glicina de la vieira pide. Cruda, el Sancerre la afila; sopleteada, su cítrico noble corta el caramelo. Doble maridaje en una copa.',
+ 'V6|mochi':'Miel y damasco sobre matcha amargo-dulce: el tardío cumple la regla de oro (nunca menos dulce que el postre) y su acidez fresca evita el empalago. El azahar del vino conversa con el vegetal del té — final patagónico para un postre de Kioto.',
+ 'C1|ebi':'La white ale de Ibaraki pone naranja y coriandro sobre el dulzor cocido del ebi: cítrico especiado contra glicina — el maridaje de puerto belga con acento japonés. Su delicadeza casi de té respeta la textura tersa del langostino.',
+ 'C2|iwashi':'Yuzu ácido y carbónico contra la sardina más franca del mar: la limonada adulta que el iwashi pedía. La acidez cítrica aliviana el azul intenso y la sal de la cerveza sour conversa con la grasa de temporada — refresco y pescado de puesto, elevados.',
+ 'C3|tobiko':'Funk lámbico y crocante salino: la acidez salvaje de la fermentación espontánea limpia cada estallido de tobiko sin una gota de azúcar de por medio. Complejidad de granja belga contra sal ahumada japonesa — el maridaje más punk de la carta, y de los más precisos.',
+ 'C4|tempura':'La tripel hace de segunda capa de rebozado aromático: fruta de levadura y especia belga envolviendo la fritura de velo, mientras el carbónico y el alcohol escondido cortan el aceite. La fritura con pedigrí encontró su abadía.',
+ 'T1|chawan':'El gyokuro es dashi con hojas: teanina y glutamato en taza contra huevo y dashi en flan — caldo sobre caldo, umami al cuadrado. Servidos ambos tibios y en pequeño volumen, es el maridaje más zen del menú: dos sedas del mismo telar.',
+ 'T2|mochi':'Matcha batido sobre mochi de matcha: la ceremonia completa, la hoja molida en la taza y en el postre. El amargor noble del té recorta el dulzor del arroz glutinoso y el final es un solo sabor en dos texturas.',
+ 'T3|kohada':'Astringencia viva de shincha contra la cura de vinagre del kohada: primavera contra oficio. La primera cosecha tiene el filo justo para acompañar la acidez del curado sin sumarle alcohol ni azúcar — dos precisiones que se respetan.',
+ 'T4|aburi':'Oolong tostado y añejado sobre grasa sopleteada: humo con humo, sin alcohol. La fruta seca y la madera dulce del té espejan el Maillard del soplete, y su astringencia madura ordena la grasa fundida. El té que puede mirar al fuego de frente.',
+ 'T6|nigiri':'Cereal, clorofila y shari: el genmaicha reforzado con matcha es el maridaje estructural del sushi con el volumen un punto arriba — el arroz tostado abraza el grano y el matcha aporta el umami vegetal que un shari solo no tiene.',
+ /* despensa */
+ 'yuzu|hamachi':'Hamachi-yuzu es canon japonés: los aceites esenciales de la cáscara — lima, mandarina y flor — iluminan la grasa elegante del pez limón sin acidificarla. El perfume trabaja donde el jugo estorbaría: la grasa queda intacta pero el paladar la percibe liviana. Un plato nacional en dos ingredientes.',
+ 'sudachi|sanma':'Sanma a la parrilla con sudachi exprimido al momento: el plato del otoño japonés, sin discusión. La acidez viva y verde del cítrico contrapesa el amargor noble de las vísceras asadas y refresca la grasa de temporada — cuando el sanma llega al mercado, el sudachi llega solo.',
+ 'shiso|iwashi':'La hoja de shiso doma el azul más intenso: sus aldehídos perfumados (menta, albahaca, comino) neutralizan los compuestos "a pescado" de la sardina y la vuelven elegante sin quitarle carácter. Hierba y mar en un bocado — la pareja que el nigiri de iwashi trae de fábrica.',
+ 'wasabi|akami':'La pareja original del edomae, desde el Tokio del 1800: el picor volátil del wasabi fresco sube por la nariz, abre el hierro y la mineralidad del akami, y se apaga en segundos dejando el paladar limpio. Sus isotiocianatos además tienen efecto antibacteriano — nació como seguridad alimentaria y quedó como perfección.',
+ 'sansho|unagi':'Unagi no kabayaki sin sanshō no existe: el sanshool de la pimienta japonesa adormece levemente los labios y "resetea" los receptores saturados por la laca dulce — cada bocado vuelve a ser el primero. Cítrico, floral y eléctrico contra caramelo, humo y grasa: siglos de servicio conjunto lo respaldan.',
+ 'shoyu|akami':'Zuke: el akami marinado en shōyu es técnica de conservación del Edo vuelta alta cocina. El glutamato del fermento penetra el músculo magro y multiplica su umami, la sal tensa la textura y el color vira al rubí profundo. El fermento no acompaña al atún — lo transforma.',
+ 'miso|saba':'Saba misoni: la caballa cocida en miso es el plato que demuestra que el fermento doma al azul más bravo. El dulzor y el umami profundo de la pasta envuelven la intensidad de la caballa, y la cocción larga funde ambos en un tercer sabor que ninguno tiene solo. Comfort food japonés con siglos de razón.',
+ 'ponzu|hirame':'Hirame usuzukuri con ponzu y momiji oroshi: el plato que define la elegancia japonesa. El ponzu aporta en un solo líquido lo que el pescado blanco no tiene — acidez cítrica, sal fermentada y umami de dashi — en dosis calibradas para no tapar el dulzor tenue de las láminas finas.',
+ 'dashi|tai':'El pescado ceremonial dentro del caldo madre: tai-meshi, tai-chazuke y el dashi del propio tai son un género de la cocina japonesa. El umami del kombu y el bonito envuelve el dulzor noble del besugo sin tocarle la jerarquía — el caldo sirve al pescado, nunca al revés.',
+ 'kombu|lenguado':'Kobujime de lenguado bonaerense: la cura de alga concentra la carne, le presta glutamato y la vuelve terciopelo — horas de kombu hacen lo que días de maduración. Técnica japonesa de conservación aplicada al pescado local: el maridaje también puede ser un método.',
+ 'negi|chutoro':'Negitoro: atún graso picado con negi — el dulzor punzante y sulfuroso de la cebolla japonesa contra la grasa dulce del chūtoro. La alianza funciona porque el negi corta y endulza a la vez: comfort food de Tokio que en la barra se sirve sin disimulo.',
+ 'kyuri|tako':'Sunomono de tako y kyūri: crocante acuoso, vinagre de arroz y la mordida dulce del pulpo — la ensalada eterna de la cocina japonesa. El pepino aporta el frescor y la textura de contraste que el pulpo cocido pide, y el vinagre une a los dos en tensión limpia.',
+ 'goma|hamachi':'Hamachi al estilo ryūkyū: sésamo tostado, shōyu y grasa elegante — Kyūshū en un bol. La pasta de goma envuelve el pescado graso en su propia grasa vegetal perfumada: untuosidad sobre untuosidad, con el amargor fino del tostado como freno de mano.',
+ 'nori|uni':'El gunkan perfecto: uni envuelto en nori tostado es yodo sobre yodo, mar sobre mar, con el crocante del alga como único contraste. Los dos comparten los mismos compuestos marinos — el alga es literalmente lo que el erizo come. El maridaje más honesto del océano.'
+};
+
+const WA_ALT={
+ s1:{n:'Ozeki Junmai',w:'Mismo perfil clásico de arroz y umami; el importador lo repone con más regularidad que Gekkeikan.'},
+ s2:{n:'Sho Chiku Bai Ginjo',w:'Floral y limpio en el mismo registro; de los ginjo que entran al país con continuidad.'},
+ s3:{n:'Sho Chiku Bai Nigori',w:'El nigori más fácil de conseguir en Argentina — mismo dulzor cremoso y textura de nube.'},
+ s4:{n:'Ozeki Dry, servido tibio',w:'Cualquier honjōzō/junmai seco de importación estable cumple: acá el maridaje es la temperatura, no la etiqueta.'},
+ s5:{n:'Kikumasamune Kimoto',w:'La referencia mundial del método kimoto y de las pocas etiquetas del estilo que llegan al país.'},
+ s6:{n:'Choya Umeshu',w:'La referencia global del licor de ciruela; distribución estable en vinotecas asiáticas de Buenos Aires.'},
+ v1:{n:'Cruzat Extra Brut',w:'Método tradicional, seco de verdad y burbuja fina — el reemplazo directo, siempre en góndola.'},
+ v2:{n:'Luigi Bosca Riesling',w:'Si el patagónico falta: mismo cítrico vertical sin madera, distribución nacional.'},
+ v3:{n:'Barda (Chacra, Río Negro)',w:'Pinot patagónico de fruta pura y tanino sedoso — sube un escalón y se consigue en vinotecas serias.'},
+ v4:{n:'Costa & Pampa Sauvignon Blanc',w:'De la misma finca de Chapadmalal: si falta el albariño, la salinidad marítima viene en esta otra copa.'},
+ v5:{n:'Riccitelli Old Vines Semillón',w:'Semillón de viñas viejas con la misma austeridad mineral; buena rotación en vinotecas.'},
+ v6:{n:'Chardonnay de Gualtallary sin crianza',w:'Zona fría de altura: la misma fruta blanca con filo, varias etiquetas disponibles todo el año.'},
+ c1:{n:'Lager nacional bien seca y fría',w:'El rol acá es mecánico (carbónico + neutralidad): cualquier lager seca local lo cumple sin pedir permiso.'},
+ c2:{n:'Witbier artesanal local',w:'El estilo belga de trigo está muy bien resuelto por cervecerías argentinas — naranja y coriandro incluidos.'},
+ c3:{n:'Kölsch artesanal local',w:'Es de los estilos más difundidos de la escena craft argentina; la delicadeza se consigue a la vuelta.'},
+ c4:{n:'Scotch ale / amber nacional',w:'Caramelo y tostado suave abundan en la craft local — el puente con el tare no se corta.'},
+ c5:{n:'Session IPA local',w:'El estilo insignia de la craft argentina: amargor cítrico moderado garantizado en cualquier barrio.'},
+ c6:{n:'Dry stout local',w:'Café y cacao sin dulzor: las stouts secas nacionales sostienen el pacto con las ostras sin problema.'},
+ t1:{n:'Té verde chino de hoja entera (mao feng / longjing)',w:'Si falta sencha japonés: astringencia fina comparable, en cualquier casa de té seria.'},
+ t2:{n:'Genmaicha de casa de té',w:'De los tés japoneses con mejor distribución local; y en emergencia: sencha + arroz tostado en casa.'},
+ t3:{n:'Sencha tostado en sartén',w:'El truco de Kioto: hōjicha casero en dos minutos de sartén seca — mismo tostado, cero espera de importación.'},
+ t4:{n:'Cebada tostada de dietética',w:'El mugicha es cebada tostada en frío: la materia prima está en cualquier dietética del país.'},
+ t5:{n:'Kukicha de dietética',w:'La macrobiótica lo trajo hace décadas: el té de tallos se consigue en dietéticas desde siempre.'},
+ t6:{n:'Trigo sarraceno tostado en casa',w:'Sobacha es sarraceno tostado e infusionado: se hace con el grano de dietética en una sartén.'},
+ S1:{n:'Hakutsuru Junmai Ginjo',w:'Si el Dassai falta (pasa seguido): el ginjo de importación más estable, mismo registro floral y limpio.'},
+ S2:{n:'Hakutsuru Sho-Une (junmai daiginjo)',w:'Daiginjo de importación más regular; conserva la sequedad y la precisión del estilo.'},
+ S3:{n:'Sho Chiku Bai Ginjo',w:'Perfume calibrado y final limpio del mismo género, con reposición confiable.'},
+ S4:{n:'Kikumasamune Kimoto',w:'Otra vía a la estructura y el umami de espalda ancha, con presencia real en el mercado local.'},
+ S5:{n:'Amontillado u oloroso seco de jerez',w:'La familia oxidativa es la misma (nuez, caramelo salino): el jerez hace el trabajo del koshu y se consigue en vinotecas.'},
+ S6:{n:'Choya Yuzu',w:'El licor de yuzu de Choya entra por los mismos importadores que el umeshu — perfume cítrico garantizado.'},
+ V1:{n:'Baron B Brut Nature',w:'Método tradicional argentino de gama alta: tensión, lías y burbuja fina para cubrir al champagne sin sonrojarse.'},
+ V2:{n:'Chardonnay mineral de zona fría (San Pablo / Gualtallary)',w:'Sin la caliza de Chablis, pero con la tensión y la piedra que la ostra pide; White Bones/White Stones si aparece.'},
+ V3:{n:'Riesling patagónico de cosecha tardía suave',w:'La jugada es el dulzor residual + acidez: un tardío liviano nacional replica el mecanismo del Kabinett.'},
+ V4:{n:'Chacra 32 / Chacra 55 (Río Negro)',w:'El "Borgoña argentino" literal: pinot de viñas 1932 en la Patagonia — mismo terciopelo, pasaporte nacional.'},
+ V5:{n:'Sauvignon Blanc de Chapadmalal o Gualtallary',w:'Pedernal no hay, pero el cítrico noble y la tensión fría sí — dos zonas locales lo entregan.'},
+ V6:{n:'Semillón tardío de Río Negro',w:'Ya es local, pero si falta: los tardíos patagónicos de otras bodegas cumplen la regla de oro igual.'},
+ C1:{n:'Witbier artesanal premium local',w:'La delicadeza de Hitachino se cubre con una blanca belga local bien hecha, de las que sobran en la escena craft.'},
+ C2:{n:'Gose o sour local con cítrico',w:'La acidez salina con limón/lima de una gose artesanal replica el rol del yuzu sour.'},
+ C3:{n:'Sidra brut de guarda o sour de barrica local',w:'La sidra brut argentina comparte acidez, funk suave y cero azúcar — un doble de riesgo digno de la gueuze.'},
+ C4:{n:'Belgian golden strong / tripel nacional',w:'Varias cervecerías locales dominan las belgas fuertes: fruta de levadura y especia asegurados.'},
+ C5:{n:'Saison artesanal local',w:'Estilo muy bien difundido en la craft argentina — seca, especiada y gastronómica igual.'},
+ C6:{n:'Imperial stout / porter local',w:'El tostado profundo con cuerpo abunda en la escena nacional; el rol de sobremesa queda cubierto.'},
+ T1:{n:'Sencha premium de casa de té especializada',w:'Sin sombra no hay gyokuro, pero un sencha de primera infusionado a 55° se acerca al umami buscado.'},
+ T2:{n:'Matcha ceremonial de casa de té',w:'Entra al país por varias casas especializadas; en emergencia, matcha culinario batido corto y servido chico.'},
+ T3:{n:'Sencha de primera calidad del año',w:'El shincha es una ventana de semanas: el mejor sencha disponible es el reemplazo honesto.'},
+ T4:{n:'Oolong tostado de importador de té',w:'Los oolong de tueste medio-alto llegan vía casas de té chinas — misma madera dulce, otro pasaporte.'},
+ T5:{n:'Hōjicha estándar',w:'El kuki es el lujo; el hōjicha de hoja común mantiene el tostado etéreo del cierre.'},
+ T6:{n:'Genmaicha + pizca de matcha en casa',w:'El matcha-iri se arma en la barra: genmaicha de siempre y un golpe de matcha al servir.'}
+};
+const WA_ALTGEN={sake:'un junmai/ginjo de importación estable (Ozeki, Hakutsuru, Sho Chiku Bai) en el mismo registro',
+ vino:'una etiqueta argentina de la misma variedad y zona fría, sin madera protagonista',
+ cerveza:'el mismo estilo hecho por una cervecería artesanal local — la escena craft argentina cubre casi todos',
+ te:'la versión disponible en casas de té especializadas de Buenos Aires, o la técnica casera que lo aproxima'};
+
+/* =====================================================================
+   TAB · WA 輪 — ruedas de maridaje: cava (menú × bebidas, común/premium)
+   y despensa (pescados × sabores). Carta PROPIA e independiente de
+   Genka/Aishō, de consulta: el salón lee, el admin edita.
+   Persistencia: kanjo:wa (escritura admin-only, el servidor lo aplica).
+   Alta de productos vía POST /api/ai/wa (perfil + scores + notas + alt AR),
+   con fallback heurístico si no hay OPENAI_API_KEY. Todo lo generado queda
+   ✦ sin revisar hasta el visto bueno — la IA propone, el itamae decide.
+   ===================================================================== */
+const WA_CAT1={sake:{n:'Sake',c:'#1E3A4C',k:'酒'},vino:{n:'Vino',c:'#6E3448',k:'葡'},cerveza:{n:'Cerveza',c:'#A87338',k:'麦'},te:{n:'Té',c:'#3E6B4E',k:'茶'}};
+const WA_CAT2={aroma:{n:'Cítricos',c:'#9C7322',k:'香'},pica:{n:'Picantes',c:'#6E3448',k:'辛'},ferm:{n:'Fermentados',c:'#1E3A4C',k:'醸'},sai:{n:'Vegetales',c:'#3E6B4E',k:'菜'}};
+const WA_FAM1={grasos:'Grasos 脂',blancos:'Blancos 白',mariscos:'Mariscos 貝',huevas:'Huevas 塩',arroz:'Arroz 米',fuego:'Fuego 火',dulce:'Dulce 甘'};
+const WA_FAM2={grasos:'Grasos 脂',blancos:'Blancos 白',mariscos:'Mariscos 貝',huevas:'Huevas 塩'};
+const WA_GK={grasos:'脂',blancos:'白',mariscos:'貝',huevas:'塩',arroz:'米',fuego:'火',dulce:'甘'};
+
+let WAX=null, waTier='comun', waAddCtx=null, waPersistT=null;
+function waSeed(){ return Object.assign({v:1, prof:{}, notes:{}, alts:{}}, waSeedCarta()); }
+function waEnsure(v){
+  const d=waSeed();
+  if(!v||typeof v!=='object') return d;
+  v=Object.assign({},d,v);
+  ['foods','fish','ings'].forEach(k=>{ if(!Array.isArray(v[k])||!v[k].length) v[k]=d[k]; });
+  if(!v.bebs||!Array.isArray(v.bebs.comun)||!Array.isArray(v.bebs.prem)) v.bebs=d.bebs;
+  ['prof','notes','alts'].forEach(k=>{ if(!v[k]||typeof v[k]!=='object') v[k]={}; });
+  return v;
+}
+function waPersist(){ clearTimeout(waPersistT); waPersistT=setTimeout(()=>{ persistSafe('kanjo:wa', WAX); },400); }
+async function loadWa(){ WAX=waEnsure(null); await kjLoadKey('kanjo:wa', v=>{ WAX=waEnsure(v); }); }
+function waAdmin(){ if(kjIsAdmin()) return true; flash('La carta de Wa la edita el admin — el salón consulta'); return false; }
+
+/* ---- afinidad ---- */
+function waLevel(rn,ln){
+  if(rn.stars&&rn.stars.includes(ln.id)) return 3;
+  if(rn.plus&&rn.plus[ln.id]!=null) return rn.plus[ln.id];
+  return (rn.g&&rn.g[ln.g])||0;
+}
+function waNoteKey(rId,lId){ return rId+'|'+lId; }
+function waNoteText(rn,ln,tplFn){
+  const k1=waNoteKey(rn.id,ln.id), k2=waNoteKey(ln.id,rn.id);
+  if(WAX.notes[k1]) return WAX.notes[k1].t;
+  if(WAX.notes[k2]) return WAX.notes[k2].t;
+  return WA_N[k1]||WA_N[k2]||tplFn(rn,ln);
+}
+function waNoteIsCustom(rn,ln){ const k1=waNoteKey(rn.id,ln.id),k2=waNoteKey(ln.id,rn.id); return !!(WAX.notes[k1]||WAX.notes[k2]||WA_N[k1]||WA_N[k2]); }
+function waIsAIpair(rn,ln){
+  if(rn.ai||ln.ai) return true;
+  const e=WAX.notes[waNoteKey(rn.id,ln.id)]||WAX.notes[waNoteKey(ln.id,rn.id)];
+  return !!(e&&e.ai);
+}
+function waProf(id,item){ return (WAX.prof[id]&&WAX.prof[id].d)||(item&&item.desc)||WA_P[id]||''; }
+const waHash=s=>{let h=7;for(const c of String(s))h=(h*31+c.charCodeAt(0))>>>0;return h%999;};
+
+/* ---- geometría ---- */
+const WA_CX=470, WA_CY=470, WA_R=352, WA_DEG=Math.PI/180;
+const waPt=(a,r)=>[WA_CX+r*Math.cos(a*WA_DEG),WA_CY+r*Math.sin(a*WA_DEG)];
+function waArcPath(a0,a1,r0,r1){
+  const [x0,y0]=waPt(a0,r1),[x1,y1]=waPt(a1,r1),[x2,y2]=waPt(a1,r0),[x3,y3]=waPt(a0,r0);
+  const laf=(a1-a0)%360>180?1:0;
+  return `M${x0},${y0} A${r1},${r1} 0 ${laf} 1 ${x1},${y1} L${x2},${y2} A${r0},${r0} 0 ${laf} 0 ${x3},${y3} Z`;
+}
+function waChordPath(a1,a2){
+  const r=WA_R-10,[x1,y1]=waPt(a1,r),[x2,y2]=waPt(a2,r),k=.62;
+  return `M${x1},${y1} C${x1+(WA_CX-x1)*k},${y1+(WA_CY-y1)*k} ${x2+(WA_CX-x2)*k},${y2+(WA_CY-y2)*k} ${x2},${y2}`;
+}
+
+/* ---- motor de rueda (dos instancias) ---- */
+function waWheel(key,cfg){
+  const W={key,cfg,cats:{},pin:null,L:null};
+  Object.keys(cfg.CAT).forEach(c=>W.cats[c]=true);
+
+  W.layout=function(){
+    const nodes={left:[],right:[]},groups=[];
+    const lG=cfg.left(),rG=cfg.right();
+    const lN=Math.max(1,lG.reduce((s,g)=>s+g.items.length,0));
+    const per=(196-2.6*(lG.length-1))/lN; let a=82;
+    lG.forEach(g=>{
+      const a0=a;
+      g.items.forEach(o=>{ nodes.left.push(Object.assign({},o,{g:g.g,gk:g.k,gl:g.gl,a:a+per/2})); a+=per; });
+      groups.push({k:g.k,a0,a1:a}); a+=2.6;
+    });
+    const rN=Math.max(1,rG.reduce((s,g)=>s+g.items.length,0));
+    const perB=(140-4*(rG.length-1))/rN; let b=294;
+    rG.forEach(g=>{
+      const a0=b;
+      g.items.forEach(it=>{ nodes.right.push(Object.assign({},it,{cat:g.cat,a:b+perB/2})); b+=perB; });
+      groups.push({a0,a1:b,cat:g.cat}); b+=4;
+    });
+    return {nodes,groups};
+  };
+
+  W.render=function(){
+    const svg=document.getElementById(cfg.svg); if(!svg) return;
+    W.L=W.layout();
+    const onlyStars=!!(document.getElementById(cfg.starsChk)||{}).checked;
+    let bands='',nds='';
+    W.L.groups.forEach(g=>{
+      const col=g.cat?cfg.CAT[g.cat].c:'var(--panel-2)';
+      bands+=`<path d="${waArcPath(g.a0,g.a1,WA_R+4,WA_R+9)}" fill="${col}" opacity="${g.cat?'.85':'1'}" stroke="var(--rule)" stroke-width=".5"/>`;
+      if(g.k){const [gx,gy]=waPt((g.a0+g.a1)/2,WA_R-26);bands+=`<text class="wagk" x="${gx}" y="${gy}" text-anchor="middle" dominant-baseline="middle">${g.k}</text>`;}
+    });
+    const els=[];
+    W.L.nodes.right.forEach(rn=>{
+      if(!W.cats[rn.cat]) return;
+      W.L.nodes.left.forEach(ln=>{
+        const lv=waLevel(rn,ln);
+        if(lv<2||(onlyStars&&lv<3)) return;
+        const col=lv===3?'var(--vermilion)':cfg.CAT[rn.cat].c;
+        const ai=waIsAIpair(rn,ln)?' wai':'';
+        const d=waChordPath(ln.a,rn.a);
+        els.push({lv,ch:`<path class="wachord lv${lv}${ai}" data-l="${ln.id}" data-r="${rn.id}" d="${d}" stroke="${col}"/>`,
+                  hit:`<path class="wahit" data-l="${ln.id}" data-r="${rn.id}" d="${d}"/>`});
+      });
+    });
+    els.sort((x,y)=>x.lv-y.lv);
+    const mk=(n,isR)=>{
+      const [x,y]=waPt(n.a,WA_R),[lx,ly]=waPt(n.a,WA_R+16);
+      const flip=n.a>90&&n.a<270,rot=flip?n.a+180:n.a;
+      const col=isR?cfg.CAT[n.cat].c:'var(--ink-soft)';
+      const off=isR&&!W.cats[n.cat];
+      return `<g class="wanode" data-id="${n.id}" data-kind="${isR?'r':'l'}" style="${off?'opacity:.14;pointer-events:none':''}">
+        <circle cx="${x}" cy="${y}" r="${isR?5:4}" fill="${col}"/>
+        <text x="${lx}" y="${ly}" text-anchor="${flip?'end':'start'}" dominant-baseline="middle" transform="rotate(${rot} ${lx} ${ly})">${n.n}${n.ai?' <tspan class="aiflag">✦</tspan>':''}</text></g>`;
+    };
+    W.L.nodes.left.forEach(n=>nds+=mk(n,false));
+    W.L.nodes.right.forEach(n=>nds+=mk(n,true));
+    svg.innerHTML=`<rect x="0" y="0" width="940" height="940" fill="transparent" data-bg="1"/>
+      <g>${els.map(e=>e.ch).join('')}</g><g>${bands}</g><g>${nds}</g><g>${els.map(e=>e.hit).join('')}</g>`;
+
+    svg.querySelector('[data-bg]').addEventListener('click',()=>{W.pin=null;W.unfocus();});
+    svg.querySelectorAll('.wanode').forEach(el=>{
+      el.addEventListener('mouseenter',()=>W.focus(el.dataset.id,el.dataset.kind));
+      el.addEventListener('mouseleave',()=>{if(!W.pin)W.unfocus();});
+      el.addEventListener('click',e=>{e.stopPropagation();W.pin=el.dataset.id;W.focus(el.dataset.id,el.dataset.kind);waOpenProfile(W,el.dataset.id,el.dataset.kind);});
+    });
+    svg.querySelectorAll('.wahit').forEach(h=>{
+      h.addEventListener('mouseenter',()=>W.focusChord(h.dataset.l,h.dataset.r));
+      h.addEventListener('mouseleave',()=>{if(!W.pin)W.unfocus();});
+      h.addEventListener('click',e=>{e.stopPropagation();waOpenPairing(W,h.dataset.l,h.dataset.r);});
+    });
+    W.center(null); W.legend(); W.chips();
+    const hs=document.getElementById(cfg.hs);
+    if(hs) hs.textContent=`${W.L.nodes.left.length} × ${W.L.nodes.right.length}${cfg.hsSuffix||''}`;
+  };
+
+  W.focus=function(id,kind){
+    const svg=document.getElementById(cfg.svg),hits=new Set();
+    svg.querySelectorAll('.wachord').forEach(p=>{
+      const on=(kind==='l'?p.dataset.l:p.dataset.r)===id;
+      p.classList.toggle('lit',on);p.classList.toggle('dim',!on);
+      if(on){hits.add(p.dataset.l);hits.add(p.dataset.r);}
+    });
+    svg.querySelectorAll('.wanode').forEach(n=>{
+      const on=n.dataset.id===id||hits.has(n.dataset.id);
+      n.classList.toggle('lit',n.dataset.id===id);n.classList.toggle('dim',!on);
+    });
+    W.center(id,kind);
+  };
+  W.focusChord=function(l,r){
+    const svg=document.getElementById(cfg.svg);
+    svg.querySelectorAll('.wachord').forEach(p=>{
+      const on=p.dataset.l===l&&p.dataset.r===r;
+      p.classList.toggle('lit',on);p.classList.toggle('dim',!on);
+    });
+    svg.querySelectorAll('.wanode').forEach(n=>{
+      const on=n.dataset.id===l||n.dataset.id===r;
+      n.classList.toggle('lit',on);n.classList.toggle('dim',!on);
+    });
+    const ln=W.L.nodes.left.find(x=>x.id===l),rn=W.L.nodes.right.find(x=>x.id===r);
+    const c=document.getElementById(cfg.ctr);
+    if(ln&&rn&&c) c.innerHTML=`<div class="cn">${ln.n} <span style="color:var(--brass-deep)">×</span> ${rn.n}</div><div class="cs">click para abrir la ficha</div>`;
+  };
+  W.unfocus=function(){
+    const svg=document.getElementById(cfg.svg); if(!svg) return;
+    svg.querySelectorAll('.wachord').forEach(p=>p.classList.remove('lit','dim'));
+    svg.querySelectorAll('.wanode').forEach(n=>n.classList.remove('lit','dim'));
+    W.center(null);
+  };
+
+  W.stats=function(){
+    let stars=0;const cov=new Set();
+    W.L.nodes.right.filter(r=>W.cats[r.cat]).forEach(rn=>W.L.nodes.left.forEach(ln=>{
+      const lv=waLevel(rn,ln);if(lv===3)stars++;if(lv>=2)cov.add(ln.id);
+    }));
+    return {stars,cov:W.L.nodes.left.length?Math.round(cov.size/W.L.nodes.left.length*100):0};
+  };
+  W.center=function(id,kind){
+    const c=document.getElementById(cfg.ctr); if(!c) return;
+    const SYM=['','','◎','★'];
+    if(!id){
+      const st=W.stats();
+      c.innerHTML=`<div class="ck">${cfg.kanji}</div>
+        <div class="stats">
+          <div><div class="v">${W.L.nodes.left.length}</div><div class="l">${cfg.leftLab}</div></div>
+          <div><div class="v">${W.L.nodes.right.filter(r=>W.cats[r.cat]).length}</div><div class="l">${cfg.rightLab}</div></div>
+          <div><div class="v" style="color:var(--vermilion)">${st.stars}</div><div class="l">firmas</div></div>
+          <div><div class="v">${st.cov}%</div><div class="l">cobertura</div></div>
+        </div>
+        <div class="cs" style="margin-top:8px">hover aísla · click abre perfil o ficha</div>`;
+      return;
+    }
+    let rows,name,sub;
+    if(kind==='l'){
+      const ln=W.L.nodes.left.find(x=>x.id===id); if(!ln) return;
+      rows=W.L.nodes.right.filter(r=>W.cats[r.cat]).map(rn=>({n:rn.n,lv:waLevel(rn,ln)})).filter(r=>r.lv>=2).sort((a,b)=>b.lv-a.lv);
+      name=ln.n;sub=`${ln.gl} · ${rows.length} maridajes`;
+    } else {
+      const rn=W.L.nodes.right.find(x=>x.id===id); if(!rn) return;
+      rows=W.L.nodes.left.map(ln=>({n:ln.n,lv:waLevel(rn,ln)})).filter(r=>r.lv>=2).sort((a,b)=>b.lv-a.lv);
+      name=rn.n;sub=`${cfg.CAT[rn.cat].n} · ${rows.length} maridajes`;
+    }
+    c.innerHTML=`<div class="cn">${name}</div><div class="cs">${sub}</div>
+      <div class="cp">${rows.slice(0,5).map(r=>`<span class="s${r.lv}">${SYM[r.lv]}</span> ${r.n}`).join('<br>')}${rows.length>5?'<br>…':''}</div>`;
+  };
+  W.legend=function(){
+    const el=document.getElementById(cfg.leg); if(!el) return;
+    el.innerHTML=Object.values(cfg.CAT).map(v=>`<span><i class="dot" style="background:${v.c}"></i> ${v.n.toLowerCase()}</span>`).join('')
+      +`<span style="margin-left:14px"><i style="background:var(--indigo);opacity:.35"></i> ◎ muy bien</span>
+        <span><i style="background:var(--vermilion);height:4px"></i> ★ de firma</span>
+        <span><i style="height:0;border-bottom:2px dashed var(--indigo);background:none;border-radius:0"></i> punteado = ✦ IA sin revisar</span>
+        <span style="margin-left:auto">${cfg.legNote}</span>`;
+  };
+  W.chips=function(){
+    const el=document.getElementById(cfg.chips); if(!el) return;
+    el.innerHTML=Object.entries(cfg.CAT).map(([c,v])=>{
+      const n=W.L.nodes.right.filter(r=>r.cat===c).length;
+      return `<span class="wacat ${W.cats[c]?'on':''}" data-c="${c}"><i style="background:${v.c}"></i>${v.n} · ${n}</span>`;
+    }).join('');
+    el.querySelectorAll('.wacat').forEach(ch=>ch.addEventListener('click',()=>{W.cats[ch.dataset.c]=!W.cats[ch.dataset.c];W.pin=null;W.render();}));
+  };
+  return W;
+}
+
+const WAW1=waWheel('w1',{
+  svg:'waSvg1',ctr:'waCtr1',leg:'waLeg1',chips:'waChips1',starsChk:'waStars1',hs:'waHs1',hsSuffix:' del nivel activo',
+  kanji:'酒',leftLab:'platos',rightLab:'bebidas',CAT:WA_CAT1,
+  legNote:'los ○ no se dibujan — solo lo servible',
+  left:()=>WAX.foods,
+  right:()=>['sake','vino','cerveza','te'].map(c=>({cat:c,items:WAX.bebs[waTier].filter(b=>b.cat===c)})),
+  tpl:(rn,ln)=>WA_T1[rn.cat+'|'+ln.g]||'Afinidad de familia.'
+});
+const WAW2=waWheel('w2',{
+  svg:'waSvg2',ctr:'waCtr2',leg:'waLeg2',chips:'waChips2',starsChk:'waStars2',hs:'waHs2',
+  kanji:'味',leftLab:'pescados',rightLab:'sabores',CAT:WA_CAT2,
+  legNote:'qué sabor levanta a qué producto',
+  left:()=>WAX.fish,
+  right:()=>WAX.ings.map(g=>({cat:g.g,items:g.items})),
+  tpl:(rn,ln)=>WA_T2[rn.cat+'|'+ln.g]||'Afinidad de familia.'
+});
+const WA_WHEELS={w1:WAW1,w2:WAW2};
+
+function waSetTier(t){
+  waTier=t; WAW1.pin=null;
+  const a=document.getElementById('waTgStd'),b=document.getElementById('waTgPrem');
+  if(a) a.classList.toggle('on',t==='comun');
+  if(b) b.classList.toggle('on',t==='prem');
+  WAW1.render();
+}
+function renderWa(){
+  if(!WAX) WAX=waEnsure(null);
+  WAW1.render(); WAW2.render();
+  if(!renderWa._gn){ wagnCatsUI(); wagnSteps(); renderWa._gn=true; }
+}
+
+/* ---- drawer: perfil + ficha de maridaje ---- */
+function waPhotoHTML(id,kanji,color,cls){
+  return `<div class="wadrphoto ${cls||''}" style="background:linear-gradient(135deg,${color} 0%, #211C16 130%)">
+    <span class="bigk">${kanji}</span>
+    <img src="/img/wa/${encodeURIComponent(id)}.jpg" alt="" loading="lazy" onerror="this.remove()">
+    <span class="ph">repositorio de fotos de Wa</span></div>`;
+}
+function waMeta(W,id,kind){
+  if(kind==='l'){const n=W.L.nodes.left.find(x=>x.id===id);return n?{n,kanji:n.gk,color:'#4a4238',cat:n.gl}:null;}
+  const n=W.L.nodes.right.find(x=>x.id===id); if(!n) return null;
+  const c=W.cfg.CAT[n.cat];
+  return {n,kanji:c.k,color:c.c,cat:c.n};
+}
+function waOpenProfile(W,id,kind){
+  const m=waMeta(W,id,kind); if(!m) return;
+  const SYM=['','','◎','★'];
+  let rows;
+  if(kind==='l') rows=W.L.nodes.right.filter(r=>W.cats[r.cat]).map(rn=>({o:rn,lv:waLevel(rn,m.n),l:id,r:rn.id})).filter(r=>r.lv>=2);
+  else rows=W.L.nodes.left.map(ln=>({o:ln,lv:waLevel(m.n,ln),l:ln.id,r:id})).filter(r=>r.lv>=2);
+  rows.sort((a,b)=>b.lv-a.lv);
+  const desc=waProf(id,m.n)||'Perfil pendiente — la IA redacta una propuesta al agregarlo; el admin la edita o aprueba.';
+  const profAI=(WAX.prof[id]&&WAX.prof[id].ai)||m.n.ai;
+  let altHtml='';
+  if(W.key==='w1'&&kind==='r'){
+    const a=WAX.alts[id]||WA_ALT[id];
+    if(a) altHtml=`<div class="wadrh"><span class="k">代</span>Si no se consigue — alternativa en Argentina</div>
+      <div class="wadralt${a.ai?' wai':''}"><span class="an">${a.ai?'✦ ':''}${a.n}</span> — ${a.w}</div>`;
+    else altHtml=`<div class="wadrh"><span class="k">代</span>Si no se consigue — alternativa en Argentina</div>
+      <div class="wadralt wai"><span class="an">✦ Sugerencia general:</span> ${WA_ALTGEN[m.n.cat]||'reemplazo del mismo estilo, de importación estable'}.</div>`;
+  }
+  document.getElementById('waDrc').innerHTML=`
+    ${waPhotoHTML(id,m.kanji,m.color)}
+    <div class="wadrbody">
+      <span class="wadrcat"><i style="background:${m.color}"></i>${m.cat}</span>${profAI?'<span class="waaich">✦ IA sin revisar</span>':''}
+      <div class="wadrname">${m.n.n}</div>
+      <p class="wadrdesc">${desc}</p>
+      ${altHtml}
+      <div class="wadrh"><span class="k">合</span>Sus maridajes</div>
+      ${rows.map(r=>`<div class="wadrpair" onclick="waOpenPairing(WA_WHEELS['${W.key}'],'${r.l}','${r.r}')">
+         <span class="sy s${r.lv}">${SYM[r.lv]}</span><span class="nm">${r.o.n}</span><span class="go">abrir ficha →</span></div>`).join('')||'<p class="note">Sin maridajes ◎/★ en el set activo.</p>'}
+      <div class="wadrbtns adminonly">
+        ${m.n.ai?`<button class="wadrbtn ok" onclick="waBless('${W.key}','${id}','${kind}')">✓ Visto bueno</button>`:''}
+        <button class="wadrbtn del" onclick="waRemove('${W.key}','${id}','${kind}')">− Quitar de la carta</button>
+      </div>
+      <p class="wadrfoot">Carta propia de Wa 輪 — el salón consulta; agregar, quitar y aprobar es de admin.</p>
+    </div>`;
+  waOpenDrawer();
+}
+function waOpenPairing(W,lId,rId){
+  const ln=W.L.nodes.left.find(x=>x.id===lId),rn=W.L.nodes.right.find(x=>x.id===rId);
+  if(!ln||!rn) return;
+  const cat=W.cfg.CAT[rn.cat],lv=waLevel(rn,ln),SYM=['','','◎ muy bien','★ de firma'];
+  const ai=waIsAIpair(rn,ln), custom=waNoteIsCustom(rn,ln);
+  const note=waNoteText(rn,ln,W.cfg.tpl);
+  document.getElementById('waDrc').innerHTML=`
+    <div class="wadrduo">
+      ${waPhotoHTML(lId,ln.gk,'#4a4238','dp')}
+      <span class="x">×</span>
+      ${waPhotoHTML(rId,cat.k,cat.c,'dp')}
+    </div>
+    <div class="wadrbody" style="padding-top:12px">
+      <div class="wadrname" style="font-size:19px">${ln.n} × ${rn.n}${ai?'<span class="waaich">✦ IA sin revisar</span>':''}</div>
+      <span class="wadrlvl"><b class="s${lv}">${lv===3?'★':'◎'}</b>${SYM[lv]||'—'}</span>
+      <div class="wadrwhy${ai?' wai':''}"><b>${ai?'✦ Propuesta:':'Por qué funciona:'}</b> ${note}</div>
+      <div class="wadrh"><span class="k">品</span>Los productos</div>
+      <div class="wadrpair" onclick="waOpenProfile(WA_WHEELS['${W.key}'],'${lId}','l')"><span class="sy">${ln.gk}</span><span class="nm">${ln.n}</span><span class="go">ver perfil →</span></div>
+      <div class="wadrpair" onclick="waOpenProfile(WA_WHEELS['${W.key}'],'${rId}','r')"><span class="sy" style="color:${cat.c}">${cat.k}</span><span class="nm">${rn.n}</span><span class="go">ver perfil →</span></div>
+      <p class="wadrfoot">${ai?'Puntuación y nota generadas por IA al agregar el producto — el visto bueno del perfil las sella.':(custom?'Nota de firma de la casa.':'Explicación de familia — la nota específica llega con la IA al agregar productos, o se escribe a mano (admin).')}</p>
+    </div>`;
+  waOpenDrawer();
+}
+function waEachGroup(wk,kind,fn){
+  const src=kind==='l'?(wk==='w1'?WAX.foods:WAX.fish):(wk==='w1'?null:WAX.ings);
+  if(src) src.forEach(fn);
+}
+function waBless(wk,id,kind){
+  if(!waAdmin()) return;
+  if(kind==='r'&&wk==='w1'){ ['comun','prem'].forEach(t=>WAX.bebs[t].forEach(b=>{ if(b.id===id) delete b.ai; })); }
+  else waEachGroup(wk,kind,g=>g.items.forEach(it=>{ if(it.id===id) delete it.ai; }));
+  Object.keys(WAX.notes).forEach(k=>{ if(k.split('|').includes(id)) delete WAX.notes[k].ai; });
+  if(WAX.prof[id]) delete WAX.prof[id].ai;
+  if(WAX.alts[id]) delete WAX.alts[id].ai;
+  waPersist(); WA_WHEELS[wk].render(); waCloseDrawer();
+  flash('Sellado ✓ — deja de figurar como IA sin revisar');
+}
+function waRemove(wk,id,kind){
+  if(!waAdmin()) return;
+  if(!confirm('¿Quitar de la carta de Wa? Sus hilos, notas y perfil desaparecen. (No afecta Genka ni Aishō.)')) return;
+  if(kind==='r'&&wk==='w1'){ WAX.bebs.comun=WAX.bebs.comun.filter(b=>b.id!==id); WAX.bebs.prem=WAX.bebs.prem.filter(b=>b.id!==id); }
+  else if(kind==='r') WAX.ings.forEach(g=>{ g.items=g.items.filter(it=>it.id!==id); });
+  else waEachGroup(wk,kind,g=>{ g.items=g.items.filter(it=>it.id!==id); });
+  if(kind==='l'){ /* limpiar referencias en el lado derecho */
+    const rights=wk==='w1'?WAX.bebs.comun.concat(WAX.bebs.prem):WAX.ings.flatMap(g=>g.items);
+    rights.forEach(r=>{ if(r.plus) delete r.plus[id]; if(r.stars) r.stars=r.stars.filter(s=>s!==id); });
+  }
+  delete WAX.prof[id]; delete WAX.alts[id];
+  Object.keys(WAX.notes).forEach(k=>{ if(k.split('|').includes(id)) delete WAX.notes[k]; });
+  const W=WA_WHEELS[wk]; W.pin=null;
+  waPersist(); W.render(); waCloseDrawer();
+}
+function waOpenDrawer(){ document.getElementById('waOvl').classList.add('open'); document.getElementById('waDrawer').classList.add('open'); }
+function waCloseDrawer(){ const o=document.getElementById('waOvl'),d=document.getElementById('waDrawer'); if(o)o.classList.remove('open'); if(d)d.classList.remove('open'); }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ waCloseDrawer(); waCloseAdd(); } });
+
+/* ---- alta: la matriz se re-teje sola (IA real con fallback heurístico) ---- */
+const WA_AFF1={sake:[{arroz:2,grasos:2},{blancos:2,mariscos:2}],vino:[{blancos:2,mariscos:2},{grasos:2,huevas:2}],
+               cerveza:[{fuego:2,mariscos:2},{fuego:2,arroz:1}],te:[{grasos:2,arroz:1},{fuego:2,dulce:2}]};
+const WA_AFF2={aroma:[{grasos:2,blancos:2},{blancos:2,mariscos:2}],pica:[{grasos:2},{mariscos:2}],
+               ferm:[{grasos:2,mariscos:2},{blancos:2,huevas:2}],sai:[{mariscos:2},{grasos:2,blancos:1}]};
+
+function waOpenAdd(wk,side){
+  if(!waAdmin()) return;
+  waAddCtx={wk,side};
+  const isW1=wk==='w1',isL=side==='l';
+  const title=isW1?(isL?'Agregar plato a la cava':'Agregar bebida'):(isL?'Agregar pescado / marisco':'Agregar sabor');
+  let famOpts;
+  if(isL) famOpts=Object.entries(isW1?WA_FAM1:WA_FAM2).map(([v,n])=>`<option value="${v}">${n}</option>`).join('');
+  else if(isW1) famOpts=Object.entries(WA_CAT1).map(([v,o])=>`<option value="${v}">${o.n}</option>`).join('');
+  else famOpts=Object.entries(WA_CAT2).map(([v,o])=>`<option value="${v}">${o.n}</option>`).join('');
+  document.getElementById('waMbox').innerHTML=`
+    <h3>${title}</h3>
+    <div class="ms">Carta propia de Wa — no toca Genka ni Aishō.</div>
+    <div class="wamrow"><label>Nombre</label><input id="waMName" placeholder="${isW1?(isL?'p.ej. Mejillón al vapor':'p.ej. Franciacorta Satèn'):(isL?'p.ej. Mejillón':'p.ej. Yuzu koshō')}"></div>
+    <div class="wamrow"><label>${isL?'Familia':'Categoría'}</label><select id="waMFam">${famOpts}</select></div>
+    ${isW1&&!isL?`<div class="wamrow"><label>Nivel</label><select id="waMTier"><option value="comun">並 Común</option><option value="prem">特 Premium</option></select></div>`:''}
+    <div class="wamrow"><label>Descripción (opcional — si falta, la redacta la IA)</label><textarea id="waMDesc" placeholder="notas de cata, origen, técnica…"></textarea></div>
+    <div class="wamai">✦ Al guardar, la IA lo puntúa contra ${isL?'toda la '+(isW1?'cava':'despensa'):'todo el '+(isW1?'menú':'producto')}, redacta perfil y notas${isW1&&!isL?', y propone una alternativa conseguible en Argentina':''}. Todo queda punteado hasta tu visto bueno.</div>
+    <div class="wambtns">
+      <button class="wambtn" onclick="waCloseAdd()">Cancelar</button>
+      <button class="wambtn go" id="waMGo" onclick="waDoAdd()">Agregar y puntuar con IA ✦</button>
+    </div>`;
+  document.getElementById('waMadd').classList.add('open');
+  setTimeout(()=>{ const el=document.getElementById('waMName'); if(el) el.focus(); },50);
+}
+function waCloseAdd(){ const m=document.getElementById('waMadd'); if(m) m.classList.remove('open'); waAddCtx=null; }
+
+async function waAiScoreNuevo(nuevo,contra){
+  try{
+    const r=await fetch('/api/ai/wa',{ method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ nuevo, contra }) });
+    if(r.status===501){ flash('Sin OPENAI_API_KEY en el servidor — alta con heurística de familia'); return null; }
+    if(r.status===403){ flash('La IA de Wa es solo para admin'); return null; }
+    if(!r.ok){ flash('La IA no respondió ('+r.status+') — alta con heurística de familia'); return null; }
+    const j=await r.json();
+    return j&&j.scores?j:null;
+  }catch(e){ flash('IA no disponible — alta con heurística de familia'); return null; }
+}
+
+async function waDoAdd(){
+  if(!waAddCtx) return;
+  const {wk,side}=waAddCtx, W=WA_WHEELS[wk];
+  const name=((document.getElementById('waMName')||{}).value||'').trim();
+  if(!name){ document.getElementById('waMName').focus(); return; }
+  const fam=document.getElementById('waMFam').value;
+  const desc=((document.getElementById('waMDesc')||{}).value||'').trim();
+  const tierSel=document.getElementById('waMTier');
+  const go=document.getElementById('waMGo'); go.disabled=true; go.textContent='✦ Puntuando…';
+  const id='wx'+Date.now().toString(36);
+  const isW1=wk==='w1', isL=side==='l';
+
+  try{
+    if(isL){
+      /* nueva proteína/plato: contra = lado derecho completo */
+      const contra=isW1
+        ? WAX.bebs.comun.concat(WAX.bebs.prem).map(b=>({id:b.id,n:b.n,cat:b.cat,tier:WAX.bebs.prem.includes(b)?'premium':'común'}))
+        : WAX.ings.flatMap(g=>g.items.map(i=>({id:i.id,n:i.n,cat:g.gl})));
+      const nuevo={n:name,d:desc,tipo:isW1?'plato':'pescado',fam:WA_FAM1[fam]||fam};
+      const ai=await waAiScoreNuevo(nuevo,contra);
+      const groups=isW1?WAX.foods:WAX.fish;
+      groups.find(x=>x.g===fam).items.push({id,n:name,ai:1,desc:desc||null});
+      const rights=isW1?WAX.bebs.comun.concat(WAX.bebs.prem):WAX.ings.flatMap(g=>g.items);
+      if(ai){
+        rights.forEach(r=>{ const v=ai.scores[r.id]; if(v!=null&&v>=2){
+          r.plus=r.plus||{}; r.plus[id]=Math.min(3,Math.round(+v));
+          if(ai.notas&&ai.notas[r.id]) WAX.notes[waNoteKey(r.id,id)]={t:String(ai.notas[r.id]),ai:1};
+        }});
+        if(ai.perfil) WAX.prof[id]={d:String(ai.perfil),ai:1};
+      } else {
+        const cands=rights.filter(r=>((r.g||{})[fam]||0)>=2);
+        if(cands.length){ const pick=cands[waHash(id)%cands.length]; pick.plus=pick.plus||{}; pick.plus[id]=3; }
+      }
+    } else {
+      /* nueva bebida/sabor: contra = lado izquierdo completo */
+      const lefts=(isW1?WAX.foods:WAX.fish).flatMap(g=>g.items.map(i=>({id:i.id,n:i.n,g:g.g,gl:g.gl})));
+      const nuevo=isW1
+        ? {n:name,d:desc,tipo:'bebida',cat:fam,tier:tierSel?tierSel.value:'comun'}
+        : {n:name,d:desc,tipo:'sabor',cat:(WA_CAT2[fam]||{}).n||fam};
+      const ai=await waAiScoreNuevo(nuevo,lefts.map(l=>({id:l.id,n:l.n,fam:l.gl})));
+      const item={id,cat:fam,n:name,g:{},plus:{},stars:[],ai:1,desc:desc||null};
+      if(ai){
+        lefts.forEach(l=>{ const v=ai.scores[l.id]; if(v!=null){
+          const lv=Math.max(0,Math.min(3,Math.round(+v)));
+          if(lv===3) item.stars.push(l.id);
+          else if(lv===2) item.plus[l.id]=2;
+          if(lv>=2&&ai.notas&&ai.notas[l.id]) WAX.notes[waNoteKey(id,l.id)]={t:String(ai.notas[l.id]),ai:1};
+        }});
+        if(ai.perfil) WAX.prof[id]={d:String(ai.perfil),ai:1};
+        if(isW1&&ai.alt&&ai.alt.n) WAX.alts[id]={n:String(ai.alt.n),w:String(ai.alt.w||''),ai:1};
+      } else {
+        const aff=(isW1?WA_AFF1:WA_AFF2)[fam][waHash(name)%2];
+        item.g=Object.assign({},aff);
+        const strong=lefts.filter(l=>aff[l.g]===2);
+        if(strong.length) item.stars=[strong[waHash(id)%strong.length].id];
+      }
+      if(isW1){
+        const t=tierSel?tierSel.value:'comun';
+        WAX.bebs[t].push(item);
+        if(t!==waTier){ waCloseAdd(); waPersist(); waSetTier(t); flash('«'+name+'» agregado al nivel '+(t==='prem'?'premium':'común')+' ✓'); return; }
+      } else {
+        WAX.ings.find(x=>x.g===fam).items.push(item);
+      }
+    }
+    W.pin=null; waPersist(); W.render(); waCloseAdd();
+    flash('«'+name+'» agregado ✓ — revisá sus hilos ✦ y sellalos con el visto bueno');
+  } finally {
+    const g2=document.getElementById('waMGo'); if(g2){ g2.disabled=false; g2.textContent='Agregar y puntuar con IA ✦'; }
+  }
+}
+
+/* ---- generador de maridajes ---- */
+const WAGN={q:'comun',cats:{sake:true,vino:true,cerveza:true,te:true},salt:0};
+const WAGN_FAM=[
+ ['fuego',['tempura','fritur','aburi','soplete','wagyu','karaage','parrilla','grill','yakitori','frito','asado']],
+ ['dulce',['postre','mochi','helado','dulce','fruta','chocolate','flan']],
+ ['huevas',['uni','erizo','ikura','hueva','tobiko','caviar']],
+ ['mariscos',['ebi','langostino','camar','gamba','centolla','cangrejo','kani','vieira','hotate','ostra','pulpo','tako','calamar','ika','anago','unagi','anguila','mejill','almeja']],
+ ['grasos',['atun','atún','toro','akami','maguro','salm','hamachi','caballa','saba','sardina','iwashi','kohada','sanma','anchoa','graso']],
+ ['arroz',['arroz','shari','nigiri','tamago','miso','chawan','temaki','maki','gohan']],
+ ['blancos',['hirame','lenguado','tai','besugo','suzuki','robalo','róbalo','kinmedai','chernia','mero','blanc','pesca']]
+];
+const WAGN_PRICE={sake:[6,14],vino:[7,16],cerveza:[4,9],te:[2,5]};   /* USD estimado por pour, tabla interna */
+const wagnPrice=b=>WAGN_PRICE[b.cat][WAGN.q==='prem'?1:0]+waHash(b.id)%3;
+function wagnClassify(txt){
+  const t=(txt||'').toLowerCase();
+  for(const [fam,kws] of WAGN_FAM) if(kws.some(k=>t.includes(k))) return fam;
+  return 'blancos';
+}
+function wagnMatchPlato(txt){
+  const t=(txt||'').toLowerCase();
+  for(const g of WAX.foods) for(const it of g.items)
+    if(t.includes(it.n.toLowerCase().split(' ')[0])||t.includes(it.id)) return Object.assign({},it,{g:g.g});
+  return null;
+}
+const wagnGKf=f=>WA_GK[f]||'？';
+function wagnQ(q){ WAGN.q=q;
+  const a=document.getElementById('wagnQc'),b=document.getElementById('wagnQp');
+  if(a) a.classList.toggle('on',q==='comun');
+  if(b) b.classList.toggle('on',q==='prem');
+}
+function wagnCatsUI(){
+  const el=document.getElementById('wagnCats'); if(!el) return;
+  el.innerHTML=Object.entries(WA_CAT1).map(([c,v])=>
+    `<span class="wacat ${WAGN.cats[c]?'on':''}" data-c="${c}"><i style="background:${v.c}"></i>${v.n}</span>`).join('');
+  el.querySelectorAll('.wacat').forEach(ch=>ch.addEventListener('click',()=>{WAGN.cats[ch.dataset.c]=!WAGN.cats[ch.dataset.c];wagnCatsUI();}));
+}
+const WAGN_SEED=['Hotate con yuzu','Hirame usuzukuri','Chūtoro','Salmón aburi','Uni con nori','Tempura de langostino','Unagi laqueado','Wagyu','Kinmedai','Ikura','Chernia curada en kombu','Mochi de matcha','Sopa miso','Tamago','Kohada','Sanma a la parrilla'];
+function wagnSteps(){
+  const inp=document.getElementById('wagnN'); if(!inp) return;
+  const n=Math.max(2,Math.min(16,+inp.value||8));
+  inp.value=n;
+  const box=document.getElementById('wagnPasos');
+  const prev=[...box.querySelectorAll('input')].map(i=>i.value);
+  box.innerHTML=Array.from({length:n},(_,i)=>{
+    const v=prev[i]!==undefined?prev[i]:(WAGN_SEED[i]||'');
+    return `<div class="wagnpaso"><span class="pn">${i+1}</span><input list="wagnDL" value="${v.replace(/"/g,'&quot;')}" oninput="this.nextElementSibling.textContent=wagnGKf(wagnClassify(this.value))"><span class="fam">${wagnGKf(wagnClassify(v))}</span></div>`;
+  }).join('');
+  document.getElementById('wagnDL').innerHTML=WAX.foods.flatMap(g=>g.items).map(it=>`<option value="${it.n}">`).join('');
+}
+function wagnGenerate(){
+  const go=document.getElementById('wagnGo'); go.disabled=true; go.innerHTML='<span class="k">献</span>Armando el flight…';
+  setTimeout(()=>{ wagnRun(); go.disabled=false; go.innerHTML='<span class="k">献</span>Generar maridaje'; },60);
+}
+function wagnRun(){
+  WAGN.salt++;
+  const inputs=[...document.querySelectorAll('#wagnPasos input')].map(i=>i.value.trim());
+  const K=Math.max(1,Math.min(inputs.length,+document.getElementById('wagnK').value||4));
+  const budget=Math.max(5,+document.getElementById('wagnB').value||40);
+  const carta=WAX.bebs[WAGN.q].filter(b=>WAGN.cats[b.cat]);
+  const out=document.getElementById('wagnOut');
+  out.style.display='block';
+  if(!carta.length){ out.innerHTML='<div class="wagnwarn">Elegí al menos una categoría de bebida.</div>'; return; }
+
+  const pasos=inputs.map((txt,i)=>{
+    const fam=wagnClassify(txt), match=wagnMatchPlato(txt);
+    const cands=carta.map(b=>{
+      const lv=match?waLevel(b,match):((b.g&&b.g[fam])||0);
+      return {b,lv,pr:wagnPrice(b)};
+    }).filter(c=>c.lv>=2)
+      .sort((a,c)=>c.lv-a.lv||a.pr-c.pr||(waHash(a.b.id+WAGN.salt)%7)-(waHash(c.b.id+WAGN.salt)%7));
+    return {i,txt:txt||('Paso '+(i+1)),fam,match,cands};
+  });
+  const ranked=[...pasos].sort((a,b)=>((b.cands[0]||{}).lv||0)-((a.cands[0]||{}).lv||0)||a.i-b.i);
+  const pourSet=new Set(ranked.filter(p=>p.cands.length).slice(0,K).map(p=>p.i));
+  const used={}, picks=[];
+  pasos.forEach(p=>{
+    if(!pourSet.has(p.i)) return;
+    const list=[...p.cands].sort((a,c)=>c.lv-a.lv||((used[a.b.id]||0)-(used[c.b.id]||0))||a.pr-c.pr);
+    const A=list[0]; if(!A) return;
+    used[A.b.id]=(used[A.b.id]||0)+1;
+    const B=list.find(x=>x.b.id!==A.b.id&&x.b.cat!==A.b.cat)||list.find(x=>x.b.id!==A.b.id)||null;
+    picks.push({p,A,B});
+  });
+  let guard=30;
+  const total=()=>picks.reduce((s,x)=>s+x.A.pr,0);
+  while(total()>budget&&guard-->0){
+    const worst=[...picks].sort((a,b)=>b.A.pr-a.A.pr)[0]; if(!worst) break;
+    const cheaper=worst.p.cands.filter(c=>c.pr<worst.A.pr&&c.b.id!==worst.A.b.id).sort((a,b)=>b.lv-a.lv||a.pr-b.pr)[0];
+    if(!cheaper) break;
+    if(worst.B&&worst.B.b.id===cheaper.b.id) worst.B=worst.p.cands.find(c=>c.b.id!==cheaper.b.id&&c.b.id!==worst.A.b.id)||null;
+    worst.A=cheaper;
+  }
+  const tot=total(), over=tot>budget;
+  const stars=picks.filter(x=>x.A.lv===3).length;
+  const SYM=['','','◎','★'];
+  const whyOf=(x,p)=>{
+    const ln=p.match||{id:'__',g:p.fam,gk:wagnGKf(p.fam),n:p.txt};
+    const t=waNoteText(x.b,ln,WAW1.cfg.tpl);
+    return t.split('. ')[0]+'.';
+  };
+  const planHtml=(x,p,tag,cls)=>x?`
+    <div class="wagplan ${cls}" onclick="wagnOpenBeb('${x.b.id}')">
+      <span class="tag">${tag}</span><span class="dot" style="background:${WA_CAT1[x.b.cat].c}"></span>
+      <span class="bn">${x.b.n}</span><span class="sy s${x.lv}">${SYM[x.lv]}</span>
+      <span class="pr">${x.pr}</span>
+    </div><div class="wagwhy">${whyOf(x,p)}</div>`
+   :`<div class="wagwhy" style="font-style:italic">Sin plan B con estas categorías — sumá otra, o el pour queda sin respaldo.</div>`;
+
+  out.innerHTML=`
+    <div class="wagnkpis">
+      <div class="wagnkpi"><div class="l">Pours</div><div class="v">${picks.length} / ${inputs.length}</div></div>
+      <div class="wagnkpi"><div class="l">Firmas ★</div><div class="v" style="color:var(--vermilion)">${stars}</div></div>
+      <div class="wagnkpi"><div class="l">Costo plan A</div><div class="v" style="color:${over?'var(--bad)':'var(--good)'}">${tot} / ${budget}</div></div>
+      <div class="wagnkpi"><div class="l">Calidad</div><div class="v" style="font-size:14px">${WAGN.q==='prem'?'特 Premium':'並 Común'}</div></div>
+      <div class="wagnkpi" style="margin-left:auto;border:none;padding-right:0"><button class="waadd" onclick="wagnRun()">⟳ Regenerar</button></div>
+    </div>
+    ${pasos.map(p=>{
+      const pick=picks.find(x=>x.p.i===p.i);
+      return `<div class="wagnstep">
+        <div class="wagsp"><div class="n"><span class="num">${String(p.i+1).padStart(2,'0')}</span>${p.txt}</div>
+        <div class="f"><span class="k">${wagnGKf(p.fam)}</span> ${WA_FAM1[p.fam]||p.fam}${p.match?' · de la carta: '+p.match.n:''}</div></div>
+        <div>${pick?planHtml(pick.A,p,'Plan A','pa')+planHtml(pick.B,p,'Plan B','pb'):`<div class="wagnnop">— sin pour: el paso respira solo${p.cands.length?'':' (sin candidatos ◎+ en las categorías elegidas)'}</div>`}</div>
+      </div>`;
+    }).join('')}
+    ${over?`<div class="wagnwarn"><b>Presupuesto corto:</b> ni degradando pours se llega a ${budget}. Opciones: bajar a ${Math.max(1,picks.length-1)} pours, sumar té a las categorías, o subir el presupuesto a ~${tot}.</div>`:''}
+    <p class="wadrfoot" style="margin-top:12px">Precios: estimación interna por pour (tabla por categoría y nivel).<span class="wagenai">✦ las notas salen de la carta de Wa — las firmas de la casa mandan</span> · click en cualquier bebida abre su perfil, con la alternativa argentina 代 como tercer respaldo.</p>`;
+  try{ out.scrollIntoView({behavior:'smooth',block:'nearest'}); }catch(e){}
+}
+function wagnOpenBeb(id){
+  const t=WAX.bebs.comun.some(b=>b.id===id)?'comun':(WAX.bebs.prem.some(b=>b.id===id)?'prem':null);
+  if(!t) return;
+  if(waTier!==t) waSetTier(t);
+  waOpenProfile(WAW1,id,'r');
+}
+
 /* ----------------------------- init ----------------------------- */
 initChartTips();
 renderInputs();
@@ -6257,7 +7518,7 @@ Promise.all([
   loadGenka().then(()=>{ meEnsureMix(); }),
   loadCompras(), loadMermas(), loadFxlog(),
   loadCaja(), loadReservas(),
-  loadStock(), loadCRM(), loadAuth(), loadCierres(), loadAisho(), loadKata(), loadKataRuns()
+  loadStock(), loadCRM(), loadAuth(), loadCierres(), loadAisho(), loadKata(), loadKataRuns(), loadWa()
 ]).then(()=>{
   renderInputs(); renderOutputs();             /* re-render con la baseline real */
   loadScenarios();
