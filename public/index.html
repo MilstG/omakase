@@ -7906,7 +7906,12 @@ async function shunAI(){
       body: JSON.stringify({ items:[{ id, n, cat:cEl.value }] }) });
     if(!r.ok){
       const e=await r.json().catch(()=>({}));
-      flash(r.status===403?'La IA de Shun es solo para admin — tu sesión actual es staff: salí y entrá con la clave de admin':(e.error==='rate_limited'?'Límite de IA alcanzado — probá en unos minutos':'La IA no respondió ('+(e.error||r.status)+') — podés cargarlo a mano'));
+      const err=e.error||String(r.status);
+      if(err==='admin_only') flash('Solo admin: tu sesión de servidor es staff — cerrá sesión y entrá con la clave de admin (verificá en /api/me)');
+      else if(err.startsWith('upstream_')) flash('OpenAI rechazó la llamada ('+err.replace('upstream_','HTTP ')+'): '+(e.detail||'sin detalle — ver logs de Railway [ai:shun]'));
+      else if(err==='rate_limited') flash('Límite de IA alcanzado — probá en unos minutos');
+      else if(err==='no_api_key') flash('Falta OPENAI_API_KEY en el servidor');
+      else flash('La IA no respondió ('+err+') — podés cargarlo a mano');
       shun.items.push({ id, n, cat:cEl.value, m:[0,0,0,0,0,0,0,0,0,0,0,0], nota:'carga manual — completar meses', pending:false });
     } else {
       const j=await r.json();
