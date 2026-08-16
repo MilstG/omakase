@@ -403,7 +403,7 @@ app.post('/api/ai/shun', requireAuth, async (req,res)=>{
         body:JSON.stringify({ model:MODEL, response_format:{type:'json_object'},
           messages:[{role:'system',content:instr+' (No tenés búsqueda web: usá tu conocimiento del mercado argentino, bajá la confianza un nivel y aclaralo en cada nota.)'},
                     {role:'user',content:'Ingredientes:\n'+lista}] })});
-      if(!r2.ok){ const t2=await r2.text().catch(()=>''); console.warn('[ai:shun]', r2.status, t2.slice(0,160)); return res.status(502).json({ error:'upstream_'+r2.status }); }
+      if(!r2.ok){ const t2=await r2.text().catch(()=>''); console.warn('[ai:shun]', r2.status, t2.slice(0,160)); return res.status(502).json({ error:'upstream_'+r2.status, detail:String(t2).slice(0,220) }); }
       const j2=await r2.json();
       raw=(j2.choices&&j2.choices[0]&&j2.choices[0].message&&j2.choices[0].message.content)||'';
     }
