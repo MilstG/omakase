@@ -170,6 +170,11 @@
     border-radius:2px;padding:5px 7px;font-size:13px;color:var(--ink);
   }
   input[type=text].name{width:120px;text-align:left;font-family:'Inter',sans-serif}
+  input::placeholder,textarea::placeholder{color:var(--ink-soft);opacity:.55}
+  input[type=checkbox]{accent-color:var(--indigo)}
+  .row .ifield{flex:0 1 230px;min-width:0;justify-content:flex-end}
+  .row .ifield input[type=text]{flex:1 1 auto;width:auto;min-width:0;text-align:left;font-family:'Inter',sans-serif}
+  .row .ifield select.sel{max-width:100%;min-width:0}
   input:focus{outline:2px solid var(--indigo);outline-offset:0;border-color:var(--indigo)}
   .small{width:62px}
   .delrow{border:none;background:none;color:var(--ink-soft);cursor:pointer;font-size:15px;line-height:1;padding:2px 4px;border-radius:2px}
@@ -837,6 +842,13 @@
 .shuncell.shX{background:rgba(195,64,43,.10);color:var(--vermilion,#c3402b);font-weight:700}
 .shuncell.shnow{outline:2px solid var(--indigo,#31456e);outline-offset:-2px}
 
+  /* ===== ZAIKO · formularios etiquetados ===== */
+  .zkform{display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px 12px;margin-bottom:10px;padding:11px 13px;background:var(--panel);border:1px solid var(--rule);border-radius:3px}
+  .zkftitle{font-family:'Zilla Slab',serif;font-weight:600;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);align-self:center;width:100%}
+  .zkf{display:flex;flex-direction:column;gap:3px;min-width:0}
+  .zkf>span{font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;white-space:nowrap}
+  .zkfish{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:flex-end;padding-left:10px;border-left:1px dotted var(--rule)}
+
   /* ===== OROSHI 卸 — proveedores ===== */
   .prlist{display:flex;flex-direction:column;max-height:430px;overflow-y:auto}
   .prrow{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:9px 6px;border-bottom:1px dotted var(--rule);cursor:pointer;border-left:3px solid transparent}
@@ -1390,7 +1402,7 @@
             <div class="row"><label>IVA</label><div class="ifield"><input type="number" id="cpIva" value="21" step="0.5"><span class="post">%</span></div></div>
             <div class="row"><label>Tipo</label><div class="ifield"><select id="cpCat" class="sel"><option value="comida">Comida</option><option value="bebida">Bebida</option><option value="otro">Otro</option></select></div></div>
             <div class="row"><label>Actualizar precio<span class="sub">en el insumo de Genka</span></label><div class="ifield"><input type="checkbox" id="cpUpd" checked style="width:auto"></div></div>
-            <button class="gkadd" id="cpSaveBtn" onclick="cpSave()">Registrar compra</button>
+            <button class="btn" style="width:100%;margin-top:10px" id="cpSaveBtn" onclick="cpSave()">Registrar compra</button>
           </div>
         </div>
 
@@ -1403,7 +1415,7 @@
             <div class="row"><label>Cantidad</label><div class="ifield"><input type="number" id="mrQty" step="0.01" placeholder="0"></div></div>
             <div class="row"><label>Motivo</label><div class="ifield"><select id="mrMotivo" class="sel"><option value="sobre">Sobreproducción</option><option value="corte">Corte fallido</option><option value="venc">Vencimiento</option><option value="rotura">Rotura / derrame</option><option value="otro">Otro</option></select></div></div>
             <div class="row"><label>Nota</label><div class="ifield"><input type="text" id="mrNota" placeholder="opcional"></div></div>
-            <button class="gkadd" id="mrSaveBtn" onclick="mrSave()">Registrar merma</button>
+            <button class="btn" style="width:100%;margin-top:10px" id="mrSaveBtn" onclick="mrSave()">Registrar merma</button>
           </div>
         </div>
         <div class="card">
@@ -1526,7 +1538,7 @@
             <div class="row"><label>Comensales</label><div class="ifield"><input type="number" id="cvParty" placeholder="2"></div></div>
             <div class="row"><label>Gasto<span class="sub">USD c/IVA, total mesa</span></label><div class="ifield"><span class="pre">$</span><input type="number" id="cvSpend" placeholder="0"></div></div>
             <div class="row"><label>Nota</label><div class="ifield"><input type="text" id="cvNota" placeholder="pidió el pairing largo…"></div></div>
-            <button class="gkadd" id="cvSaveBtn" onclick="cvSave()">Registrar visita</button>
+            <button class="btn" style="width:100%;margin-top:10px" id="cvSaveBtn" onclick="cvSave()">Registrar visita</button>
           </div>
         </div>
 
@@ -1540,7 +1552,7 @@
             <div class="row"><label>Alergias<span class="sub">se muestran en rojo</span></label><div class="ifield"><input type="text" id="ccAllerg" placeholder="mariscos, gluten…"></div></div>
             <div class="row"><label>Preferencias</label><div class="ifield"><input type="text" id="ccPrefs" placeholder="sake junmai, sin uni…"></div></div>
             <div class="row"><label>Notas</label><div class="ifield"><input type="text" id="ccNotas"></div></div>
-            <button class="gkadd" id="ccSaveBtn" onclick="ccSave()">Guardar cliente</button>
+            <button class="btn" style="width:100%;margin-top:10px" id="ccSaveBtn" onclick="ccSave()">Guardar cliente</button>
           </div>
         </div>
       </div>
@@ -8206,30 +8218,30 @@ function renderZaiko(){
   const gOpts='<option value="">— sin vínculo a Genka —</option>'+(typeof G==='object'&&Array.isArray(G.insumos)?G.insumos.map(i=>`<option value="${i.id}">${escapeHtml(i.n)}</option>`).join(''):'');
   const itOpts=zaiko.items.map(i=>`<option value="${i.id}">${escapeHtml(i.n)}</option>`).join('');
   forms.innerHTML =
-    (admin? `<div class="filterbar" style="margin-bottom:8px;flex-wrap:wrap">
-      <span class="fl">Nuevo ítem</span>
-      <input type="text" id="zkN" placeholder="Nombre" style="width:150px">
-      <select class="sel" id="zkC" onchange="document.getElementById('zkFishF').style.display=this.value==='Pescado'?'inline':'none'"><option>Pescado</option><option>Bebida</option><option>Despensa</option><option>Despensa 守</option><option>Consumible</option></select>
-      <input type="text" id="zkU" placeholder="unidad" style="width:70px">
-      <input type="number" step="0.1" id="zkS" placeholder="stock" style="width:64px">
-      <input type="number" step="0.1" id="zkP" placeholder="par" style="width:56px" title="Punto de reposición (no aplica a pescado)">
-      <input type="number" step="0.01" id="zkK" placeholder="USD/u neto" style="width:84px">
-      <select class="sel" id="zkG" title="Vincular a insumo de Genka: costo compartido y merma al log de Compras">${gOpts}</select>
-      <span id="zkFishF" style="display:inline">
-        <input type="date" id="zkIng" value="${fmtDate(new Date())}" title="Ingreso">
-        <input type="number" id="zkVa" placeholder="vent. desde" style="width:82px" title="Ventana de maduración: desde (días)">
-        <input type="number" id="zkVb" placeholder="hasta" style="width:60px">
-        <input type="text" id="zkO" placeholder="origen" style="width:110px">
+    (admin? `<div class="zkform">
+      <span class="zkftitle">Nuevo ítem</span>
+      <label class="zkf" style="flex:1 1 150px"><span>Nombre</span><input type="text" id="zkN" placeholder="Hamachi entero…" style="width:100%;text-align:left;font-family:'Inter',sans-serif"></label>
+      <label class="zkf"><span>Familia</span><select class="sel" id="zkC" onchange="document.getElementById('zkFishF').style.display=this.value==='Pescado'?'flex':'none'"><option>Pescado</option><option>Bebida</option><option>Despensa</option><option>Despensa 守</option><option>Consumible</option></select></label>
+      <label class="zkf"><span>Unidad</span><input type="text" id="zkU" placeholder="kg" style="width:56px;text-align:left;font-family:'Inter',sans-serif"></label>
+      <label class="zkf"><span>Stock</span><input type="number" step="0.1" id="zkS" placeholder="0" style="width:64px"></label>
+      <label class="zkf" title="Punto de reposición (no aplica a pescado)"><span>Par</span><input type="number" step="0.1" id="zkP" placeholder="0" style="width:56px"></label>
+      <label class="zkf"><span>USD/u neto</span><input type="number" step="0.01" id="zkK" placeholder="0" style="width:84px"></label>
+      <label class="zkf" title="Vincular a insumo de Genka: costo compartido y merma al log de Compras"><span>Genka 原価</span><select class="sel" id="zkG">${gOpts}</select></label>
+      <span id="zkFishF" class="zkfish" style="display:flex">
+        <label class="zkf"><span>Ingreso</span><input type="date" id="zkIng" value="${fmtDate(new Date())}"></label>
+        <label class="zkf" title="Ventana de maduración (días desde el ingreso)"><span>Ventana desde</span><input type="number" id="zkVa" placeholder="0" style="width:56px"></label>
+        <label class="zkf"><span>Hasta</span><input type="number" id="zkVb" placeholder="3" style="width:56px"></label>
+        <label class="zkf" style="flex:1 1 110px"><span>Origen</span><input type="text" id="zkO" placeholder="Mar del Plata…" style="width:100%;text-align:left;font-family:'Inter',sans-serif"></label>
       </span>
-      <button class="gkadd" style="margin:0" onclick="zkAdd()">+ Agregar</button>
+      <button class="gkadd" style="margin:0;align-self:flex-end" onclick="zkAdd()">+ Agregar</button>
     </div>`:'')
-    + (zaiko.items.length? `<div class="filterbar" style="margin-bottom:8px">
-      <span class="fl">Movimiento</span>
-      <select class="sel" id="zkMi">${itOpts}</select>
-      <select class="sel" id="zkMt"><option value="entrada">Entrada</option><option value="salida">Salida</option><option value="merma">Merma</option></select>
-      <input type="number" step="0.1" id="zkMc" placeholder="cant." style="width:64px">
-      <input type="text" id="zkMm" placeholder="motivo (obligatorio en salida/merma)" style="width:220px">
-      <button class="gkadd" style="margin:0" onclick="zkMov()">Registrar</button>
+    + (zaiko.items.length? `<div class="zkform">
+      <span class="zkftitle">Movimiento</span>
+      <label class="zkf" style="flex:1 1 160px"><span>Ítem</span><select class="sel" id="zkMi" style="width:100%">${itOpts}</select></label>
+      <label class="zkf"><span>Tipo</span><select class="sel" id="zkMt"><option value="entrada">Entrada</option><option value="salida">Salida</option><option value="merma">Merma</option></select></label>
+      <label class="zkf"><span>Cantidad</span><input type="number" step="0.1" id="zkMc" placeholder="0" style="width:64px"></label>
+      <label class="zkf" style="flex:2 1 220px"><span>Motivo <i style="font-style:normal;opacity:.7">· obligatorio en salida/merma</i></span><input type="text" id="zkMm" placeholder="Servicio del sábado, rotura…" style="width:100%;text-align:left;font-family:'Inter',sans-serif"></label>
+      <button class="gkadd" style="margin:0;align-self:flex-end" onclick="zkMov()">Registrar</button>
     </div>`:'');
   const f=document.getElementById('zkFilter').value;
   let rows=zaiko.items.map((it,ix)=>({it,ix}));
