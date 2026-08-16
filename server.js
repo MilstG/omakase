@@ -24,7 +24,7 @@ const DEV_OPEN = !ADMIN_PW && !process.env.DATABASE_URL;
 
 /* Claves que el staff puede LEER (la app las necesita para renderizar)
    pero NO escribir: modelo financiero, escenarios, caja, permisos y sync. */
-const ADMIN_ONLY_WRITE = ['kanjo:baseline','kanjo:scenarios','kanjo:caja','kanjo:auth','kanjo:cierres','kanjo:kata','kanjo:wa'];
+const ADMIN_ONLY_WRITE = ['kanjo:baseline','kanjo:scenarios','kanjo:caja','kanjo:auth','kanjo:cierres','kanjo:kata','kanjo:wa','kanjo:dou','kanjo:shun'];
 /* Claves que el staff tampoco puede LEER (saldos de caja, P&L congelado):
    ocultar el tab no alcanza si la API igual entrega el dato. */
 const ADMIN_ONLY_READ = ['kanjo:caja','kanjo:cierres'];
@@ -350,6 +350,80 @@ app.post('/api/ai/wa/precios', requireAuth, async (req,res)=>{
 app.get('/api/audit', requireAuth, async (req,res)=>{
   if(req.role!=='admin') return res.status(403).json({ error:'admin_only' });
   res.json({ entries: await db.auditList(req.query.limit) });
+});
+
+
+/* ---------- IA: Shun 旬 — estacionalidad de producto con búsqueda web ----------
+   Recibe hasta 6 ingredientes y devuelve, por cada uno, los 12 meses con estado
+   (2 pico · 1 aceptable · 0 fuera · -1 veda legal), nota corta y confianza.
+   Busca online zafras y vedas argentinas vigentes. La respuesta entra al cliente
+   como sugerencia ✦ pendiente: la IA propone, el itamae decide.
+   Admin-only, auditado, comparte el límite de 30/10min. */
+app.post('/api/ai/shun', requireAuth, async (req,res)=>{
+  if(req.role!=='admin') return res.status(403).json({ error:'admin_only' });
+  const KEY=process.env.OPENAI_API_KEY||'';
+  if(!KEY) return res.status(501).json({ error:'no_api_key' });
+  const ip=req.ip||req.socket.remoteAddress||'?';
+  const now=Date.now();
+  if(aiLimit.size>2000) for(const [k,v] of aiLimit){ if(now>=v.resetAt) aiLimit.delete(k); }
+  const a=aiLimit.get(ip);
+  if(a && now<a.resetAt && a.n>=30) return res.status(429).json({ error:'rate_limited' });
+  if(!a || now>=a.resetAt) aiLimit.set(ip,{n:0,resetAt:now+10*60*1000});
+  aiLimit.get(ip).n++;
+  const { items } = req.body||{};
+  if(!Array.isArray(items) || !items.length || items.length>6) return res.status(400).json({ error:'bad_request' });
+  const lista=items.map(i=>`${String(i.id).slice(0,24)}: ${String(i.n).slice(0,60)} [${String(i.cat||'').slice(0,20)}]`).join('\n');
+  const instr='Sos un experto en producto de mar y huerta de Argentina asesorando a un omakase en Buenos Aires. '
+    +'Para cada ingrediente listado, buscá en la web la estacionalidad REAL en Argentina: zafras, desembarques, vedas vigentes por resolución (CFP, provincias), cosechas. '
+    +'Respondé SOLO un objeto JSON, sin markdown: {"temporadas":{"<id>":{"m":[12 enteros, enero a diciembre: 2 pico de calidad, 1 aceptable, 0 fuera de temporada, -1 veda legal],'
+    +'"nota":"una línea: zafra/veda/fuente de la estacionalidad","confianza":"alta|media|baja"}}}. '
+    +'Reglas: si hay veda legal usá -1 en esos meses y nombrá la norma en la nota. Nunca inventes: si no encontrás datos creíbles para un ingrediente, usá confianza "baja", meses conservadores (0/1) y decilo en la nota. Producto de cultivo/importado estable: todo 1 con nota. Castellano rioplatense.';
+  const AI_BASE=(process.env.OPENAI_BASE_URL||'https://api.openai.com').replace(/\/+$/,'');
+  const MODEL=process.env.OPENAI_MODEL||'gpt-5.5';
+  try{
+    /* Responses API con web_search; fallback a chat sin búsqueda (igual que /api/ai/wa/precios) */
+    let raw='', conBusqueda=true;
+    let r=await fetch(AI_BASE+'/v1/responses',{
+      method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+KEY },
+      body:JSON.stringify({ model:MODEL, tools:[{type:'web_search'}], input:[
+        { role:'system', content:instr },
+        { role:'user', content:'Ingredientes:\n'+lista }
+      ]})});
+    if(r.ok){
+      const j=await r.json();
+      raw=j.output_text||'';
+      if(!raw && Array.isArray(j.output))
+        raw=j.output.flatMap(o=>Array.isArray(o.content)?o.content:[]).map(c=>c.text||'').join('');
+    } else {
+      conBusqueda=false;
+      const t=await r.text().catch(()=>'');
+      console.warn('[ai:shun] responses '+r.status+' — fallback sin búsqueda:', t.slice(0,140));
+      const r2=await fetch(AI_BASE+'/v1/chat/completions',{
+        method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+KEY },
+        body:JSON.stringify({ model:MODEL, response_format:{type:'json_object'},
+          messages:[{role:'system',content:instr+' (No tenés búsqueda web: usá tu conocimiento del mercado argentino, bajá la confianza un nivel y aclaralo en cada nota.)'},
+                    {role:'user',content:'Ingredientes:\n'+lista}] })});
+      if(!r2.ok){ const t2=await r2.text().catch(()=>''); console.warn('[ai:shun]', r2.status, t2.slice(0,160)); return res.status(502).json({ error:'upstream_'+r2.status }); }
+      const j2=await r2.json();
+      raw=(j2.choices&&j2.choices[0]&&j2.choices[0].message&&j2.choices[0].message.content)||'';
+    }
+    const m=String(raw).replace(/```json|```/g,'').match(/\{[\s\S]*\}/);
+    if(!m) return res.status(502).json({ error:'no_json' });
+    const obj=JSON.parse(m[0]);
+    if(!obj.temporadas) return res.status(502).json({ error:'no_temporadas' });
+    const out={};
+    for(const [k,v] of Object.entries(obj.temporadas)){
+      if(!v||typeof v!=='object'||!Array.isArray(v.m)||v.m.length!==12) continue;
+      out[String(k).slice(0,24)]={
+        m: v.m.map(x=>[2,1,0,-1].includes(+x)?+x:0),
+        nota: String(v.nota||'').slice(0,240),
+        confianza: ['alta','media','baja'].includes(v.confianza)?v.confianza:'baja'
+      };
+    }
+    if(!Object.keys(out).length) return res.status(502).json({ error:'empty' });
+    db.audit(req.role,'ai_shun',null,null,null);
+    res.json({ temporadas: out, busqueda: conBusqueda });
+  }catch(e){ console.warn('[ai:shun]', e.message); res.status(502).json({ error:'upstream_error' }); }
 });
 
 /* ---------- salud + estáticos ---------- */
