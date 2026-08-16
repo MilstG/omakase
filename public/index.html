@@ -7906,7 +7906,7 @@ async function shunAI(){
       body: JSON.stringify({ items:[{ id, n, cat:cEl.value }] }) });
     if(!r.ok){
       const e=await r.json().catch(()=>({}));
-      flash(e.error==='rate_limited'?'Límite de IA alcanzado — probá en unos minutos':'La IA no respondió ('+(e.error||r.status)+') — podés cargarlo a mano');
+      flash(r.status===403?'La IA de Shun es solo para admin — tu sesión actual es staff: salí y entrá con la clave de admin':(e.error==='rate_limited'?'Límite de IA alcanzado — probá en unos minutos':'La IA no respondió ('+(e.error||r.status)+') — podés cargarlo a mano'));
       shun.items.push({ id, n, cat:cEl.value, m:[0,0,0,0,0,0,0,0,0,0,0,0], nota:'carga manual — completar meses', pending:false });
     } else {
       const j=await r.json();
@@ -8057,7 +8057,14 @@ function renderZaiko(){
   document.getElementById('zkAlerts').textContent=zaiko.items.filter(zkAlert).length;
 }
 
+async function loadMe(){
+  try{
+    const r=await fetch('/api/me');
+    if(r.ok){ const j=await r.json(); if(j&&j.role) window.KANJO_SERVER_ROLE=j.role; }
+  }catch(e){}
+}
 Promise.all([
+  loadMe(),
   loadBaselineSilent(),                        /* el esquema guardado ES la app: sin esto todo calcula sobre defaults */
   loadServices(), loadFcHealth(),
   loadGenka().then(()=>{ meEnsureMix(); }),
