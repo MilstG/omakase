@@ -820,7 +820,9 @@
 .doubody li{margin-bottom:3px}
 .doudef{display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap}
 .doutag{background:rgba(195,64,43,.08);border:1px dashed var(--vermilion,#c3402b);border-radius:4px;padding:1px 6px;font-size:11.5px;color:var(--vermilion,#c3402b);white-space:nowrap}
-.shuncell{width:30px;text-align:center;cursor:pointer;user-select:none}
+.shuncell{width:30px;min-width:26px;text-align:center;cursor:pointer;user-select:none}
+.shunname{min-width:230px;max-width:360px}
+.shunnote{display:block;font-size:11px;color:var(--muted,#7a715f);white-space:normal;line-height:1.35;margin-top:2px;max-width:350px}
 .shuncell.sh2{background:rgba(166,124,39,.14);color:var(--brass,#a67c27);font-weight:700}
 .shuncell.sh1{opacity:.75}
 .shuncell.sh0{opacity:.35}
@@ -7895,10 +7897,19 @@ function shunCycle(ix,mi){
 }
 function shunApprove(ix){ const it=shun.items[ix]; if(!it) return; it.pending=false; shunPersist(); renderShun(); flash('Visto bueno ✓ — la sugerencia IA ahora es oficial'); }
 function shunDel(ix){ if(!kjIsAdmin()) return; shun.items.splice(ix,1); shunPersist(); renderShun(); }
+function shunManual(){
+  if(!kjIsAdmin()) return;
+  const nEl=document.getElementById('shunNewN'), cEl=document.getElementById('shunNewC');
+  const n=(nEl.value||'').trim(); if(!n){ flash('Poné el nombre del ingrediente'); return; }
+  if(shun.items.some(i=>i.n.toLowerCase()===n.toLowerCase())){ flash('Ya existe un ingrediente con ese nombre'); return; }
+  shun.items.push({ id:rid(), n, cat:cEl.value, m:[0,0,0,0,0,0,0,0,0,0,0,0], nota:'carga manual — completar meses con clic', pending:false });
+  nEl.value=''; shunPersist(); renderShun();
+}
 async function shunAI(){
   if(shunAIBusy) return;
   const nEl=document.getElementById('shunNewN'), cEl=document.getElementById('shunNewC');
   const n=(nEl.value||'').trim(); if(!n){ flash('Poné el nombre del ingrediente'); return; }
+  if(shun.items.some(i=>i.n.toLowerCase()===n.toLowerCase())){ flash('Ya existe un ingrediente con ese nombre — borralo primero si querés regenerarlo'); return; }
   const id=rid();
   shunAIBusy=true; renderShun();
   try{
@@ -7912,18 +7923,17 @@ async function shunAI(){
       else if(err==='rate_limited') flash('Límite de IA alcanzado — probá en unos minutos');
       else if(err==='no_api_key') flash('Falta OPENAI_API_KEY en el servidor');
       else flash('La IA no respondió ('+err+') — podés cargarlo a mano');
-      shun.items.push({ id, n, cat:cEl.value, m:[0,0,0,0,0,0,0,0,0,0,0,0], nota:'carga manual — completar meses', pending:false });
     } else {
       const j=await r.json();
       const t=j.temporadas && j.temporadas[id];
       if(t){
         shun.items.push({ id, n, cat:cEl.value, m:t.m, nota:'✦ '+t.nota+(j.busqueda?'':' · sin búsqueda web')+' · confianza '+t.confianza, pending:true });
-        flash('✦ Estacionalidad sugerida — pendiente de tu visto bueno');
+        flash('✦ Estacionalidad sugerida — pendiente de tu visto bueno'); nEl.value='';
       } else {
-        shun.items.push({ id, n, cat:cEl.value, m:[0,0,0,0,0,0,0,0,0,0,0,0], nota:'la IA no devolvió datos — completar a mano', pending:false });
+        flash('La IA no devolvió datos para ese ingrediente — podés cargarlo con “+ manual”');
       }
     }
-    nEl.value=''; shunPersist();
+    shunPersist();
   }catch(e){ flash('Error de red con la IA'); }
   shunAIBusy=false; renderShun();
 }
@@ -7933,13 +7943,13 @@ function renderShun(){
   const box=document.getElementById('shunAddBox');
   box.innerHTML = admin? `<input type="text" id="shunNewN" placeholder="Nuevo ingrediente…" style="width:160px" value="${box.querySelector('#shunNewN')?escapeHtml(box.querySelector('#shunNewN').value):''}">
     <select class="sel" id="shunNewC"><option>Pescado de mar</option><option>Marisco</option><option>Río</option><option>Huerta</option></select>
-    <button class="gkadd" style="margin:0" onclick="shunAI()" ${shunAIBusy?'disabled':''}>${shunAIBusy?'✦ buscando zafras y vedas…':'✦ Estacionalidad IA'}</button>` : '';
+    <button class="gkadd" style="margin:0" onclick="shunAI()" ${shunAIBusy?'disabled':''}>${shunAIBusy?'✦ buscando zafras y vedas…':'✦ Estacionalidad IA'}</button><button class="editrow" style="margin-left:4px" title="Agregar vacío para completar a mano" onclick="shunManual()">+ manual</button>` : '';
   const f=document.getElementById('shunFilter').value;
   const mesNow=new Date().getMonth();
   const rows=shun.items.map((s,ix)=>({s,ix})).filter(r=>!f||r.s.cat===f);
   tbl.innerHTML=`<thead><tr><th>Ingrediente</th>${SHUN_MESES.map((m,i)=>`<th style="text-align:center${i===mesNow?';color:var(--indigo,#31456e)':''}">${m}</th>`).join('')}<th></th></tr></thead><tbody>`
    + rows.map(({s,ix})=>`<tr${s.pending?' style="background:rgba(49,69,110,.07)"':''}>
-      <td><b>${escapeHtml(s.n)}</b>${s.pending?' <span class="doutag" style="border-color:var(--indigo,#31456e);color:var(--indigo,#31456e)">✦ pendiente</span>':''}<span class="gcat">${escapeHtml(s.cat)} · ${escapeHtml(s.nota||'')}</span></td>
+      <td class="shunname" title="${escapeHtml(s.nota||'')}"><b>${escapeHtml(s.n)}</b>${s.pending?' <span class="doutag" style="border-color:var(--indigo,#31456e);color:var(--indigo,#31456e)">✦ pendiente</span>':''}<span class="shunnote">${escapeHtml(s.cat)} · ${escapeHtml(s.nota||'')}</span></td>
       ${s.m.map((v,mi)=>`<td class="shuncell sh${v===-1?'X':v}${mi===mesNow?' shnow':''}" onclick="shunCycle(${ix},${mi})">${SHUN_SYM[v]}</td>`).join('')}
       <td style="white-space:nowrap">${s.pending&&admin?`<button class="gkadd" style="margin:0" onclick="shunApprove(${ix})">Visto bueno</button> `:''}${admin?`<button class="editrow" onclick="shunDel(${ix})">×</button>`:''}</td>
     </tr>`).join('') + '</tbody>';
