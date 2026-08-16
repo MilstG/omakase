@@ -7895,8 +7895,15 @@ function shunCycle(ix,mi){
   it.m[mi]=order[(order.indexOf(it.m[mi])+1)%4];
   shunPersist(); renderShun();
 }
-function shunApprove(ix){ const it=shun.items[ix]; if(!it) return; it.pending=false; shunPersist(); renderShun(); flash('Visto bueno ✓ — la sugerencia IA ahora es oficial'); }
+function shunApprove(ix){ const it=shun.items[ix]; if(!it) return; it.pending=false; it.nota=(it.nota||'').replace(/^✦\s*/,''); shunPersist(); renderShun(); flash('Visto bueno ✓ — la sugerencia IA ahora es oficial'); }
 function shunDel(ix){ if(!kjIsAdmin()) return; shun.items.splice(ix,1); shunPersist(); renderShun(); }
+function shunEditNota(ix){
+  if(!kjIsAdmin()) return;
+  const it=shun.items[ix]; if(!it) return;
+  const v=window.prompt('Nota de '+it.n+' (vacío = sin nota):', it.nota||'');
+  if(v===null) return;
+  it.nota=v.trim(); shunPersist(); renderShun(); flash('Nota actualizada ✓');
+}
 function shunManual(){
   if(!kjIsAdmin()) return;
   const nEl=document.getElementById('shunNewN'), cEl=document.getElementById('shunNewC');
@@ -7951,7 +7958,7 @@ function renderShun(){
    + rows.map(({s,ix})=>`<tr${s.pending?' style="background:rgba(49,69,110,.07)"':''}>
       <td class="shunname" title="${escapeHtml(s.nota||'')}"><b>${escapeHtml(s.n)}</b>${s.pending?' <span class="doutag" style="border-color:var(--indigo,#31456e);color:var(--indigo,#31456e)">✦ pendiente</span>':''}<span class="shunnote">${escapeHtml(s.cat)} · ${escapeHtml(s.nota||'')}</span></td>
       ${s.m.map((v,mi)=>`<td class="shuncell sh${v===-1?'X':v}${mi===mesNow?' shnow':''}" onclick="shunCycle(${ix},${mi})">${SHUN_SYM[v]}</td>`).join('')}
-      <td style="white-space:nowrap">${s.pending&&admin?`<button class="gkadd" style="margin:0" onclick="shunApprove(${ix})">Visto bueno</button> `:''}${admin?`<button class="editrow" onclick="shunDel(${ix})">×</button>`:''}</td>
+      <td style="white-space:nowrap">${s.pending&&admin?`<button class="gkadd" style="margin:0" onclick="shunApprove(${ix})">Visto bueno</button> `:''}${admin?`<button class="editrow" title="Editar nota" onclick="shunEditNota(${ix})">✎</button><button class="editrow" onclick="shunDel(${ix})">×</button>`:''}</td>
     </tr>`).join('') + '</tbody>';
   const pico=shun.items.filter(s=>!s.pending&&s.m[mesNow]===2).map(s=>s.n);
   const veda=shun.items.filter(s=>s.m[mesNow]===-1).map(s=>s.n);
