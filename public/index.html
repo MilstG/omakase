@@ -339,10 +339,18 @@
   .scenempty{font-size:12.5px;color:var(--ink-soft);line-height:1.6;margin-top:10px}
 
   /* ---------- tabs ---------- */
-  .tabs{display:flex;flex-wrap:wrap;align-items:center;gap:5px 4px;border-bottom:2px solid var(--ink);margin-bottom:26px;padding-bottom:12px}
+  .tabs{border-bottom:2px solid var(--ink);margin-bottom:26px}
+  .tabrow{display:flex;flex-wrap:wrap;align-items:center;gap:5px 4px;padding:7px 0}
+  .tabrow + .tabrow{border-top:1px dotted var(--rule)}
+  .tabrow:not(:has(.tab:not([data-hidden="1"]))){display:none}
+  .tglab{font-family:'Inter',sans-serif;font-size:9.5px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-soft);width:96px;flex:none;padding-right:8px}
+  @media(max-width:640px){.tglab{width:100%;padding:2px 0 1px}}
   .tab[data-hidden="1"]{display:none}
   body.staff .adminonly{display:none!important}
-  .roletab{margin-left:auto;background:none;border:none;font-family:'Inter',sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);cursor:pointer;padding:8px 10px;align-self:center}
+  .navutils{margin-left:auto;display:flex;align-items:center;gap:4px}
+  .roletab{background:none;border:1px solid transparent;border-radius:2px;font-family:'Inter',sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);cursor:pointer;padding:5px 9px;white-space:nowrap}
+  .roletab:hover{color:var(--ink);background:var(--panel);border-color:var(--rule)}
+  @media(max-width:640px){.navutils{width:100%;justify-content:flex-end;margin-left:0}}
   .roletab:hover{color:var(--ink)}
   .dotr{display:inline-block;width:9px;height:9px;border-radius:50%;vertical-align:middle;margin-left:4px}
   /* ---- aishō 相性 ---- */
@@ -894,26 +902,37 @@
 
 <div class="wrap">
   <nav class="tabs">
-    <button class="tab active" data-tab="resumen" onclick="switchTab('resumen')">Resumen <span class="tk">週報</span></button>
-    <button class="tab" data-tab="costos" onclick="switchTab('costos')">Esquema de costos <span class="tk">勘定</span></button>
-    <button class="tab" data-tab="turnos" onclick="switchTab('turnos')">Analista de turnos <span class="tk">番付</span></button>
-    <button class="tab" data-tab="heika" onclick="switchTab('heika')">Precios dinámicos <span class="tk">平価</span></button>
-    <button class="tab" data-tab="yoso" onclick="switchTab('yoso')">Pronóstico <span class="tk">予想</span></button>
-    <button class="tab" data-tab="genka" onclick="switchTab('genka')">Costeo de menú <span class="tk">原価</span></button>
-    <button class="tab" data-tab="aisho" onclick="switchTab('aisho')">Maridaje <span class="tk">相性</span></button>
-    <button class="tab" data-tab="compras" onclick="switchTab('compras')">Compras <span class="tk">仕入</span></button>
-    <button class="tab" data-tab="oroshi" onclick="switchTab('oroshi')">Proveedores <span class="tk">卸</span></button>
-    <button class="tab" data-tab="caja" onclick="switchTab('caja')">Caja <span class="tk">現金</span></button>
-    <button class="tab" data-tab="reservas" onclick="switchTab('reservas')">Reservas <span class="tk">予約</span></button>
-    <button class="tab" data-tab="crm" onclick="switchTab('crm')">Clientes <span class="tk">顧客</span></button>
-    <button class="tab" data-tab="kata" onclick="switchTab('kata')">Manual <span class="tk">型</span></button>
-    <button class="tab" data-tab="wa" onclick="switchTab('wa')">Rueda <span class="tk">輪</span></button>
-    <button class="tab" data-tab="dou" onclick="switchTab('dou')">Procedimientos <span class="tk">道</span></button>
-    <button class="tab" data-tab="shun" onclick="switchTab('shun')">Estacionalidad <span class="tk">旬</span></button>
-    <button class="tab" data-tab="zaiko" onclick="switchTab('zaiko')">Inventario <span class="tk">在庫</span></button>
-    <button class="roletab kjqlaunch" onclick="kjQuick()">⚡ carga rápida</button>
-    <button class="roletab" id="roleBtn" onclick="kjRoleToggle()">⚙ roles</button>
-    <button class="roletab" id="logoutBtn" onclick="kjLogout()" style="display:none" title="Cerrar sesión en este dispositivo">⎋ salir</button>
+    <div class="tabrow">
+      <span class="tglab">Números</span>
+      <button class="tab active" data-tab="resumen" onclick="switchTab('resumen')">Resumen <span class="tk">週報</span></button>
+      <button class="tab" data-tab="costos" onclick="switchTab('costos')">Esquema de costos <span class="tk">勘定</span></button>
+      <button class="tab" data-tab="turnos" onclick="switchTab('turnos')">Analista de turnos <span class="tk">番付</span></button>
+      <button class="tab" data-tab="heika" onclick="switchTab('heika')">Precios dinámicos <span class="tk">平価</span></button>
+      <button class="tab" data-tab="yoso" onclick="switchTab('yoso')">Pronóstico <span class="tk">予想</span></button>
+      <button class="tab" data-tab="caja" onclick="switchTab('caja')">Caja <span class="tk">現金</span></button>
+    </div>
+    <div class="tabrow">
+      <span class="tglab">Producto</span>
+      <button class="tab" data-tab="genka" onclick="switchTab('genka')">Costeo de menú <span class="tk">原価</span></button>
+      <button class="tab" data-tab="compras" onclick="switchTab('compras')">Compras <span class="tk">仕入</span></button>
+      <button class="tab" data-tab="oroshi" onclick="switchTab('oroshi')">Proveedores <span class="tk">卸</span></button>
+      <button class="tab" data-tab="zaiko" onclick="switchTab('zaiko')">Inventario <span class="tk">在庫</span></button>
+      <button class="tab" data-tab="shun" onclick="switchTab('shun')">Estacionalidad <span class="tk">旬</span></button>
+    </div>
+    <div class="tabrow">
+      <span class="tglab">Sala y equipo</span>
+      <button class="tab" data-tab="reservas" onclick="switchTab('reservas')">Reservas <span class="tk">予約</span></button>
+      <button class="tab" data-tab="crm" onclick="switchTab('crm')">Clientes <span class="tk">顧客</span></button>
+      <button class="tab" data-tab="aisho" onclick="switchTab('aisho')">Maridaje <span class="tk">相性</span></button>
+      <button class="tab" data-tab="wa" onclick="switchTab('wa')">Rueda <span class="tk">輪</span></button>
+      <button class="tab" data-tab="kata" onclick="switchTab('kata')">Manual <span class="tk">型</span></button>
+      <button class="tab" data-tab="dou" onclick="switchTab('dou')">Procedimientos <span class="tk">道</span></button>
+      <span class="navutils">
+        <button class="roletab kjqlaunch" onclick="kjQuick()">⚡ carga rápida</button>
+        <button class="roletab" id="roleBtn" onclick="kjRoleToggle()">⚙ roles</button>
+        <button class="roletab" id="logoutBtn" onclick="kjLogout()" style="display:none" title="Cerrar sesión en este dispositivo">⎋ salir</button>
+      </span>
+    </div>
   </nav>
 
   <div id="tab-costos" class="tabpanel">
