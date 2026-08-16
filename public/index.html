@@ -805,6 +805,27 @@
   .wagenai{display:inline-block;font-size:8.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--indigo);border:1px solid var(--indigo);border-radius:2px;padding:1px 6px;background:#fff;vertical-align:2px;margin-left:8px}
 
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ===== DŌ 道 / SHUN 旬 / ZAIKO 在庫 ===== */
+.doucat{border:1px solid var(--line,#ddd4c2);background:transparent;border-radius:6px;padding:5px 10px;margin-right:4px;cursor:pointer;font-family:'Zilla Slab',serif;font-size:12.5px;font-weight:600;color:inherit}
+.doucat.on{background:var(--ink,#221d15);color:var(--paper,#f6f2e9);border-color:var(--ink,#221d15)}
+.doucat span{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--brass,#a67c27)}
+.doucat.on span{color:inherit}
+.douproc{border:1px solid var(--line,#ddd4c2);border-radius:8px;margin-bottom:8px;overflow:hidden}
+.douhead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;cursor:pointer}
+.doubody{display:none;padding:0 12px 12px;border-top:1px dashed var(--line,#ddd4c2)}
+.douproc.open .doubody{display:block}
+.doulbl{font-size:10.5px;color:var(--brass,#a67c27);text-transform:uppercase;letter-spacing:.05em;margin:10px 0 2px;font-weight:700}
+.doubody ol{padding-left:18px;margin:0}
+.doubody li{margin-bottom:3px}
+.doudef{display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.doutag{background:rgba(195,64,43,.08);border:1px dashed var(--vermilion,#c3402b);border-radius:4px;padding:1px 6px;font-size:11.5px;color:var(--vermilion,#c3402b);white-space:nowrap}
+.shuncell{width:30px;text-align:center;cursor:pointer;user-select:none}
+.shuncell.sh2{background:rgba(166,124,39,.14);color:var(--brass,#a67c27);font-weight:700}
+.shuncell.sh1{opacity:.75}
+.shuncell.sh0{opacity:.35}
+.shuncell.shX{background:rgba(195,64,43,.10);color:var(--vermilion,#c3402b);font-weight:700}
+.shuncell.shnow{outline:2px solid var(--indigo,#31456e);outline-offset:-2px}
 </style>
 
 <div class="wrap">
@@ -822,6 +843,9 @@
     <button class="tab" data-tab="crm" onclick="switchTab('crm')">Clientes <span class="tk">顧客</span></button>
     <button class="tab" data-tab="kata" onclick="switchTab('kata')">Manual <span class="tk">型</span></button>
     <button class="tab" data-tab="wa" onclick="switchTab('wa')">Rueda <span class="tk">輪</span></button>
+    <button class="tab" data-tab="dou" onclick="switchTab('dou')">Procedimientos <span class="tk">道</span></button>
+    <button class="tab" data-tab="shun" onclick="switchTab('shun')">Estacionalidad <span class="tk">旬</span></button>
+    <button class="tab" data-tab="zaiko" onclick="switchTab('zaiko')">Inventario <span class="tk">在庫</span></button>
     <button class="roletab kjqlaunch" onclick="kjQuick()">⚡ carga rápida</button>
     <button class="roletab" id="roleBtn" onclick="kjRoleToggle()">⚙ roles</button>
     <button class="roletab" id="logoutBtn" onclick="kjLogout()" style="display:none" title="Cerrar sesión en este dispositivo">⎋ salir</button>
@@ -1439,6 +1463,44 @@
       <div class="tright" id="crmOut"></div>
     </div>
   </div><!-- /tab-crm -->
+
+  <!-- ============ TAB · DŌ 道 — Procedimientos ============ -->
+  <div id="tab-dou" class="tabpanel">
+    <div class="filterbar" style="margin-bottom:10px">
+      <span class="fl">Categoría</span><span id="douCats"></span>
+      <input type="search" id="douSearch" placeholder="Buscar procedimiento…" style="min-width:180px" oninput="renderDou()">
+    </div>
+    <p class="note">Los 28 procedimientos del camino a la estrella. El staff los lee y ejecuta; el itamae fija los parámetros <b style="color:var(--vermilion)">[DEFINIR]</b> — cada uno resuelto convierte una sugerencia en estándar de la casa. La <b>evidencia</b> de cada procedimiento es lo que sube el puntaje de 3 a 4 en la auto-auditoría mensual.</p>
+    <div class="ystat" style="margin-bottom:10px"><span>Parámetros definidos</span><b id="douCount" style="font-family:'JetBrains Mono',monospace">0 / 0</b></div>
+    <div id="douList"></div>
+  </div>
+
+  <!-- ============ TAB · SHUN 旬 — Estacionalidad ============ -->
+  <div id="tab-shun" class="tabpanel">
+    <div class="filterbar" style="margin-bottom:10px">
+      <span class="fl">Familia</span>
+      <select class="sel" id="shunFilter" onchange="renderShun()"><option value="">Todas</option><option>Pescado de mar</option><option>Marisco</option><option>Río</option><option>Huerta</option></select>
+      <span id="shunAddBox"></span>
+    </div>
+    <p class="note">Mapa vivo del procedimiento 1.3: <b style="color:var(--brass)">●</b> pico (candidato a firma) · ○ aceptable · – fuera de temporada · <b style="color:var(--vermilion)">✕</b> veda legal. Clic en una celda para corregir (itamae). Al agregar un ingrediente, la IA busca online zafras y vedas argentinas y propone los 12 meses <b>✦ pendientes de visto bueno</b> — la IA propone, el itamae decide. Regla de menú: nada se sirve en meses – o ✕.</p>
+    <div class="note" id="shunNow" style="border-left:3px solid var(--indigo,#31456e)"></div>
+    <div style="overflow-x:auto"><table class="gkins" id="shunTable"></table></div>
+  </div>
+
+  <!-- ============ TAB · ZAIKO 在庫 — Inventario ============ -->
+  <div id="tab-zaiko" class="tabpanel">
+    <div class="filterbar" style="margin-bottom:10px">
+      <span class="fl">Familia</span>
+      <select class="sel" id="zkFilter" onchange="renderZaiko()"><option value="">Todo</option><option value="Pescado">Pescado / marisco</option><option value="Bebida">Bebidas</option><option value="Despensa">Despensa</option><option value="Consumible">Consumibles</option><option value="alerta">Alertas</option><option value="prot">Protegidos 守</option></select>
+    </div>
+    <p class="note">Inventario operativo, complementario del conteo mensual 棚卸 de Compras (ese es contable; este es el día a día). <b>Pescado/marisco</b> entra con fecha y ventana de maduración — el estado se calcula solo contra el procedimiento 2.2. <b>Bebidas</b> con punto de reposición. Los cinco protegidos del 1.5 van marcados <b style="color:var(--brass)">守</b>: exentos de recorte. La merma de ítems vinculados a un insumo de Genka 原価 se registra directo en el log de mermas de Compras — un solo lugar, el triángulo de food cost sigue sano.</p>
+    <div class="ystate" style="margin-bottom:10px">
+      <div class="ystat"><span>Valor total (USD neto)</span><b id="zkVal">—</b></div>
+      <div class="ystat"><span>Alertas: bajo par / fuera de ventana</span><b id="zkAlerts">—</b></div>
+    </div>
+    <div id="zkForms"></div>
+    <div style="overflow-x:auto"><table class="gkins" id="zkTable"></table></div>
+  </div>
 
   <div id="tab-kata" class="tabpanel">
     <header class="top">
@@ -2485,6 +2547,9 @@ function switchTab(name){
   if(name==='crm') renderCRM();
   if(name==='kata') renderKata();
   if(name==='wa') renderWa();
+  if(name==='dou') renderDou();
+  if(name==='shun') renderShun();
+  if(name==='zaiko') renderZaiko();
   window.scrollTo(0,0);
 }
 
@@ -5158,7 +5223,7 @@ function renderCRM(){
    Control operativo del lado del cliente: la aplicación real de permisos
    llega con el servidor (Railway). Esto ordena quién ve qué en el local.
    ===================================================================== */
-const TAB_LABELS={ resumen:'Resumen 週報', costos:'Esquema 勘定', turnos:'Turnos 番付', heika:'Precios 平価', yoso:'Pronóstico 予想', genka:'Costeo 原価', aisho:'Maridaje 相性', compras:'Compras 仕入', caja:'Caja 現金', reservas:'Reservas 予約', crm:'Clientes 顧客', kata:'Manual 型', wa:'Rueda 輪' };
+const TAB_LABELS={ resumen:'Resumen 週報', costos:'Esquema 勘定', turnos:'Turnos 番付', heika:'Precios 平価', yoso:'Pronóstico 予想', genka:'Costeo 原価', aisho:'Maridaje 相性', compras:'Compras 仕入', caja:'Caja 現金', reservas:'Reservas 予約', crm:'Clientes 顧客', kata:'Manual 型', wa:'Rueda 輪', dou:'Procedimientos 道', shun:'Estacionalidad 旬', zaiko:'Inventario 在庫' };
 let auth={ pin:'', algo:'', modules:{} };
 function authDefaults(){ return { resumen:'staff', costos:'admin', turnos:'staff', heika:'admin', yoso:'admin', genka:'staff', aisho:'staff', compras:'staff', caja:'admin', reservas:'staff', crm:'staff', kata:'staff', wa:'staff' }; }
 function authEnsure(a){
@@ -5258,7 +5323,7 @@ async function kjLogout(){
 }
 
 /* ---- backup / restore total ---- */
-const KANJO_KEYS=['kanjo:baseline','kanjo:scenarios','kanjo:services','kanjo:fchealth','kanjo:genka','kanjo:compras','kanjo:mermas','kanjo:fxlog','kanjo:caja','kanjo:reservas','kanjo:stock','kanjo:crm','kanjo:auth','kanjo:cierres','kanjo:aisho','kanjo:kata','kanjo:kataruns'];
+const KANJO_KEYS=['kanjo:baseline','kanjo:scenarios','kanjo:services','kanjo:fchealth','kanjo:genka','kanjo:compras','kanjo:mermas','kanjo:fxlog','kanjo:caja','kanjo:reservas','kanjo:stock','kanjo:crm','kanjo:auth','kanjo:cierres','kanjo:aisho','kanjo:kata','kanjo:kataruns','kanjo:dou','kanjo:shun','kanjo:zaiko'];
 async function kjBackup(){
   const data={};
   for(const k of KANJO_KEYS){
@@ -7662,13 +7727,343 @@ initChartTips();
 renderInputs();
 renderOutputs();
 document.getElementById('svDate').value = fmtDate(new Date());
+/* =====================================================================
+   TAB · DŌ 道 — Procedimientos: los 28 del camino a la estrella
+   Texto en bundle (DOU_PROCS); solo los parámetros [DEFINIR] persisten
+   en kanjo:dou (admin-only server-side).
+   ===================================================================== */
+const DOU_PROCS = [
+ {cat:"Producto",w:22,critical:true,procs:[
+  {id:"1.1",t:"Redundancia de proveedores",why:"La falla de un proveedor nunca debe llegar a la barra.",who:"Chef-propietario / se arma una vez, se revisa trimestralmente.",steps:["Identificar 2–3 proveedores primarios de pescado (compradores de puerto en Mar del Plata, Puerto Madryn para langostino/centolla, un distribuidor en CABA para cubrir baches). Con cada uno, correr una prueba de 4 semanas: pedir las mismas 3 especies por semana y puntuar cada entrega.", "Redactar una ficha de especificación de una página por especie (ver Apéndice A): rango de tamaño, indicadores de grasa/condición, método de sacrificio, horas máximas desde la captura, estándar de empaque, ventana de entrega.", "Enviar la ficha a cada proveedor y obtener confirmación verbal y luego escrita. La ficha es el contrato; el precio se negocia alrededor de la ficha, nunca a través de ella.", "Asignar a cada especie un proveedor primario y uno de respaldo. Probar el respaldo con un pedido real al menos una vez por trimestre, para que la relación esté viva y no sea teórica.", "Revisión trimestral: puntuar a cada proveedor por % de cumplimiento de ficha, % de puntualidad y tasa de rechazo. Reemplazar a cualquiera que quede por debajo del estándar dos trimestres seguidos."],std:"Cada especie del menú tiene primario y respaldo con nombre y apellido. Al respaldo se le compró dentro de los últimos 90 días.",ev:"Scorecard de proveedores (una fila por entrega: fecha, especie, pasa/falla por criterio, acción tomada). Fichas de especificación confirmadas y archivadas.",def:[]},
+  {id:"1.2",t:"Disciplina de rechazo",why:"Tu estándar vale exactamente lo que rechazás. Si la tasa de rechazo es 0%, el estándar lo pone el proveedor.",who:"Chef o segundo certificado / en cada entrega.",steps:["Toda entrega se inspecciona contra la ficha de la especie **antes de firmar la recepción**: ojos, agallas, firmeza, olor, temperatura (termómetro: pescado ≤2°C al recibir), tamaño/peso vs. pedido.", "Toda pieza que falle cualquier criterio se rechaza en el momento — se fotografía, se registra, se devuelve o se acredita. No existe el \"lo hacemos funcionar por hoy\".", "Si un rechazo deja un hueco para el servicio: se activa el proveedor de respaldo (1.1) o se sustituye desde la cámara de maduración (2.2). Si ninguno lo cubre, cambia el paso afectado del menú — el estándar nunca baja para llenar un lugar.", "Semanal: revisar el registro de rechazos. Banda objetivo `[DEFINIR — sugerido 3–8% de las entregas]`. Menos de 2% durante un mes = la inspección está blanda; más de 15% = problema de proveedor, escalar según 1.1."],std:"100% de las entregas inspeccionadas antes de firmar. Tasa de rechazo dentro de la banda objetivo.",ev:"Registro de rechazos — fecha, proveedor, especie, criterio fallado, foto, resolución. Revisado y firmado cada semana.",def:[{k:"banda_rechazo",label:"Banda objetivo de rechazo",sug:"3–8% de las entregas"}]},
+  {id:"1.3",t:"Mapa de estacionalidad",why:"El producto local en su pico le gana al producto importado pasado de punto, y la estacionalidad es tu motor de rotación (ver 3.4).",who:"Chef-propietario / se construye una vez, se actualiza en cada cambio de estación.",steps:["Armar un calendario de 12 meses del producto costero argentino: chernia, besugo, abadejo, lenguado, mero, pez limón, langostino (temporada de Rawson), centolla (invierno, Canal Beagle), vieiras, cornalitos, más pescado de río si la tesis lo permite (pacú, surubí — se decide una vez, según 4.1).", "Para cada especie marcar: meses pico, meses aceptables, meses fuera de temporada. El calendario se arma con los desembarques reales de tus proveedores, no con promedios publicados — pedirle a cada proveedor que lo corrija. Sus correcciones son el dato real.", "Regla de menú: ninguna especie se sirve en sus meses fuera de temporada. Las especies en mes pico se promueven a los lugares de firma.", "En cada cambio de estación (4 veces al año): sentarse con el calendario, decidir la rotación de la temporada entrante, actualizar fichas (1.1) y la progresión fija (3.4)."],std:"Calendario escrito, validado por proveedores, y el menú vigente con cero especies fuera de temporada.",ev:"El calendario + un memo de cambio de menú fechado por temporada indicando qué rotó y por qué.",def:[]},
+  {id:"1.4",t:"Estándar de sacrificio y manipulación",why:"El ikejime es la palanca de calidad controlable más grande entre el mar y tu barra, y casi nadie lo hace en Argentina — eso lo convierte en un foso competitivo.",who:"Chef-propietario / programa continuo.",steps:["Auditar el estado actual: por cada proveedor, documentar el método real de sacrificio y manipulación por especie (¿asfixia al aire? ¿agua con hielo? ¿desangrado? ¿cuándo se eviscera?).", "Clasificar las especies en niveles: **Nivel 1** (se sirve cruda, textura crítica — objetivo ikejime o como mínimo desangrado inmediato + agua con hielo), **Nivel 2** (curada/madurada/cocida — sacrificio controlado preferido, no obligatorio).", "Negociar: ofrecer un premio por kilo `[DEFINIR — sugerido 15–30%]` a un barco/comprador dispuesto a seguir tu protocolo para especies Nivel 1. El protocolo va en una página plastificada con fotos: punto de punción cerebral por especie, corte de desangrado, proporción de la mezcla de hielo, tiempo máximo hasta el enfriado.", "Si ningún proveedor acepta: financiarlo vos — una visita de capacitación, las herramientas (tessen o punzones), o comprar vivo/recién desembarcado en puerto una vez al mes y procesarlo personalmente hasta que aparezca un socio.", "Verificar en recepción: el pescado ikejime muestra la marca de punción y el desangrado limpio; registrar cumplimiento por entrega en el scorecard (1.1)."],std:"100% del pescado crudo Nivel 1 proviene de sacrificio controlado, o existe un plan financiado y con fechas para cerrar la brecha en 2 trimestres.",ev:"Columna de método de sacrificio activa en el scorecard; el protocolo plastificado; acuerdo de premio con al menos una fuente.",def:[{k:"premio_ikejime",label:"Premio por kilo ikejime",sug:"15–30%"}]},
+  {id:"1.5",t:"Decisiones de despensa",why:"Arroz, vinagre, nori, shoyu y wasabi son el 20% de cada bocado y el 100% invisibles en la revisión del P&L — hasta que un inspector prueba el recorte.",who:"Chef-propietario / se decide una vez, se revalida anualmente, se protege para siempre.",steps:["Para cada uno de los cinco, hacer una cata comparativa documentada de 3+ candidatos (importado vs. mejor local): arroz (tipo koshihikari importado vs. japónica cultivada en Corrientes), vinagres (akazu añejado vs. komezu estándar vs. mezcla propia), grado de nori, shoyu (bodega única vs. mezcla propia), wasabi (viabilidad de rizoma fresco importado vs. procesado de calidad — nunca la pasta verde de pomo).", "Escribir el veredicto por ítem: qué elegiste, cuánto cuesta, y la razón en una frase que dirías en voz alta a un comensal o un inspector. Si no se puede defender en una frase, se vuelve a catar.", "Fijar los cinco en la especificación de compras. **Regla: estos cinco ítems están exentos de recortes de costos.** Cualquier sustitución requiere una nueva cata documentada, nunca un disparador de precio (esto es la bandera roja #3).", "Cata de revalidación anual — la calidad de los proveedores también se mueve."],std:"Los cinco ítems tienen hoja de veredicto escrita. Cero sustituciones sin registro en los últimos 12 meses.",ev:"Cinco hojas de veredicto, fechadas, con notas de cata; especificación de compras con los ítems bloqueados.",def:[]}
+ ]},
+ {cat:"Técnica",w:18,critical:true,procs:[
+  {id:"2.1",t:"Ficha escrita por pieza",why:"Si el estándar vive en tu cabeza, el restaurante no tiene estándar — tiene un estado de ánimo.",who:"Chef-propietario / una ficha por neta, actualizada ante cualquier cambio deliberado.",steps:["Crear una ficha por neta/paso. Campos: especie + nivel de origen · notas de despiece · curado (tiempo de sal / tiempo de kombu) · rango de días de maduración (vincular con 2.2) · corte (ángulo, espesor en mm, peso en g `[DEFINIR por pieza — típico neta 12–15 g, shari 9–11 g]`) · condimento (¿nikiri? ¿sal? ¿cítrico? cuánto, aplicado cuándo) · temperatura de servicio · forma de emplatado/entrega.", "Fotografiar la pieza de referencia — la imagen de \"así es correcto\" vive en la ficha.", "Las fichas viven en una carpeta/tablet en la barra y una copia de respaldo. Son el programa de entrenamiento del segundo (2.4) y la clave de corrección de la auditoría interna (3.2).", "Control de cambios: toda modificación se fecha y se inicializa en la ficha. El historial de la ficha es el registro de evolución del plato."],std:"100% de los ítems del menú vigente con ficha completa y foto de referencia. Cero estándares solo verbales.",ev:"El set de fichas + historial de cambios visible.",def:[{k:"peso_neta",label:"Peso neta / shari",sug:"neta 12–15 g · shari 9–11 g"}]},
+  {id:"2.2",t:"Programa de maduración",why:"La maduración es a la vez técnica de sabor, herramienta de textura y tu amortiguador contra la oferta menos predecible de Argentina — una chernia madurada 5 días convierte un bache de entrega en una virtud.",who:"Chef / registro diario; programa revisado mensualmente.",steps:["Dedicar un espacio controlado: `[DEFINIR — heladera exclusiva a 0–2°C, ~80% de humedad controlada según método de envoltura]`. Estandarizar el método por especie: desangrado/eviscerado → limpio → envuelto para controlar humedad (papel cambiado a diario las primeras 48 h) o al vacío según ficha.", "Todo pescado que entra al programa lleva etiqueta: especie, peso, origen, método de sacrificio, fecha de ingreso, ventana objetivo (ej.: \"besugo: servir día 3–6\").", "Chequeo diario de 5 minutos: olor, superficie, cambio de papel si hace falta, una línea de registro por pescado.", "La decisión del día de servicio es una decisión de gusto dentro de la ventana objetivo, registrada (\"día 4, en el pico\").", "Revisión mensual: qué especies/ventanas están llegando al pico con consistencia y cuáles no; actualizar fichas (2.1) con el aprendizaje."],std:"Cero pescados sin etiqueta en la cámara. Ventana objetivo definida por especie. Registro diario completo.",ev:"El registro de maduración (datos de etiqueta + líneas diarias + nota del día de servicio). Memo de revisión mensual.",def:[]},
+  {id:"2.3",t:"Protocolo de arroz",why:"La mayoría de las barras fallan en el arroz, no en el pescado. El shari es la pregunta de examen.",who:"Chef o segundo certificado / en cada servicio, sin excepciones.",steps:["Receta fija: variedad de arroz (según 1.5) · ciclos de lavado hasta el estándar de claridad del agua · tiempo de remojo por estación `[DEFINIR — típico 30–60 min, más largo en invierno/aire seco]` · proporción de agua · método de cocción · reposo al vapor.", "Sazonado del vinagre: proporción escrita (su/azúcar/sal), ajustada **por estación y por menú** — la temporada de pescados más grasos tolera un shari más filoso. Mínimo dos proporciones estacionales, escritas y fechadas.", "Tamaño de tanda según cubiertos: 13 asientos × piezas por menú → tandas dimensionadas para que nada se sostenga más allá del límite. **Límite de espera: `[DEFINIR — sugerido 45 min]` en el ohitsu; pasado el límite = comida de personal, nunca se sirve.**", "Temperatura de servicio: 36–37°C al momento de formar — temperatura corporal. Verificar con termómetro en la puesta a punto; calibrar la mano a diario contra el termómetro hasta que la mano sea el instrumento.", "Cada servicio: una línea de registro — horarios de tanda, cumplimiento del límite, cualquier desvío."],std:"Receta escrita con proporciones estacionales; cero piezas servidas pasado el límite de espera; temperatura verificada a diario.",ev:"Registro de arroz por servicio (horarios de salida de tanda + cumplimiento del límite + inicial del chequeo de termómetro).",def:[{k:"limite_shari",label:"Límite de espera del shari",sug:"45 min"}]},
+  {id:"2.4",t:"Cadena de habilidades",why:"Una estrella exige que el estándar sobreviva a tu ausencia — y tu segundo está entrenado a la ficha o el restaurante cierra cuando te enfermás.",who:"Chef-propietario / bloque semanal de entrenamiento, certificación trimestral.",steps:["Definir la lista de certificación del rol de segundo = las fichas (2.1) + protocolo de arroz (2.3) + coreografía (5.1). Cada ficha es una habilidad a firmar.", "Bloque semanal protegido de entrenamiento `[DEFINIR — sugerido 2–3 h, en día cerrado]`: práctica deliberada sobre fichas específicas, con el chef corrigiendo contra la foto de referencia y una cata ciega lado a lado (pieza del chef vs. pieza del segundo — ¿se distinguen?).", "Certificación por ficha: el segundo queda \"firmado\" en una ficha cuando 3 catas ciegas consecutivas resultan indistinguibles. Solo las fichas firmadas se pueden ejecutar solo.", "Recertificación trimestral del 20% de las fichas, sorteadas al azar.", "Tu propia cadena también: un proyecto de técnica por trimestre (un curado nuevo, una especie no dominada, un stage/viaje) — registrado como todo lo demás."],std:"El segundo certificado en ≥80% de la progresión fija antes de correr un servicio; el proyecto trimestral del chef es real y tiene fecha.",ev:"Matriz de certificación (fichas × personas × fechas de firma). El bloque de entrenamiento figura en el calendario semanal real.",def:[{k:"bloque_training",label:"Bloque semanal de entrenamiento",sug:"2–3 h en día cerrado"}]},
+  {id:"2.5",t:"Proceso de desarrollo",why:"Los platos nuevos son donde la consistencia va a morir. Una compuerta de prueba evita que la ambición contamine el menú.",who:"Chef / pipeline continuo, compuerta antes de cada cambio de menú.",steps:["Registro de ideas: cada idea de plato nuevo tiene su línea (ingrediente de origen, vínculo con la tesis según 4.1, lugar objetivo en la progresión).", "Etapa de desarrollo: mínimo `[DEFINIR — sugerido 5]` ejecuciones de prueba en días separados, catadas a sangre fría (no a la 1 a.m. post-servicio). Puntuar cada una contra: ajuste a la tesis / qué tan rico es / repetibilidad en la barra bajo presión de servicio / costo.", "Compuerta pre-lanzamiento: el plato debe ejecutarse perfecto 3 veces por quien lo va a servir, con la ficha (2.1) escrita **antes** del lanzamiento, no después.", "Se lanza dentro de un cambio de estación (1.3) — nunca a mitad de ciclo salvo para reemplazar un fracaso.", "Revisión post-lanzamiento a las 2 semanas: señales de los comensales, desvíos de ejecución (3.3), mantener/matar/revisar."],std:"Ningún plato llega a un comensal que paga sin ficha completa y 3 ejecuciones limpias pre-lanzamiento.",ev:"Registro de ideas + hoja de desarrollo por plato con los 5 puntajes de prueba + fecha de firma de la compuerta.",def:[{k:"n_pruebas",label:"Ejecuciones de prueba mínimas",sug:"5"}]}
+ ]},
+ {cat:"Consistencia",w:24,critical:true,procs:[
+  {id:"3.1",t:"Propiedad de la barra",why:"La tercera visita del inspector es, estadísticamente, un martes cualquiera. No hay noches de equipo B porque no hay equipo B.",who:"Chef-propietario / política permanente, aplicada por servicio.",steps:["Regla de cobertura escrita: cada servicio lo corre (a) vos, o (b) un segundo certificado según 2.4 en el 100% del menú de esa noche. Si ninguna de las dos es posible → el restaurante cierra y los comensales se reprograman vía Meitre con disculpas + prioridad de reserva. Cerrar es más barato que una mala noche de inspección.", "Publicar tu propio calendario con 4 semanas de anticipación (vinculado a 6.3 — carga sostenible). La regla de cobertura se verifica al armar el calendario, no a las 16 h del mismo día.", "Protocolo de ausencia: hoja de briefing pre-servicio para el segundo (estado del pescado de hoy, decisiones de la cámara de maduración, notas de comensales), y llamada de debrief post-servicio.", "Registrarlo: cada servicio anotado con \"quién corrió la barra\". Doce meses de esto es tu prueba de que martes = sábado."],std:"Cero servicios en los últimos 12 meses corridos por alguien no certificado en ese menú. Cero excepciones \"por esta vez\".",ev:"Registro de servicios con columna de responsable de barra; registros de reprogramación ante cualquier cierre.",def:[]},
+  {id:"3.2",t:"Auditoría interna",why:"No podés corregir tu propia noche mientras la vivís. La auditoría es el inspector que contratás antes de que Michelin mande el suyo.",who:"Chef-propietario + un paladar externo / un servicio completo por mes.",steps:["Una vez al mes se audita un servicio completo: o bien (a) se filma con discreción (cámara fija sobre la barra, comensales informados según normas de privacidad/cartelería) y se revisa a la mañana siguiente contra las fichas, o bien (b) un paladar externo de confianza (chef amigo, comensal serio con discreción total) come el menú completo de forma anónima para el resto del equipo y lo puntúa.", "La planilla de puntaje espeja la herramienta de auditoría: cada paso puntuado 0–4 contra su ficha (corte, temperatura, condimento, ritmo), más los puntos de control de la coreografía (5.1).", "Revisión al día siguiente, máximo 48 h después: todo puntaje menor a 3 se convierte en una entrada del registro de desvíos (3.3) o en una revisión de ficha (2.1) — una de las dos, nunca un encogimiento de hombros.", "El auditor rota: que el mismo paladar no te calibre dos veces seguidas."],std:"12 auditorías al año, cero meses salteados, cada ítem sub-3 resuelto dentro de la semana.",ev:"Planillas mensuales + notas de resolución. Esto también alimenta la foto mensual de la herramienta Star Audit.",def:[]},
+  {id:"3.3",t:"Registro de desvíos",why:"Las opiniones discuten; los datos deciden. Un defecto que no anotaste es un defecto que vas a repetir.",who:"Todo el equipo / en vivo durante el servicio, revisado semanalmente.",steps:["Un registro compartido (papel en el pase o nota compartida), columnas: fecha/servicio · paso · qué se desvió de la ficha · causa probable (producto / mise / ejecución / tiempos / equipamiento) · ¿se detectó antes del comensal? Sí/No · corrección aplicada.", "Regla cultural: anotar un desvío se premia; ocultarlo es la única falta de calidad que amerita despido. El registro es sin culpables — se corrigen causas, no se castiga a la gente por anotar.", "Revisión semanal de 20 minutos: agrupar por causa. Tres entradas con la misma causa = algún procedimiento cambia (ficha, proveedor, entrenamiento, equipamiento).", "Mensual: la tendencia de desvíos por servicio va en la nota de la foto mensual de la herramienta. Bajando = el sistema aprende. Alta y plana = el sistema pierde por algún lado."],std:"Registro activo en cada servicio (una semana vacía significa que no se usa, no que fueron perfectos). La revisión semanal se hace de verdad.",ev:"El registro + iniciales de la revisión semanal + al menos un cambio de procedimiento por mes trazable al registro.",def:[]},
+  {id:"3.4",t:"Tope de variabilidad",why:"Reinventar todo cada semana es la manera de servir mal el paso 3. La rotación es evolución controlada, no improvisación.",who:"Chef / se aplica en cada cambio de menú.",steps:["Fijar la arquitectura: `[DEFINIR — sugerido 15–17 pasos: bocados de apertura → bloque de sashimi/crudo → progresión de nigiri → momento caliente → temaki → tamago → postre]`. La arquitectura no cambia a mitad de temporada.", "Clasificar cada lugar: **Fijo** (70–80% — la columna vertebral, cambia a lo sumo por estación) vs. **Rotativo** (20–30% — por donde entran la estacionalidad (1.3) y el desarrollo (2.5)).", "Regla de rotación: máximo `[DEFINIR — sugerido 2]` lugares cambian en una misma semana, y solo lugares rotativos. Los fijos cambian solo en el límite de estación, pasando la compuerta completa de 2.5.", "Cada versión del menú se fecha y se archiva — el historial de menús es tu prueba de consistencia y tu registro creativo."],std:"El menú vigente mapea 1:1 con la arquitectura; los últimos 3 meses de versiones muestran el tope respetado.",ev:"Archivo de versiones de menú con anotaciones de cambio.",def:[{k:"arquitectura",label:"Arquitectura del menú",sug:"15–17 pasos"},{k:"max_cambios",label:"Cambios máximos por semana",sug:"2 lugares rotativos"}]},
+  {id:"3.5",t:"Igualdad entre servicios",why:"El comensal de un martes de lluvia pagó lo mismo que la barra llena del sábado. El criterio de consistencia de Michelin es literalmente esto.",who:"Chef + segundo / cada servicio; verificado en la auditoría mensual.",steps:["Definir los invariantes que nunca se flexibilizan con la energía o los cubiertos: pesos de pieza (±1 g de la ficha), temperatura del arroz, ventanas de ritmo entre pasos (5.1), cantidad de porciones, aplicación del condimento, momentos del guion de bienvenida/despedida.", "Mise independiente del servicio: las listas de mise se generan desde cubiertos × fichas, no desde la sensación. 6 cubiertos un martes reciben la misma precisión por pieza que 13 un sábado.", "Chequeos anti-deriva: una vez por semana, pesar 5 piezas al azar en pleno servicio contra la ficha; medir el shari con termómetro una vez a mitad de servicio. 10 segundos cada uno, registrado con una inicial.", "La auditoría mensual (3.2) alterna deliberadamente entre un servicio pico y uno de baja — la comparación entre ambas auditorías es la medición de igualdad."],std:"Los puntajes de la auditoría de baja quedan dentro del 5% de los de la auditoría pico en cualquier ventana móvil de 3 auditorías.",ev:"Iniciales de los chequeos semanales + la comparación pico/baja de auditorías.",def:[]}
+ ]},
+ {cat:"Identidad",w:14,critical:false,procs:[
+  {id:"4.1",t:"Tesis escrita",why:"Los inspectores premian una voz singular. Un menú que podría existir en cualquier lado no gana nada.",who:"Chef-propietario / se escribe una vez, se somete a presión anualmente, se cambia casi nunca.",steps:["Redactar la frase. Prueba: reemplazá tu nombre por \"una buena barra de Tokio\" — si la frase sigue funcionando, falla. Dirección de trabajo para reaccionar en contra: *\"Omakase construido sobre la costa argentina — disciplina Edomae aplicada a pescados que Tokio nunca vio.\"* `[DEFINIR — esto es el alma; escribí la tuya]`", "Someterla a presión contra tus restricciones reales: ¿sobrevive a la realidad de la oferta argentina? ¿Toma decisiones de compra POR vos? (Una tesis de verdad responde sola preguntas como \"¿servimos hon-maguro importado?\").", "Escribir los 3 compromisos que la sostienen (ej.: \"pescado local primero\", \"la maduración como técnica central\", \"la cava argentina como socia en pie de igualdad con el sake\"). Estos se vuelven las pruebas de coherencia de 4.4.", "Prueba de presión anual: ¿los menús del último año realmente la expresan? Si no, cambian los menús — la tesis solo cambia si el restaurante cambia de raíz."],std:"La frase existe, está escrita, falla la prueba de sustitución por Tokio en la dirección correcta, y todo el equipo puede decirla.",ev:"El documento de tesis con sus 3 compromisos, fechado; nota de la prueba anual.",def:[{k:"tesis",label:"La tesis (una frase)",sug:"escribila — es el alma"}]},
+  {id:"4.2",t:"Momentos de firma",why:"El informe del inspector necesita algo para decir. Dale la frase que va a escribir.",who:"Chef / 2–3 lugares protegidos en la progresión fija.",steps:["Reservar 2–3 lugares de la arquitectura (3.4) como lugares de firma — posiciones de máxima atención (típicamente: la apertura, el pico de mitad de menú, el cierre antes del tamago).", "Cada firma pasa una compuerta más dura que 2.5: (a) no existe en ningún otro lado — genuinamente tuya, nacida de la tesis; (b) cuenta la historia argentina en un bocado (un paso de centolla, un besugo madurado a tu curva, un nikiri con inflexión criolla — lo que sea honestamente tuyo); (c) sobrevive 100 ejecuciones consecutivas sin degradarse.", "Las firmas evolucionan como mucho una vez al año. Son el hilo conductor al que se anclan los habitués y la prensa.", "Nombrarlas internamente y trackear su reacción específica (qué pasos se fotografían, se preguntan, se mencionan en reseñas — registrarlo mensualmente)."],std:"2–3 firmas con nombre, vivas, cada una documentada con su vínculo a la tesis y su seguimiento de reacción.",ev:"Dossier por firma: ficha + historia de origen + notas mensuales de reacción.",def:[]},
+  {id:"4.3",t:"Narrativa en servicio",why:"La personalidad-a-través-de-la-cocina se percibe en parte por lo que se dice en la barra. Trece asientos es un formato de narración — se usa o se desperdicia.",who:"Quien corra la barra / cada servicio.",steps:["Guionar los momentos, no las palabras: (a) momento de bienvenida — la tesis en una frase natural dentro de los dos primeros pasos; (b) 3–4 momentos de producto — de dónde es este pescado, por qué esta semana, por qué 4 días de maduración (las historias de proveedores de 1.1–1.4 SON el material); (c) momentos de firma — la historia de origen de cada plato de firma, 30 segundos máximo; (d) momento de despedida.", "Todo lo demás queda sin guion — los momentos son anclas, no un monólogo. Leer la barra: una cita recibe menos, un solitario obsesionado con la comida recibe más.", "Se entrena como una técnica: los momentos narrativos son parte de la certificación del segundo (2.4). Se audita: la planilla mensual (3.2) incluye \"¿se tocaron los momentos? ¿sonaron naturales?\".", "Versiones en castellano e inglés de cada momento — Buenos Aires recibe barras internacionales."],std:"Momentos definidos por escrito; presentes en ≥90% de los servicios auditados; naturales, nunca recitados.",ev:"Hoja de momentos (ambos idiomas) + tildes de auditoría.",def:[]},
+  {id:"4.4",t:"Coherencia total",why:"La identidad se filtra por los detalles que contradicen la tesis. La coherencia es la diferencia entre un concepto y un disfraz.",who:"Chef-propietario / se aplica en cada decisión; barrido trimestral.",steps:["Regla de decisión: toda elección de cara al comensal (menú, plato, copa, uniforme, música, volumen, cartel, posteo de Instagram, texto del mail de confirmación de Meitre) debe responder \"¿qué compromiso de la tesis expresa esto?\". Sin respuesta = se rediseña o se elimina.", "Barrido trimestral de coherencia (30 min, brutal): recorrer el viaje completo del comensal — mail de reserva → llegada → baño → asiento → menú → pago → seguimiento — y listar cada elemento que un desconocido no podría conectar con la tesis. Corregir los 3 principales por trimestre.", "El programa de vajilla que ya estás trayendo de Japón es una decisión de coherencia — documentar POR QUÉ estas piezas (qué dice la elección de oficio/wabi junto al pescado argentino), para que la respuesta exista cuando alguien pregunte.", "Poder de veto: todo lo que se agregue por moda (\"ahora todos tienen X\") lleva una demora obligatoria de 2 semanas + chequeo de tesis antes de la compra."],std:"Barrido trimestral hecho; cero elementos de cara al comensal sin respuesta de tesis.",ev:"Checklist del barrido por trimestre con las 3 correcciones elegidas y cerradas.",def:[]}
+ ]},
+ {cat:"Experiencia",w:12,critical:false,procs:[
+  {id:"5.1",t:"Coreografía de servicio",why:"En una barra, el ritmo ES sabor — un hueco muerto de 12 minutos o una entrega apurada cambian cómo sabe la comida.",who:"Chef + apoyo de sala / se documenta una vez, se ejecuta en cada servicio, se audita mensualmente.",steps:["Escribir la partitura del servicio: manejo de la ventana de llegada → ubicación → oshibori + ofrecimiento de la primera bebida (objetivo: bebida en mano ≤ 6 min desde sentarse) → reloj de pasos: `[DEFINIR — sugerido 8–12 min entre los pasos de apertura, ajustando a 4–6 min en la progresión de nigiri, total 2,5–3 h]` → ningún hueco supera jamás los 8 minutos sin un momento intencional (servir el té, momento narrativo, limpieza de paladar).", "Definir los roles invisibles: mientras el chef forma, quién rellena, quién levanta, quién mira el nivel de las copas — con 13 asientos y un equipo chico, cada movimiento está asignado, no improvisado.", "Modos de falla pre-resueltos: comensal tarde (se suma en el paso vigente, recuperación comprimida de máximo 2 pasos), comensal lento (el menú no espera a nadie más allá de +1 paso de deriva — se marca el ritmo de la barra, se flexibiliza al individuo), alergia declarada en el asiento (sustitución pre-planificada por paso, decidida en 2.5, nunca inventada en vivo).", "Despedida: cuenta resuelta en la barra sin el baile de la billetera, momento de salida, y el seguimiento a la mañana siguiente si 5.4 lo define."],std:"Partitura documentada; regla de hueco máximo rota en 0 servicios auditados; duración total dentro de ±15 min del objetivo.",ev:"La partitura escrita + tiempos de hueco muestreados en la auditoría mensual (3.2).",def:[{k:"reloj",label:"Reloj de pasos",sug:"8–12 min apertura → 4–6 min nigiri · total 2,5–3 h"}]},
+  {id:"5.2",t:"Programa de bebidas con punto de vista",why:"Profundidad en sake + una cava argentina seria es una historia de maridaje que ninguna barra de Tokio puede copiar — es la identidad (4.x) expresada en líquido.",who:"Chef-propietario (o responsable de bebidas cuando la escala lo permita) / programa revisado por estación.",steps:["Estructurar la carta como declaración de tesis: `[DEFINIR — sugerido: 12–18 sakes elegidos por rango (un junmai daiginjo vitrina, pero profundidad en junmai/kimoto que realmente maride), 15–25 vinos argentinos seleccionados CONTRA el menú (blancos costeros, semillón, criolla, chardonnay de altura, tintos de extracción liviana para el paso caliente), 1–2 tés tratados con la misma seriedad]`.", "Escribir el mapa de maridaje: cada paso fijo (3.4) tiene un maridaje de primera elección y una alternativa, documentados con una frase de por qué. Los pasos rotativos reciben su maridaje en la compuerta de 2.5.", "Ofrecer dos formatos: maridaje completo y libertad por copa. Preciar el maridaje para que lo elija el `[DEFINIR — objetivo 40–60%]` de los cubiertos — esa tasa de adopción es el boletín del programa.", "Revisión estacional: cortar las 3 botellas más lentas, sumar contra el menú nuevo, re-catar el mapa. El equipo cata a ciegas los maridajes trimestralmente para que el \"por qué\" sobreviva en servicio."],std:"Mapa de maridaje completo para el 100% del menú fijo; adopción dentro de la banda; cero maridajes que no se puedan explicar en una frase en la barra.",ev:"El mapa de maridaje + % de adopción con datos de Meitre/POS por mes.",def:[{k:"adopcion",label:"Adopción objetivo del maridaje",sug:"40–60%"}]},
+  {id:"5.3",t:"Barrido de detalles",why:"Ningún detalle gana una estrella; cualquier detalle puede costar la impresión. Los detalles se chequean, no se notan.",who:"Asignado por ítem / checklist diario + semanal.",steps:["Armar dos checklists. **Diario (pre-servicio, 15 min):** baño perfecto (es el juicio silencioso #1), temperatura del oshibori (tibio en invierno / fresco en verano — medirla), estado de la superficie de la barra, palitos + descansos alineados por asiento, cristalería impecable a contraluz, menú/cartas impecables, zona de entrada, escena de luz configurada, nivel de música medido `[DEFINIR — sugerido ≤ 62 dB en la barra]`. **Semanal:** rotación de limpieza profunda, estado de plantas/flores, estabilidad de sillas, herrajes de puerta, caminata de olfato (entrar como un comensal — ¿qué olés en los primeros 3 segundos?).", "Cada ítem tiene responsable y casillero. La lista se firma antes de abrir; lista sin firmar = no se abre.", "Chequeo de baño a mitad de servicio asignado a una persona con nombre en un momento con nombre (ej.: después del paso 8).", "Mensual: la auditoría (3.2) verifica de forma independiente 5 ítems al azar del checklist."],std:"100% de los servicios abren con checklist firmado; la verificación de auditoría encuentra ≤1 falla por mes.",ev:"Checklists diarios/semanales firmados y archivados.",def:[{k:"db_musica",label:"Nivel de música",sug:"≤62 dB en barra"}]},
+  {id:"5.4",t:"Experiencia de reserva",why:"La experiencia empieza en la reserva, y con 13 asientos cada no-show es el 7,7% del salón. Premium y protegido no son opuestos.",who:"Chef-propietario / se configura en Meitre una vez, se revisa mensualmente.",steps:["Configuración de Meitre: reservas prepagas o con tarjeta de garantía `[DEFINIR — sugerido prepago total del menú en servicios pico, garantía con tarjeta y penalidad en servicios de baja]`, ventana de cancelación `[DEFINIR — sugerido 48–72 h con transferibilidad total — el comensal puede regalar o mover el asiento, lo que convierte cancelaciones en comensales nuevos en vez de peleas]`.", "Texto de confirmación reescrito en la voz del restaurante (coherencia, 4.4): qué esperar, duración, captura de alergias al reservar (alimenta las sustituciones pre-resueltas de 5.1), cómo llegar, sin código de vestimenta pero marcando expectativas.", "Cadencia: confirmación de reserva → recordatorio a las 72 h (se cierra la ventana de cancelación) → nota del día anterior con algún toque personal (cumpleaños anotado, comensal que vuelve reconocido).", "Política de no-show/tardanza aplicada con consistencia total y gracia total — la política hace el trabajo duro, el humano pone la calidez. Mensual: revisar % de no-show `[objetivo < 3%]`, conversión de lista de espera y tasa de recompra de asientos cancelados."],std:"No-show < 3%; alergias capturadas antes de la llegada para el 100% de los cubiertos; flujo de confirmación en la voz de la casa.",ev:"Reporte mensual de Meitre + la política escrita + las plantillas de mensajes.",def:[{k:"politica_pago",label:"Política de prepago",sug:"prepago pico · garantía resto · 48–72 h"}]}
+ ]},
+ {cat:"Operaciones y radar",w:10,critical:false,procs:[
+  {id:"6.1",t:"Pista financiera",why:"Las estrellas no van a restaurantes que quizás no existan el año que viene. Doce meses de estabilidad visible es un criterio Michelin disfrazado.",who:"Chef-propietario / modelo actualizado mensualmente, revisado trimestralmente.",steps:["Tu workbook v2 es el instrumento — agregarle una pestaña de runway si no la tiene: caja + ingresos comprometidos vs. curva de obligaciones a 12 meses (alquiler, nómina + calendario de SAC/aguinaldo, calendario de IVA/Ganancias, plazos de proveedores). El runway en meses es EL número.", "Cierre mensual antes del día 10: reales al modelo, variación vs. plan marcada a ±10% por línea, un párrafo de narrativa (\"qué cambió y por qué\").", "Trimestral: volver a correr la pestaña de Growth Scenarios contra los reales — qué palancas de ingreso son reales y cuáles eran expectativa. Matar los supuestos basados en expectativa.", "Regla dura: piso de runway `[DEFINIR — sugerido 6 meses]`. Perforar el piso dispara el playbook pre-acordado (precio, calendario, líneas de costo que NO son los cinco protegidos de 1.5) — decidido ahora, con calma, no durante la crisis."],std:"Modelo al día dentro de los 10 días, siempre; runway sobre el piso; playbook escrito.",ev:"Archivo de cierre mensual + notas de variación; el documento del playbook.",def:[{k:"piso_runway",label:"Piso de runway",sug:"6 meses"}]},
+  {id:"6.2",t:"Disciplina de sala llena",why:"Los asientos vacíos cambian tu economía y tu energía — y los inspectores reservan como civiles, con semanas de anticipación, en noches normales.",who:"Chef-propietario / trackeado por servicio, revisado mensualmente.",steps:["Definir objetivos de ocupación por tipo de servicio: `[DEFINIR — sugerido ≥ 85% promedio, ≥ 95% noches pico]` con 13 asientos — trackear asientos vendidos, no ingresos, para que los cambios de precio no escondan la verdad de la demanda.", "Calendario liberado en ventanas controladas (ej.: apertura mensual) — escasez con un ritmo que los habitués pueden aprender.", "Lista de espera trabajada activamente: toda cancelación dentro de la ventana se ofrece a la lista dentro de 1 h (automatización de Meitre + seguimiento humano).", "Datos de demanda revisados mensualmente: qué noches se ablandan, distribución de anticipación, % de comensales repetidos. Las noches blandas reciben una decisión — otro formato, día cerrado, o un momento de prensa (6.4) — nunca aceptación silenciosa."],std:"Ocupación móvil de 3 meses en objetivo; cancelaciones recolocadas ≥ 70%.",ev:"Tablero de ocupación (export de Meitre, mensual).",def:[{k:"ocupacion",label:"Ocupación objetivo",sug:"≥85% prom · ≥95% pico"}]},
+  {id:"6.3",t:"Carga sostenible del chef",why:"El burnout llega al plato en el mes 8, y llega a los puntajes de auditoría antes de llegar a tu conciencia. La fatiga es un KPI, no una sensación.",who:"Chef-propietario / regla semanal de calendario, auto-chequeo mensual.",steps:["Regla del calendario de servicios: `[DEFINIR — sugerido 4–5 servicios/semana, 2 días cerrados consecutivos, ticket más alto para compensar — la pestaña Growth Scenarios de tu modelo lo puede preciar con exactitud]`. La regla es estructural: impresa en el calendario anual, no renegociada cada semana con vos mismo.", "Bloques protegidos: el bloque de entrenamiento (2.4), el cierre mensual (6.1), y al menos `[DEFINIR]` semanas completas por año totalmente cerradas (el viaje de compras a Japón cuenta doble).", "Chequeo mensual de fatiga, 5 preguntas cuantificadas de 1 a 5 (calidad de sueño, rechazo antes del servicio, irritabilidad en la barra, dolor físico, apetito creativo). Puntaje bajando 2 meses seguidos = el calendario cambia ESE mes.", "Cruce de datos: superponer los puntajes de fatiga con el volumen del registro de desvíos (3.3) y los puntajes de auditoría (3.2). Si aparece correlación = el sistema te está diciendo algo que el espejo no."],std:"Regla de calendario sin romper; chequeo de fatiga hecho cada mes; intervención disparada cuando el dato lo dice, no después.",ev:"El calendario anual + puntajes mensuales de fatiga archivados con la foto de auditoría.",def:[{k:"servicios",label:"Servicios por semana",sug:"4–5 + 2 días cerrados seguidos"}]},
+  {id:"6.4",t:"Ruido legítimo",why:"Michelin explora los mercados en parte a través de la señal. Ser invisible es una estrategia para quedar sin inspeccionar.",who:"Chef-propietario / un movimiento por mes, revisado trimestralmente.",steps:["Identificar las 10 voces que importan en la alta gastronomía porteña `[críticos locales, los 2–3 periodistas gastronómicos serios, votantes de 50 Best Discovery/academia en la región, el puñado de chefs cuya opinión viaja]` — una lista con nombres, no una intuición.", "Un movimiento legítimo por mes, a elegir entre: un crítico invitado (pagando o invitado según tu política — se decide una vez, se aplica siempre), una colaboración (un cuatro manos con un chef local respetado), una historia de proveedor ofrecida a prensa (el programa de ikejime de 1.4 ES una historia que nadie más en Argentina puede contar), una nota de menú estacional a tu lista de prensa.", "Presencia digital bajo el estándar de coherencia (4.4): menos posteos, mejores; las firmas (4.2) y las historias de origen son la columna del contenido.", "Trimestral: trackear menciones, crecimiento de la lista, qué movimientos produjeron señal. Nunca comprar cobertura, nunca perseguir volumen de influencers — la guía lee los canales serios."],std:"12 movimientos al año ejecutados; la lista de nombres al día; cero pago-por-elogio en ningún lado.",ev:"El registro mensual de movimientos + archivo de prensa/menciones.",def:[]},
+  {id:"6.5",t:"Sin juegos con inspectores",why:"Los inspectores están entrenados para ser invisibles y la guía descarta el trato especial. El comensal anónimo ES la auditoría — así que la única estrategia ganadora es que cada asiento sea la inspección.",who:"Todo el equipo / política escrita permanente.",steps:["Política de un párrafo, firmada por todos al ingresar: no especulamos sobre inspectores, no mejoramos el trato a críticos sospechados, no tratamos distinto a ningún comensal solo. Cada comensal recibe menú, porciones y atención idénticos — porque nuestro sistema (secciones 1–5) hace que lo mejor que podemos hacer sea LO ÚNICO que hacemos.", "Si alguien se identifica como prensa/inspector después de comer: calidez, brevedad, sin pescar devoluciones, anotado en el registro de servicio — nada más cambia.", "La versión cultural, dicha en cada ingreso: \"El inspector ya comió acá. No nos dimos cuenta. Eso tiene que estar bien.\""],std:"Política firmada por el 100% del equipo; cero incidentes de trato diferencial, jamás.",ev:"Hojas de política firmadas en los legajos.",def:[]}
+ ]},
+];
+const DOU_FLAGS = [{"t": "BR1 · Deriva de menú", "d": "El tope de variabilidad (3.4) + el veto de tesis (4.4) son la defensa estructural. La señal: cualquier plato cuya justificación honesta sea \"a algunos comensales no les gusta X\". La respuesta a ese comensal es el texto de expectativas de Meitre (5.4), no una concesión en el menú."}, {"t": "BR2 · Fatiga del chef", "d": "6.3 es la contramedida. La señal llega en los datos antes que en el espejo: desvíos en alza (3.3) + auditorías en baja (3.2) + fatiga en baja = se actúa ese mes."}, {"t": "BR3 · Recorte invisible de costos", "d": "Los cinco ítems protegidos (1.5) están contractualmente exentos de la presión de margen; el playbook de crisis (6.1) pre-lista qué SÍ se puede cortar para que la lista protegida sobreviva un mal trimestre."}];
+const DOU_RITMO = [{"f": "Cada servicio", "d": "registro de arroz (2.3) · registro de desvíos (3.3) · checklist diario (5.3) · registro de servicio con responsable de barra (3.1)"}, {"f": "Semanal", "d": "revisión de rechazos (1.2) · revisión de desvíos (3.3) · chequeos al azar (3.5) · bloque de entrenamiento (2.4)"}, {"f": "Mensual", "d": "auditoría interna (3.2) → foto del Star Audit · cierre financiero (6.1) · revisión de ocupación (6.2) · chequeo de fatiga (6.3) · movimiento de prensa (6.4) · seguimiento de reacción (4.2)"}, {"f": "Trimestral", "d": "scorecards de proveedores (1.1) · pedido real al respaldo (1.1) · sorteo de recertificación (2.4) · barrido de coherencia (4.4) · re-corrida de escenarios (6.1)"}, {"f": "Estacional (4×/año)", "d": "rotación de estacionalidad (1.3) · cambio de menú por la compuerta de 2.5 · revisión de bebidas (5.2)"}, {"f": "Anual", "d": "revalidación de despensa (1.5) · prueba de presión de la tesis (4.1) · decisión de evolución de firmas (4.2)"}];
+const DOU_APB = "fecha · servicio · paso · desvío vs. ficha · causa probable (producto/mise/ejecución/tiempos/equipamiento) · detectado antes del comensal Sí/No · corrección inmediata · corrección sistémica (indica qué procedimiento cambió)";
+const DOU_APC = "Por paso: puntaje 0–4 vs. ficha (corte/peso · temperatura · condimento · apariencia vs. foto de referencia) + puntos de control de servicio (bebida ≤6 min · hueco máximo ≤8 min · momentos narrativos presentes · despedida) + marca pico/baja → alimenta la foto mensual de la herramienta Star Audit.";
+
+
+function douFmt(t){
+  let h=escapeHtml(t);
+  h=h.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+  h=h.replace(/\[DEFINIR[^\]]*\]/g, m=>'<span class="doutag">'+m+'</span>');
+  return h;
+}
+let dou={ params:{} };
+let douCat='Producto';
+function douEnsure(d){ if(!d||typeof d!=='object') d={}; if(!d.params||typeof d.params!=='object') d.params={}; return d; }
+function douPersist(){ persistSafe('kanjo:dou', dou); }
+async function loadDou(){ await kjLoadKey('kanjo:dou', v=>{ dou=douEnsure(v); }); }
+function douSetParam(k){
+  const inp=document.getElementById('douIn_'+k); if(!inp) return;
+  const v=inp.value.trim(); if(!v){ flash('Escribí el valor a fijar'); return; }
+  dou.params[k]=v; douPersist(); flash('Parámetro fijado — ahora es estándar ✓'); renderDou();
+}
+function douToggle(id){ const el=document.getElementById('douP_'+id); if(el) el.classList.toggle('open'); }
+function renderDou(){
+  const cats=document.getElementById('douCats'); if(!cats) return;
+  cats.innerHTML=DOU_PROCS.map(c=>`<button class="doucat${c.cat===douCat?' on':''}" onclick="douCat='${c.cat}';renderDou()">${escapeHtml(c.cat)}${c.critical?' ⛩':''} <span>${c.w}pts</span></button>`).join('');
+  cats.innerHTML+=`<button class="doucat${douCat==='__flags'?' on':''}" onclick="douCat='__flags';renderDou()">Banderas rojas</button><button class="doucat${douCat==='__ritmo'?' on':''}" onclick="douCat='__ritmo';renderDou()">Ritmo 暦</button>`;
+  const q=(document.getElementById('douSearch').value||'').toLowerCase();
+  const admin=kjIsAdmin();
+  if(!q && douCat==='__flags'){
+    document.getElementById('douList').innerHTML=
+      '<p class="note">Los tres asesinos silenciosos: no aparecen en los puntajes hasta que es tarde. Cada uno tiene su contramedida estructural en los procedimientos.</p>'
+      + DOU_FLAGS.map(f=>`<div class="douproc open"><div class="douhead"><b style="color:var(--vermilion)">${douFmt(f.t)}</b></div><div class="doubody"><p style="margin-top:10px">${douFmt(f.d)}</p></div></div>`).join('');
+    const _a=DOU_PROCS.flatMap(c=>c.procs).flatMap(p=>p.def);
+    document.getElementById('douCount').textContent=_a.filter(d=>dou.params[d.k]).length+' / '+_a.length;
+    return;
+  }
+  if(!q && douCat==='__ritmo'){
+    document.getElementById('douList').innerHTML=
+      '<p class="note">Todo el manual en un calendario — la página que va en la pared. Cada línea referencia su procedimiento.</p>'
+      + `<div class="douproc open"><div class="doubody"><table class="gkins" style="margin-top:10px"><thead><tr><th>Frecuencia</th><th>Qué se hace</th></tr></thead><tbody>${DOU_RITMO.map(r=>`<tr><td style="white-space:nowrap"><b>${douFmt(r.f)}</b></td><td>${douFmt(r.d)}</td></tr>`).join('')}</tbody></table>
+      <div class="doulbl" style="margin-top:14px">Apéndice B · Columnas del registro de desvíos</div><p style="font-family:'JetBrains Mono',monospace;font-size:11.5px">${escapeHtml(DOU_APB)}</p>
+      <div class="doulbl">Apéndice C · Planilla de auditoría mensual</div><p>${douFmt(DOU_APC)}</p></div></div>`;
+    const _a=DOU_PROCS.flatMap(c=>c.procs).flatMap(p=>p.def);
+    document.getElementById('douCount').textContent=_a.filter(d=>dou.params[d.k]).length+' / '+_a.length;
+    return;
+  }
+  const procs=q? DOU_PROCS.flatMap(c=>c.procs).filter(p=>(p.id+p.t+p.why).toLowerCase().includes(q))
+               : (DOU_PROCS.find(c=>c.cat===douCat)||DOU_PROCS[0]).procs;
+  document.getElementById('douList').innerHTML=procs.map(p=>{
+    const defs=p.def.map(d=>{
+      const v=dou.params[d.k];
+      return `<div class="doudef">
+        <span class="doutag">[DEFINIR] ${escapeHtml(d.label)}</span>
+        ${admin
+          ? `<input type="text" id="douIn_${d.k}" placeholder="sugerido: ${escapeHtml(d.sug)}" value="${v?escapeHtml(v):''}" style="flex:1;min-width:150px">
+             <button class="gkadd" style="margin:0" onclick="douSetParam('${d.k}')">Fijar</button>`
+          : (v? `<b style="color:var(--good,#4a7a45)">${escapeHtml(v)}</b>` : `<span class="gcat">pendiente — sugerido: ${escapeHtml(d.sug)}</span>`)}
+      </div>`;
+    }).join('');
+    return `<div class="douproc" id="douP_${p.id.replace('.','_')}">
+      <div class="douhead" onclick="douToggle('${p.id.replace('.','_')}')">
+        <b><span style="color:var(--brass,#a67c27);font-family:'JetBrains Mono',monospace">${p.id}</span> ${escapeHtml(p.t)}</b>
+        <span class="gcat">${escapeHtml(p.who)}</span>
+      </div>
+      <div class="doubody">
+        <div class="doulbl">Por qué</div><p>${douFmt(p.why)}</p>
+        <div class="doulbl">Procedimiento</div><ol>${p.steps.map(s=>`<li>${douFmt(s)}</li>`).join('')}</ol>
+        <div class="doulbl">Estándar</div><p>${douFmt(p.std)}</p>
+        <div class="doulbl">Evidencia (el 4)</div><p>${douFmt(p.ev)}</p>
+        ${defs}
+      </div>
+    </div>`;
+  }).join('') || '<p class="desc">Sin resultados.</p>';
+  const all=DOU_PROCS.flatMap(c=>c.procs).flatMap(p=>p.def);
+  const done=all.filter(d=>dou.params[d.k]).length;
+  const cEl=document.getElementById('douCount'); if(cEl) cEl.textContent=done+' / '+all.length;
+}
+
+/* =====================================================================
+   TAB · SHUN 旬 — Estacionalidad de producto
+   kanjo:shun (admin-only server-side). Semilla: borrador v1 del mapa
+   validado en trabajo previo; todo editable, besugo/vieira con nota de
+   validar. La IA (POST /api/ai/shun, búsqueda web) propone 12 meses que
+   entran ✦ pendientes hasta el visto bueno del itamae.
+   ===================================================================== */
+const SHUN_MESES=['E','F','M','A','M','J','J','A','S','O','N','D'];
+const SHUN_SYM={2:'●',1:'○',0:'–','-1':'✕'};
+const SHUN_SEED=[
+ {id:'chernia',n:'Chernia',cat:'Pescado de mar',m:[1,1,1,1,2,2,2,2,2,1,1,1],nota:'Aguas profundas; ideal maduración larga',pending:false},
+ {id:'besugo',n:'Besugo',cat:'Pescado de mar',m:[1,1,1,1,0,0,0,0,2,2,2,2],nota:'Zafra de primavera — VALIDAR con proveedor MdP',pending:false},
+ {id:'lenguado',n:'Lenguado',cat:'Pescado de mar',m:[1,2,2,2,2,2,2,2,1,0,0,1],nota:'Flaco post-desove en primavera',pending:false},
+ {id:'pezlimon',n:'Pez limón',cat:'Pescado de mar',m:[2,2,2,2,1,0,0,0,0,0,1,2],nota:'Migratorio de agua cálida — firma de verano',pending:false},
+ {id:'anchoita',n:'Anchoíta fresca',cat:'Pescado de mar',m:[0,0,0,0,0,0,0,0,2,2,2,0],nota:'Zafra primavera MdP — curados propios',pending:false},
+ {id:'merluzanegra',n:'Merluza negra',cat:'Pescado de mar',m:[1,1,1,1,1,2,2,2,2,1,1,1],nota:'Cuota anual; lujo graso de invierno',pending:false},
+ {id:'centolla',n:'Centolla',cat:'Marisco',m:[1,1,-1,-1,-1,-1,2,2,2,2,1,1],nota:'VEDA ≈mar–jun (confirmar resolución anual). Solo macho y talla legal',pending:false},
+ {id:'erizo',n:'Erizo',cat:'Marisco',m:[1,1,0,0,0,1,2,2,2,2,1,1],nota:'Beagle/Almanza — logística aérea semanal',pending:false},
+ {id:'langostino',n:'Langostino Rawson (fresco)',cat:'Marisco',m:[2,2,1,0,0,0,0,0,0,0,2,2],nota:'Temporada provincial; fresco ≠ congelado de altura',pending:false},
+ {id:'calamar',n:'Calamar (Illex)',cat:'Marisco',m:[0,2,2,2,2,2,1,1,0,0,0,0],nota:'Fresco solo en zafra',pending:false},
+ {id:'pejerrey',n:'Pejerrey',cat:'Río',m:[0,0,1,2,2,2,2,2,1,0,0,0],nota:'Lagunas bonaerenses, agua fría',pending:false},
+ {id:'citricos',n:'Cítricos',cat:'Huerta',m:[0,0,1,1,2,2,2,2,1,0,0,0],nota:'Ponzu propio, tsukemono de cáscara',pending:false},
+ {id:'hongospino',n:'Hongos de pino',cat:'Huerta',m:[0,0,2,2,1,0,0,0,0,0,0,0],nota:'Otoño patagónico',pending:false}
+];
+let shun={ items: SHUN_SEED.map(x=>({...x, m:[...x.m]})) };
+let shunAIBusy=false, shunPersistT=null;
+function shunEnsure(s){
+  if(!s||typeof s!=='object') return { items: SHUN_SEED.map(x=>({...x, m:[...x.m]})) };
+  if(!Array.isArray(s.items) || !s.items.length) s.items=SHUN_SEED.map(x=>({...x, m:[...x.m]}));
+  s.items.forEach(i=>{ if(!Array.isArray(i.m)||i.m.length!==12) i.m=[0,0,0,0,0,0,0,0,0,0,0,0]; });
+  return s;
+}
+function shunPersist(){ clearTimeout(shunPersistT); shunPersistT=setTimeout(()=>persistSafe('kanjo:shun', shun), 400); }
+async function loadShun(){ await kjLoadKey('kanjo:shun', v=>{ shun=shunEnsure(v); }); }
+function shunCycle(ix,mi){
+  if(!kjIsAdmin()){ flash('El mapa lo edita el itamae — staff en solo lectura'); return; }
+  const order=[2,1,0,-1]; const it=shun.items[ix]; if(!it) return;
+  it.m[mi]=order[(order.indexOf(it.m[mi])+1)%4];
+  shunPersist(); renderShun();
+}
+function shunApprove(ix){ const it=shun.items[ix]; if(!it) return; it.pending=false; shunPersist(); renderShun(); flash('Visto bueno ✓ — la sugerencia IA ahora es oficial'); }
+function shunDel(ix){ if(!kjIsAdmin()) return; shun.items.splice(ix,1); shunPersist(); renderShun(); }
+async function shunAI(){
+  if(shunAIBusy) return;
+  const nEl=document.getElementById('shunNewN'), cEl=document.getElementById('shunNewC');
+  const n=(nEl.value||'').trim(); if(!n){ flash('Poné el nombre del ingrediente'); return; }
+  const id=rid();
+  shunAIBusy=true; renderShun();
+  try{
+    const r=await fetch('/api/ai/shun',{ method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ items:[{ id, n, cat:cEl.value }] }) });
+    if(!r.ok){
+      const e=await r.json().catch(()=>({}));
+      flash(e.error==='rate_limited'?'Límite de IA alcanzado — probá en unos minutos':'La IA no respondió ('+(e.error||r.status)+') — podés cargarlo a mano');
+      shun.items.push({ id, n, cat:cEl.value, m:[0,0,0,0,0,0,0,0,0,0,0,0], nota:'carga manual — completar meses', pending:false });
+    } else {
+      const j=await r.json();
+      const t=j.temporadas && j.temporadas[id];
+      if(t){
+        shun.items.push({ id, n, cat:cEl.value, m:t.m, nota:'✦ '+t.nota+(j.busqueda?'':' · sin búsqueda web')+' · confianza '+t.confianza, pending:true });
+        flash('✦ Estacionalidad sugerida — pendiente de tu visto bueno');
+      } else {
+        shun.items.push({ id, n, cat:cEl.value, m:[0,0,0,0,0,0,0,0,0,0,0,0], nota:'la IA no devolvió datos — completar a mano', pending:false });
+      }
+    }
+    nEl.value=''; shunPersist();
+  }catch(e){ flash('Error de red con la IA'); }
+  shunAIBusy=false; renderShun();
+}
+function renderShun(){
+  const tbl=document.getElementById('shunTable'); if(!tbl) return;
+  const admin=kjIsAdmin();
+  const box=document.getElementById('shunAddBox');
+  box.innerHTML = admin? `<input type="text" id="shunNewN" placeholder="Nuevo ingrediente…" style="width:160px" value="${box.querySelector('#shunNewN')?escapeHtml(box.querySelector('#shunNewN').value):''}">
+    <select class="sel" id="shunNewC"><option>Pescado de mar</option><option>Marisco</option><option>Río</option><option>Huerta</option></select>
+    <button class="gkadd" style="margin:0" onclick="shunAI()" ${shunAIBusy?'disabled':''}>${shunAIBusy?'✦ buscando zafras y vedas…':'✦ Estacionalidad IA'}</button>` : '';
+  const f=document.getElementById('shunFilter').value;
+  const mesNow=new Date().getMonth();
+  const rows=shun.items.map((s,ix)=>({s,ix})).filter(r=>!f||r.s.cat===f);
+  tbl.innerHTML=`<thead><tr><th>Ingrediente</th>${SHUN_MESES.map((m,i)=>`<th style="text-align:center${i===mesNow?';color:var(--indigo,#31456e)':''}">${m}</th>`).join('')}<th></th></tr></thead><tbody>`
+   + rows.map(({s,ix})=>`<tr${s.pending?' style="background:rgba(49,69,110,.07)"':''}>
+      <td><b>${escapeHtml(s.n)}</b>${s.pending?' <span class="doutag" style="border-color:var(--indigo,#31456e);color:var(--indigo,#31456e)">✦ pendiente</span>':''}<span class="gcat">${escapeHtml(s.cat)} · ${escapeHtml(s.nota||'')}</span></td>
+      ${s.m.map((v,mi)=>`<td class="shuncell sh${v===-1?'X':v}${mi===mesNow?' shnow':''}" onclick="shunCycle(${ix},${mi})">${SHUN_SYM[v]}</td>`).join('')}
+      <td style="white-space:nowrap">${s.pending&&admin?`<button class="gkadd" style="margin:0" onclick="shunApprove(${ix})">Visto bueno</button> `:''}${admin?`<button class="editrow" onclick="shunDel(${ix})">×</button>`:''}</td>
+    </tr>`).join('') + '</tbody>';
+  const pico=shun.items.filter(s=>!s.pending&&s.m[mesNow]===2).map(s=>s.n);
+  const veda=shun.items.filter(s=>s.m[mesNow]===-1).map(s=>s.n);
+  const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  document.getElementById('shunNow').innerHTML=`<b>Ahora (${meses[mesNow]}):</b> en pico → ${pico.length?pico.map(escapeHtml).join(' · '):'—'}${veda.length?' &nbsp;·&nbsp; <b style="color:var(--vermilion)">veda:</b> '+veda.map(escapeHtml).join(' · '):''}`;
+}
+
+/* =====================================================================
+   TAB · ZAIKO 在庫 — Inventario operativo
+   kanjo:zaiko (staff puede registrar movimientos, como kataruns).
+   Arranca VACÍO: acá no se inventan ni stock ni costos.
+   Pescado: ingreso + ventana de maduración (procedimiento 2.2).
+   Merma de ítems con genkaRef → log de mermas de Compras (un solo lugar).
+   ===================================================================== */
+let zaiko={ items:[], movs:[] };
+function zkEnsure(z){ if(!z||typeof z!=='object') z={}; if(!Array.isArray(z.items)) z.items=[]; if(!Array.isArray(z.movs)) z.movs=[]; return z; }
+function zkPersist(){ persistSafe('kanjo:zaiko', zaiko); }
+async function loadZaiko(){ await kjLoadKey('kanjo:zaiko', v=>{ zaiko=zkEnsure(v); }); }
+const zkUsd=n=>'$'+(+n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+function zkDias(f){ return Math.floor((Date.now()-new Date(f+'T12:00:00').getTime())/86400000); }
+function zkFishEstado(it){
+  const d=zkDias(it.ingreso), a=it.ventana[0], b=it.ventana[1];
+  if(d<a) return {t:'día '+d+' · madurando ('+a+'–'+b+')', cls:'', alert:false};
+  if(d<=b) return {t:'día '+d+' · EN VENTANA '+a+'–'+b, cls:'color:var(--good,#4a7a45);font-weight:700', alert:false};
+  return {t:'día '+d+' · fuera de ventana ('+a+'–'+b+') — decidir hoy', cls:'color:var(--vermilion);font-weight:700', alert:true};
+}
+function zkAlert(it){ return it.cat==='Pescado'? zkFishEstado(it).alert : (it.par>0 && it.stock<it.par); }
+function zkAdd(){
+  if(!kjIsAdmin()){ flash('Alta de ítems: solo itamae'); return; }
+  const g=id=>document.getElementById(id);
+  const n=g('zkN').value.trim(); if(!n){ flash('Nombre requerido'); return; }
+  const cat0=g('zkC').value, cat=cat0.replace(' 守','');
+  const it={ id:rid(), n, cat, un:g('zkU').value.trim()||'un', stock:+g('zkS').value||0, par:+g('zkP').value||0,
+    costo:+g('zkK').value||0, prot:cat0.includes('守'), genkaRef:g('zkG').value||'' };
+  if(cat==='Pescado'){
+    it.ingreso=g('zkIng').value||fmtDate(new Date());
+    it.ventana=[+g('zkVa').value||0, +g('zkVb').value||3];
+    it.origen=g('zkO').value.trim()||'—';
+    it.par=0;
+  }
+  if(it.genkaRef && !it.costo){ const cu=mrCostUnit(it.genkaRef); if(cu) it.costo=Math.round(cu*100)/100; }
+  zaiko.items.push(it); zkPersist(); flash('Ítem agregado ✓'); renderZaiko();
+}
+function zkDel(ix){ if(!kjIsAdmin()) return; zaiko.items.splice(ix,1); zkPersist(); renderZaiko(); }
+function zkMov(){
+  const g=id=>document.getElementById(id);
+  const it=zaiko.items.find(x=>x.id===g('zkMi').value); if(!it){ flash('Elegí el ítem'); return; }
+  const tipo=g('zkMt').value, cant=+g('zkMc').value||0, motivo=g('zkMm').value.trim();
+  if(cant<=0){ flash('Cantidad requerida'); return; }
+  if((tipo==='salida'||tipo==='merma') && !motivo){ flash('El motivo es obligatorio en salida/merma (regla 3.3)'); return; }
+  it.stock=Math.max(0, it.stock + (tipo==='entrada'?cant:-cant));
+  zaiko.movs.push({ id:rid(), date:fmtDate(new Date()), item:it.id, n:it.n, tipo, cant, motivo, usd:cant*(it.costo||0) });
+  if(zaiko.movs.length>500) zaiko.movs=zaiko.movs.slice(-500);
+  if(tipo==='merma' && it.genkaRef){
+    mermas.push({ id:rid(), date:fmtDate(new Date()), ins:it.genkaRef, qty:cant, motivo:'otro', nota:'Zaiko 在庫: '+it.n+' — '+motivo, cu:mrCostUnit(it.genkaRef) });
+    mrPersist();
+    flash('Merma registrada ✓ — también en el log de Compras (triángulo de food cost)');
+  } else {
+    flash('Movimiento registrado ✓');
+  }
+  g('zkMc').value=''; g('zkMm').value='';
+  zkPersist(); renderZaiko();
+}
+function renderZaiko(){
+  const tbl=document.getElementById('zkTable'); if(!tbl) return;
+  const admin=kjIsAdmin();
+  const forms=document.getElementById('zkForms');
+  const gOpts='<option value="">— sin vínculo a Genka —</option>'+(typeof G==='object'&&Array.isArray(G.insumos)?G.insumos.map(i=>`<option value="${i.id}">${escapeHtml(i.n)}</option>`).join(''):'');
+  const itOpts=zaiko.items.map(i=>`<option value="${i.id}">${escapeHtml(i.n)}</option>`).join('');
+  forms.innerHTML =
+    (admin? `<div class="filterbar" style="margin-bottom:8px;flex-wrap:wrap">
+      <span class="fl">Nuevo ítem</span>
+      <input type="text" id="zkN" placeholder="Nombre" style="width:150px">
+      <select class="sel" id="zkC" onchange="document.getElementById('zkFishF').style.display=this.value==='Pescado'?'inline':'none'"><option>Pescado</option><option>Bebida</option><option>Despensa</option><option>Despensa 守</option><option>Consumible</option></select>
+      <input type="text" id="zkU" placeholder="unidad" style="width:70px">
+      <input type="number" step="0.1" id="zkS" placeholder="stock" style="width:64px">
+      <input type="number" step="0.1" id="zkP" placeholder="par" style="width:56px" title="Punto de reposición (no aplica a pescado)">
+      <input type="number" step="0.01" id="zkK" placeholder="USD/u neto" style="width:84px">
+      <select class="sel" id="zkG" title="Vincular a insumo de Genka: costo compartido y merma al log de Compras">${gOpts}</select>
+      <span id="zkFishF" style="display:inline">
+        <input type="date" id="zkIng" value="${fmtDate(new Date())}" title="Ingreso">
+        <input type="number" id="zkVa" placeholder="vent. desde" style="width:82px" title="Ventana de maduración: desde (días)">
+        <input type="number" id="zkVb" placeholder="hasta" style="width:60px">
+        <input type="text" id="zkO" placeholder="origen" style="width:110px">
+      </span>
+      <button class="gkadd" style="margin:0" onclick="zkAdd()">+ Agregar</button>
+    </div>`:'')
+    + (zaiko.items.length? `<div class="filterbar" style="margin-bottom:8px">
+      <span class="fl">Movimiento</span>
+      <select class="sel" id="zkMi">${itOpts}</select>
+      <select class="sel" id="zkMt"><option value="entrada">Entrada</option><option value="salida">Salida</option><option value="merma">Merma</option></select>
+      <input type="number" step="0.1" id="zkMc" placeholder="cant." style="width:64px">
+      <input type="text" id="zkMm" placeholder="motivo (obligatorio en salida/merma)" style="width:220px">
+      <button class="gkadd" style="margin:0" onclick="zkMov()">Registrar</button>
+    </div>`:'');
+  const f=document.getElementById('zkFilter').value;
+  let rows=zaiko.items.map((it,ix)=>({it,ix}));
+  if(f==='alerta') rows=rows.filter(r=>zkAlert(r.it));
+  else if(f==='prot') rows=rows.filter(r=>r.it.prot);
+  else if(f) rows=rows.filter(r=>r.it.cat===f);
+  tbl.innerHTML=`<thead><tr><th>Ítem</th><th>Familia</th><th>Unidad</th><th>Stock</th><th>Par</th><th>USD/u</th><th>Valor</th><th>Estado</th><th></th></tr></thead><tbody>`
+   + (rows.length? rows.map(({it,ix})=>{
+      const est = it.cat==='Pescado'
+        ? (e=>`<span style="${e.cls}">${e.t}</span>`)(zkFishEstado(it))
+        : (it.par>0 && it.stock<it.par ? '<span style="color:var(--vermilion);font-weight:700">reponer</span>' : '<span style="color:var(--good,#4a7a45)">ok</span>');
+      const det = it.cat==='Pescado'? `<span class="gcat">${escapeHtml(it.origen||'')} · ingreso ${it.ingreso}</span>` : (it.genkaRef?'<span class="gcat">↔ Genka</span>':'');
+      return `<tr><td><b>${escapeHtml(it.n)}</b>${it.prot?' <b style="color:var(--brass,#a67c27)" title="Protegido 1.5 — exento de recorte">守</b>':''}${det}</td>
+      <td>${it.cat}</td><td>${escapeHtml(it.un)}</td>
+      <td style="text-align:right;font-family:'JetBrains Mono',monospace">${it.stock}</td>
+      <td style="text-align:right">${it.cat==='Pescado'?'—':(it.par||'—')}</td>
+      <td style="text-align:right">${zkUsd(it.costo)}</td>
+      <td style="text-align:right;font-family:'JetBrains Mono',monospace">${zkUsd(it.stock*it.costo)}</td>
+      <td>${est}</td>
+      <td>${admin?`<button class="editrow" onclick="zkDel(${ix})">×</button>`:''}</td></tr>`;
+    }).join('') : `<tr><td colspan="9"><p class="desc" style="margin:8px 0">Inventario vacío — se carga con datos reales, nada inventado. ${admin?'Agregá el primer ítem arriba.':'El itamae carga los ítems.'}</p></td></tr>`)
+   + '</tbody>';
+  document.getElementById('zkVal').textContent=zkUsd(zaiko.items.reduce((a,b)=>a+b.stock*(b.costo||0),0));
+  document.getElementById('zkAlerts').textContent=zaiko.items.filter(zkAlert).length;
+}
+
 Promise.all([
   loadBaselineSilent(),                        /* el esquema guardado ES la app: sin esto todo calcula sobre defaults */
   loadServices(), loadFcHealth(),
   loadGenka().then(()=>{ meEnsureMix(); }),
   loadCompras(), loadMermas(), loadFxlog(),
   loadCaja(), loadReservas(),
-  loadStock(), loadCRM(), loadAuth(), loadCierres(), loadAisho(), loadKata(), loadKataRuns(), loadWa()
+  loadStock(), loadCRM(), loadAuth(), loadCierres(), loadAisho(), loadKata(), loadKataRuns(), loadWa(), loadDou(), loadShun(), loadZaiko()
 ]).then(()=>{
   renderInputs(); renderOutputs();             /* re-render con la baseline real */
   loadScenarios();
