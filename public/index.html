@@ -339,7 +339,7 @@
   .scenempty{font-size:12.5px;color:var(--ink-soft);line-height:1.6;margin-top:10px}
 
   /* ---------- tabs ---------- */
-  .tabs{display:flex;flex-wrap:wrap;gap:2px;border-bottom:2px solid var(--ink);margin-bottom:26px}
+  .tabs{display:flex;flex-wrap:wrap;align-items:center;gap:5px 4px;border-bottom:2px solid var(--ink);margin-bottom:26px;padding-bottom:12px}
   .tab[data-hidden="1"]{display:none}
   body.staff .adminonly{display:none!important}
   .roletab{margin-left:auto;background:none;border:none;font-family:'Inter',sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);cursor:pointer;padding:8px 10px;align-self:center}
@@ -448,12 +448,12 @@
   @media(max-width:640px){
     .ifield input,.ifield select,.sel{font-size:16px}
     .gkadd{padding:11px 14px}
-    .tab{padding:10px 12px}
+    .tab{padding:8px 11px 9px}
   }
-  .tab{font-family:'Zilla Slab',serif;font-weight:600;font-size:15.5px;color:var(--ink-soft);background:none;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;padding:11px 18px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;letter-spacing:.01em}
-  .tab:hover{color:var(--ink)}
-  .tab.active{color:var(--ink);border-bottom-color:var(--brass)}
-  .tab .tk{font-size:13px;color:var(--brass);opacity:.7;font-weight:600}
+  .tab{font-family:'Zilla Slab',serif;font-weight:600;font-size:14px;color:var(--ink-soft);background:none;border:1px solid transparent;border-radius:3px;padding:6px 12px 7px;cursor:pointer;display:flex;align-items:baseline;gap:7px;letter-spacing:.01em;line-height:1.2;white-space:nowrap}
+  .tab:hover{color:var(--ink);background:var(--panel);border-color:var(--rule)}
+  .tab.active{color:var(--paper);background:var(--ink);border-color:var(--ink)}
+  .tab .tk{font-size:11.5px;color:var(--brass);opacity:.75;font-weight:600}
   .tab.active .tk{opacity:1}
   .tabpanel{display:none}
   .tabpanel.active{display:block}
@@ -828,6 +828,68 @@
 .shuncell.sh0{opacity:.35}
 .shuncell.shX{background:rgba(195,64,43,.10);color:var(--vermilion,#c3402b);font-weight:700}
 .shuncell.shnow{outline:2px solid var(--indigo,#31456e);outline-offset:-2px}
+
+  /* ===== OROSHI 卸 — proveedores ===== */
+  .prlist{display:flex;flex-direction:column;max-height:430px;overflow-y:auto}
+  .prrow{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:9px 6px;border-bottom:1px dotted var(--rule);cursor:pointer;border-left:3px solid transparent}
+  .prrow:hover{background:var(--panel-2)}
+  .prrow.on{background:#efe9dc;border-left-color:var(--brass)}
+  .prrow .nm{font-family:'Zilla Slab',serif;font-weight:600;font-size:14.5px;line-height:1.2}
+  .prrow .meta{font-size:10.5px;color:var(--ink-soft);margin-top:2px}
+  .prrow .usd{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12.5px;text-align:right}
+  .prrow .usdlab{font-size:9px;color:var(--ink-soft);text-align:right;text-transform:uppercase;letter-spacing:.04em}
+  .rub{font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;padding:1px 7px;border-radius:2px;font-weight:600;white-space:nowrap}
+  .rub.pescados{background:#dde6ea;color:var(--indigo)}
+  .rub.verduras{background:#e2ead9;color:var(--good)}
+  .rub.carnes{background:#f0e0da;color:var(--vermilion)}
+  .rub.bebidas{background:#ece2f0;color:#5b3e73}
+  .rub.secos{background:#efe6d0;color:var(--brass-deep)}
+  .rub.otro{background:#e7e1d1;color:var(--ink-soft)}
+  .stalechip{font-size:9px;color:var(--warn);border:1px solid var(--warn);border-radius:2px;padding:0 4px;margin-left:6px;vertical-align:1px;white-space:nowrap}
+  .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px}
+  @media(max-width:700px){.fgrid{grid-template-columns:1fr}}
+  .frow{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px dotted var(--rule);font-size:12.5px}
+  .frow .fl2{color:var(--ink-soft);flex:none}
+  .frow .fv{text-align:right;min-width:0;overflow-wrap:anywhere}
+  .wabtn{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#fff;background:var(--good);border-radius:2px;padding:3px 9px;text-decoration:none}
+  .wabtn:hover{filter:brightness(1.08)}
+  .alchip{display:inline-flex;align-items:center;gap:5px;font-size:11px;background:var(--paper);border:1px solid var(--rule);border-radius:2px;padding:2px 7px;margin:2px 4px 2px 0}
+  .alchip button{border:none;background:none;color:var(--ink-soft);cursor:pointer;font-size:12px;line-height:1;padding:0}
+  .alchip button:hover{color:var(--vermilion)}
+  .orrat{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12.5px}
+  .orrat .rl{width:110px;color:var(--ink-soft)}
+  .orrat .dots{display:flex;gap:4px}
+  .orrat .dot{width:15px;height:15px;border-radius:50%;border:1px solid var(--rule);background:var(--paper);cursor:pointer;padding:0}
+  .orrat .dot.on{background:var(--brass);border-color:var(--brass-deep)}
+  .orrat .dot:hover{border-color:var(--brass-deep)}
+  .ratmini{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--brass-deep);font-weight:700}
+  .logrow{display:grid;grid-template-columns:auto auto 1fr auto;gap:10px;align-items:baseline;padding:7px 2px;border-bottom:1px dotted var(--rule);font-size:12.5px}
+  .logrow .d{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-soft)}
+  .logtag{font-size:9px;letter-spacing:.05em;text-transform:uppercase;padding:1px 6px;border-radius:2px;font-weight:600;white-space:nowrap}
+  .logtag.nota{background:#e7e1d1;color:var(--ink-soft)}
+  .logtag.incidencia{background:#f4e8e4;color:var(--vermilion)}
+  .logtag.negociacion{background:#dde6ea;color:var(--indigo)}
+  .logtag.pedido{background:#e2ead9;color:var(--good)}
+  .ccsaldo{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-top:6px}
+  .ccsaldo .big{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:24px;line-height:1.1}
+  .ccsaldo .ccsub{font-size:10.5px;color:var(--ink-soft)}
+  .due{font-size:9.5px;letter-spacing:.04em;text-transform:uppercase;padding:1px 7px;border-radius:2px;font-weight:600;white-space:nowrap}
+  .due.venc{background:#f4e8e4;color:var(--vermilion)}
+  .due.soon{background:#f1e9d6;color:var(--warn)}
+  .due.ok{background:#e2ead9;color:var(--good)}
+  .mvrow{display:grid;grid-template-columns:auto auto 1fr auto auto;gap:10px;align-items:baseline;padding:6px 2px;border-bottom:1px dotted var(--rule);font-size:12px}
+  .mvrow .d{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-soft)}
+  .mvrow .amt{font-family:'JetBrains Mono',monospace;font-weight:700;text-align:right;white-space:nowrap}
+  .mvrow .amt.fac{color:var(--ink)}
+  .mvrow .amt.pag{color:var(--good)}
+  .mvtag{font-size:9px;letter-spacing:.05em;text-transform:uppercase;padding:1px 6px;border-radius:2px;font-weight:600;white-space:nowrap}
+  .mvtag.fac{background:#e7e1d1;color:var(--ink-soft)}
+  .mvtag.pag{background:#e2ead9;color:var(--good)}
+  .ororphan{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 2px;border-bottom:1px dotted var(--rule);font-size:12.5px}
+  .ororphan .on2{font-weight:600}
+  .ororphan .om{font-size:10.5px;color:var(--ink-soft)}
+  .orprem{color:var(--vermilion);font-weight:700}
+  .orbest{color:var(--good);font-weight:700}
 </style>
 
 <div class="wrap">
@@ -840,6 +902,7 @@
     <button class="tab" data-tab="genka" onclick="switchTab('genka')">Costeo de menú <span class="tk">原価</span></button>
     <button class="tab" data-tab="aisho" onclick="switchTab('aisho')">Maridaje <span class="tk">相性</span></button>
     <button class="tab" data-tab="compras" onclick="switchTab('compras')">Compras <span class="tk">仕入</span></button>
+    <button class="tab" data-tab="oroshi" onclick="switchTab('oroshi')">Proveedores <span class="tk">卸</span></button>
     <button class="tab" data-tab="caja" onclick="switchTab('caja')">Caja <span class="tk">現金</span></button>
     <button class="tab" data-tab="reservas" onclick="switchTab('reservas')">Reservas <span class="tk">予約</span></button>
     <button class="tab" data-tab="crm" onclick="switchTab('crm')">Clientes <span class="tk">顧客</span></button>
@@ -1502,6 +1565,99 @@
     </div>
     <div id="zkForms"></div>
     <div style="overflow-x:auto"><table class="gkins" id="zkTable"></table></div>
+  </div>
+
+  <!-- ============ TAB · OROSHI 卸 — Proveedores ============ -->
+  <div id="tab-oroshi" class="tabpanel">
+    <header class="top">
+      <div class="brand">
+        <div>
+          <h1>Oroshi <span class="kanji">卸</span></h1>
+          <p class="sub">Proveedores · ficha, scorecard, bitácora y cuenta corriente</p>
+        </div>
+      </div>
+      <div class="kpis" id="orKpis"></div>
+    </header>
+
+    <p class="assume">
+      <span>※</span>
+      <span>Cada proveedor es una <b>ficha viva</b>: contacto y condiciones se cargan una vez; gasto, insumos, precios y competitividad se calculan solos desde las facturas de <b>Shiire 仕入</b>. La unión es por <b>alias</b>: la ficha declara los nombres con los que aparece en las compras y adopta ese historial sin migrar nada. La <b>cuenta corriente</b> arranca de una fecha de corte con saldo inicial que cargás vos — nunca se inventa deuda desde el historial: saldo = inicial + facturas posteriores − pagos, en ARS nominales.</span>
+    </p>
+
+    <div class="tgrid">
+      <div class="tleft">
+        <div class="card">
+          <div class="head" style="cursor:default"><span class="num">卸</span><span class="ttl" id="orFormTtl">Nueva ficha de proveedor</span></div>
+          <div class="body">
+            <div class="row"><label>Nombre</label><div class="ifield"><input type="text" class="name" id="orfN" placeholder="Pescadería…"></div></div>
+            <div class="row"><label>Rubro</label><div class="ifield"><select class="sel" id="orfR">
+              <option value="pescados">Pescados y mariscos</option><option value="verduras">Verduras y frutas</option>
+              <option value="carnes">Carnes</option><option value="bebidas">Bebidas</option>
+              <option value="secos">Secos / almacén</option><option value="otro">Otro</option>
+            </select></div></div>
+            <div class="row"><label>Contacto<span class="sub">persona</span></label><div class="ifield"><input type="text" class="name" id="orfC" placeholder="Nombre"></div></div>
+            <div class="row"><label>WhatsApp<span class="sub">con característica, sin espacios</span></label><div class="ifield"><input type="text" class="name" id="orfT" placeholder="5491155551234"></div></div>
+            <div class="row"><label>Dirección</label><div class="ifield"><input type="text" class="name" id="orfD" placeholder="Barrio / zona"></div></div>
+            <div class="row"><label>CUIT</label><div class="ifield"><input type="text" class="name" id="orfCu" placeholder="30-…"></div></div>
+            <div class="row"><label>Condición de pago</label><div class="ifield"><select class="sel" id="orfP">
+              <option value="contado">Contado</option><option value="cta15">Cta. cte. 15 días</option>
+              <option value="cta30">Cta. cte. 30 días</option><option value="otro">Otro</option>
+            </select></div></div>
+            <div class="row"><label>Días de entrega</label><div class="ifield"><input type="text" class="name" id="orfE" placeholder="mar / vie"></div></div>
+            <div class="row"><label>Pedido mínimo<span class="sub">ARS, opcional</span></label><div class="ifield"><span class="pre">AR$</span><input type="number" id="orfM" placeholder="0"></div></div>
+            <div class="row" style="align-items:flex-start"><label style="padding-top:6px">Notas del itamae</label></div>
+            <textarea id="orfNo" placeholder="Cómo pedir, horarios, qué evitar…" style="font-family:'Inter',sans-serif;background:var(--paper);border:1px solid var(--rule);border-radius:2px;padding:6px 8px;font-size:12.5px;color:var(--ink);width:100%;resize:vertical;min-height:52px"></textarea>
+            <button class="btn" style="width:100%;margin-top:10px" id="orSaveBtn" onclick="orSave()">Crear ficha</button>
+            <button class="btn ghost" style="width:100%;margin-top:8px" id="orCancelBtn" onclick="orFormReset()" hidden>Cancelar edición</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="head" style="cursor:default"><span class="num">拾</span><span class="ttl">Proveedores sueltos</span></div>
+          <div class="body">
+            <p class="note">Nombres que aparecen en las facturas de Shiire 仕入 pero todavía no tienen ficha. Un click crea la ficha y el historial queda adoptado.</p>
+            <div id="orOrphans"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Cómo leer la competitividad</h3>
+          <p class="desc">Para cada insumo se compara el <b>precio unitario promedio de los últimos 90 días</b> entre todos los proveedores que lo venden. El mejor precio marca la base; el resto muestra cuánto <span class="orprem">más caro</span> te lo cobra. No dice a quién comprarle — la calidad no sale de una factura. Dice con qué número sentarse a negociar.</p>
+        </div>
+      </div>
+
+      <div class="tright">
+        <div class="panel" style="padding:12px 15px">
+          <div class="filterbar"><span class="fl">Buscar</span><input type="text" id="orQ" placeholder="nombre, rubro, alias, insumo, nota…" oninput="orSearch(this.value)" style="text-align:left;font-family:'Inter',sans-serif;min-width:210px"></div>
+        </div>
+        <div class="panel">
+          <h3>Proveedores <span style="font-weight:400;font-size:11px;color:var(--ink-soft)">· ordenados por gasto histórico · USD neto</span></h3>
+          <div class="prlist" id="orList"></div>
+        </div>
+        <div id="orDetail"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="shead">
+        <h2>Scorecard <span class="kanji">番付</span></h2>
+        <p>Todos los proveedores, lado a lado — y lo que vale una llamada.</p>
+      </div>
+      <div class="panel" style="margin-bottom:14px">
+        <h3>Ranking por gasto</h3>
+        <div style="overflow-x:auto"><table class="gkins"><thead><tr>
+          <th style="text-align:left">Proveedor</th><th>Rubro</th><th>Fact.</th><th id="orRkMes">Mes</th><th>Histórico</th><th>Share</th><th>Rating</th><th>Última compra</th>
+        </tr></thead><tbody id="orRkBody"></tbody></table></div>
+      </div>
+      <div class="panel" style="margin-bottom:14px">
+        <h3>Mismo insumo, distinto precio <span style="font-weight:400;font-size:11px;color:var(--ink-soft)">· últimos 90 días · solo proveedores con ficha</span></h3>
+        <div id="orGaps"></div>
+      </div>
+      <div class="panel">
+        <h3>Vencimientos <span class="kanji" style="font-size:14px;color:var(--brass)">支払</span> <span style="font-weight:400;font-size:11px;color:var(--ink-soft)">· cuentas corrientes activas · ARS nominales</span></h3>
+        <div id="orDue"></div>
+      </div>
+    </div>
   </div>
 
   <div id="tab-kata" class="tabpanel">
@@ -2543,6 +2699,7 @@ function switchTab(name){
   if(name==='genka'){ renderGenka(); renderMix(); }
   if(name==='aisho') renderAisho();
   if(name==='compras') renderCompras();
+  if(name==='oroshi') renderOroshi();
   if(name==='caja') renderCaja();
   if(name==='reservas') renderReservas();
   if(name==='resumen') renderResumen();
@@ -4459,7 +4616,7 @@ function renderCompras(){
   cpSel.innerHTML=`<option value="">— sin vincular (describir) —</option>`+insOpts;
   mrSel.innerHTML=insOpts;
   if(cv) cpSel.value=cv; if(mv) mrSel.value=mv;
-  document.getElementById('cpProvList').innerHTML=[...new Set(compras.map(c=>c.prov).filter(Boolean))].map(p=>`<option value="${escapeHtml(p)}">`).join('');
+  document.getElementById('cpProvList').innerHTML=[...new Set([...(oroshi.provs||[]).map(p=>p.n), ...compras.map(c=>c.prov).filter(Boolean)])].map(p=>`<option value="${escapeHtml(p)}">`).join('');
   if(!document.getElementById('cpDate').value) document.getElementById('cpDate').value=fmtDate(new Date());
   if(!document.getElementById('mrDate').value) document.getElementById('mrDate').value=fmtDate(new Date());
 
@@ -5225,9 +5382,9 @@ function renderCRM(){
    Control operativo del lado del cliente: la aplicación real de permisos
    llega con el servidor (Railway). Esto ordena quién ve qué en el local.
    ===================================================================== */
-const TAB_LABELS={ resumen:'Resumen 週報', costos:'Esquema 勘定', turnos:'Turnos 番付', heika:'Precios 平価', yoso:'Pronóstico 予想', genka:'Costeo 原価', aisho:'Maridaje 相性', compras:'Compras 仕入', caja:'Caja 現金', reservas:'Reservas 予約', crm:'Clientes 顧客', kata:'Manual 型', wa:'Rueda 輪', dou:'Procedimientos 道', shun:'Estacionalidad 旬', zaiko:'Inventario 在庫' };
+const TAB_LABELS={ resumen:'Resumen 週報', costos:'Esquema 勘定', turnos:'Turnos 番付', heika:'Precios 平価', yoso:'Pronóstico 予想', genka:'Costeo 原価', aisho:'Maridaje 相性', compras:'Compras 仕入', oroshi:'Proveedores 卸', caja:'Caja 現金', reservas:'Reservas 予約', crm:'Clientes 顧客', kata:'Manual 型', wa:'Rueda 輪', dou:'Procedimientos 道', shun:'Estacionalidad 旬', zaiko:'Inventario 在庫' };
 let auth={ pin:'', algo:'', modules:{} };
-function authDefaults(){ return { resumen:'staff', costos:'admin', turnos:'staff', heika:'admin', yoso:'admin', genka:'staff', aisho:'staff', compras:'staff', caja:'admin', reservas:'staff', crm:'staff', kata:'staff', wa:'staff' }; }
+function authDefaults(){ return { resumen:'staff', costos:'admin', turnos:'staff', heika:'admin', yoso:'admin', genka:'staff', aisho:'staff', compras:'staff', oroshi:'staff', caja:'admin', reservas:'staff', crm:'staff', kata:'staff', wa:'staff' }; }
 function authEnsure(a){
   const d={ pin:'', algo:'', modules:authDefaults() };
   if(!a||typeof a!=='object') return d;
@@ -5654,7 +5811,8 @@ function cpProvHtml(mk){
 
   return `<div class="panel"><h3>Proveedores <span style="font-weight:400;color:var(--ink-soft);font-size:11px">· gasto en USD neto</span></h3>
     <div style="overflow-x:auto"><table class="gkins"><thead><tr><th style="text-align:left">Proveedor</th><th>Fact.</th><th>${monthLabel(mk)}</th><th>Histórico</th><th>Share</th></tr></thead><tbody>${rows}</tbody></table></div>
-    ${compHtml}</div>`;
+    ${compHtml}
+    <p class="desc" style="margin:10px 0 0">La ficha de cada proveedor —contacto, condiciones, cuenta corriente y bitácora— vive en la pestaña <b>Proveedores 卸</b>.</p></div>`;
 }
 
 /* =====================================================================
@@ -8079,6 +8237,519 @@ function renderZaiko(){
   document.getElementById('zkAlerts').textContent=zaiko.items.filter(zkAlert).length;
 }
 
+/* =====================================================================
+   TAB · OROSHI 卸 — Proveedores: ficha, alias, scorecard, bitácora,
+   rating y cuenta corriente.
+   kanjo:oroshi — escriben staff y admin (auth normal; NO va en
+   ADMIN_ONLY_WRITE del server).
+   Las compras NO se migran: cada ficha declara alias y adopta por
+   matching el historial de Shiire 仕入 en tiempo de render. La cuenta
+   corriente arranca de una fecha de corte con saldo inicial cargado a
+   mano — nunca se inventa deuda desde el historial: saldo = inicial +
+   facturas posteriores al corte − pagos. ARS nominales; aging FIFO
+   (el saldo vivo son las últimas facturas).
+   ===================================================================== */
+let oroshi={ provs:[] };
+const orUI={ q:'', sel:null, editing:null };
+const OR_RUBRO={pescados:'Pescados y mariscos', verduras:'Verduras y frutas', carnes:'Carnes', bebidas:'Bebidas', secos:'Secos / almacén', otro:'Otro'};
+const OR_PAGO={contado:'Contado', cta15:'Cta. cte. 15 días', cta30:'Cta. cte. 30 días', otro:'Otro'};
+const OR_LOGTIPOS=[['nota','Nota'],['incidencia','Incidencia'],['negociacion','Negociación'],['pedido','Pedido especial']];
+const OR_LOGLABEL=Object.fromEntries(OR_LOGTIPOS);
+const OR_MEDIOS=[['transferencia','Transferencia'],['efectivo','Efectivo'],['echeq','E-cheq'],['otro','Otro']];
+const OR_MEDIOLABEL=Object.fromEntries(OR_MEDIOS);
+
+function orEnsure(o){
+  if(!o||typeof o!=='object') o={};
+  if(!Array.isArray(o.provs)) o.provs=[];
+  o.provs.forEach(p=>{
+    if(!p.id) p.id=rid();
+    if(!Array.isArray(p.aliases)) p.aliases=[];
+    if(!p.rating||typeof p.rating!=='object') p.rating={cal:0,cum:0,pre:0};
+    if(!Array.isArray(p.log)) p.log=[];
+    if(p.cc && !Array.isArray(p.cc.pagos)) p.cc.pagos=[];
+  });
+  return o;
+}
+function orPersist(){ persistSafe('kanjo:oroshi', oroshi); }
+async function loadOroshi(){ await kjLoadKey('kanjo:oroshi', v=>{ oroshi=orEnsure(v); }); }
+
+function orNorm(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim(); }
+function orById(id){ return oroshi.provs.find(p=>p.id===id)||null; }
+function orKeys(p){ return [orNorm(p.n), ...(p.aliases||[]).map(orNorm)].filter(Boolean); }
+function orMatch(provStr){ const k=orNorm(provStr); if(!k) return null; return oroshi.provs.find(p=>orKeys(p).includes(k))||null; }
+function orComprasDe(p){ return compras.filter(c=>orMatch(c.prov)===p); }
+function orFmtArs(v){ return 'AR$ '+Math.round(v).toLocaleString('en-US'); }
+function orDaysSince(d){ try{ return Math.round((parseDate(gkToday())-parseDate(d))/86400000); }catch(e){ return 0; } }
+function orAddDays(dateStr,n){ try{ const d=parseDate(dateStr); d.setDate(d.getDate()+n); return fmtDate(d); }catch(e){ return dateStr; } }
+
+function orOrphans(){
+  const seen={};
+  compras.forEach(c=>{
+    const k=orNorm(c.prov);
+    if(k && !orMatch(c.prov)){
+      if(!seen[k]) seen[k]={name:(c.prov||'').trim(), n:0, usd:0, last:''};
+      seen[k].n++; seen[k].usd+=cpUsd(c);
+      if(c.date>seen[k].last) seen[k].last=c.date;
+    }
+  });
+  return Object.values(seen).sort((a,b)=>b.usd-a.usd);
+}
+
+function orStats(p){
+  const cs=orComprasDe(p);
+  const mk=monthKey(gkToday());
+  const usd=cs.reduce((a,c)=>a+cpUsd(c),0);
+  const usdM=cs.filter(c=>monthKey(c.date)===mk).reduce((a,c)=>a+cpUsd(c),0);
+  const last=cs.reduce((a,c)=>c.date>a?c.date:a,'');
+  const porIns={};
+  cs.forEach(c=>{ if(c.ins && c.qty>0) (porIns[c.ins]=porIns[c.ins]||[]).push(c); });
+  Object.values(porIns).forEach(list=>list.sort((a,b)=>a.date<b.date?-1:1));
+  return { cs, usd, usdM, last, n:cs.length, porIns };
+}
+function orAvg90(p, insId){
+  const cutoff=fmtDate(new Date(Date.now()-90*86400000));
+  const list=orComprasDe(p).filter(c=>c.ins===insId && c.qty>0 && c.date>=cutoff);
+  if(!list.length) return null;
+  const sum=list.reduce((a,c)=>a+(c.ars||0),0), q=list.reduce((a,c)=>a+c.qty,0);
+  return q>0? sum/q : null;
+}
+function orBest(insId){
+  let best=null;
+  oroshi.provs.forEach(p=>{ const u=orAvg90(p,insId); if(u!=null && (best==null||u<best.u)) best={p,u}; });
+  return best;
+}
+function orRatAvg(p){ const r=p.rating||{}; const vals=[r.cal,r.cum,r.pre].filter(v=>v>0); return vals.length? vals.reduce((a,b)=>a+b,0)/vals.length : 0; }
+
+/* ---- cuenta corriente ---- */
+function orPlazo(p){ return p.pago==='cta15'?15 : p.pago==='cta30'?30 : 0; }
+function orCcOf(p){ return (p.cc && p.cc.on)? p.cc : null; }
+function orCcInv(p){
+  const cc=orCcOf(p); if(!cc) return [];
+  return orComprasDe(p).filter(c=>c.date>=cc.desde).sort((a,b)=>a.date<b.date?-1:1);
+}
+function orCcSaldo(p){
+  const cc=orCcOf(p); if(!cc) return 0;
+  const fac=orCcInv(p).reduce((a,c)=>a+(c.ars||0),0);
+  const pag=(cc.pagos||[]).reduce((a,g)=>a+(g.ars||0),0);
+  return (cc.inicial||0)+fac-pag;
+}
+function orCcOpen(p){
+  const cc=orCcOf(p); if(!cc) return [];
+  let rem=orCcSaldo(p); if(rem<=0) return [];
+  const plazo=orPlazo(p), out=[];
+  const invs=orCcInv(p).slice().reverse();
+  for(const c of invs){
+    if(rem<=0) break;
+    const open=Math.min(c.ars||0, rem);
+    if(open>0){ out.push({date:c.date, open, due:orAddDays(c.date,plazo), ins:c.ins}); rem-=open; }
+  }
+  if(rem>0) out.push({date:cc.desde, open:rem, due:orAddDays(cc.desde,plazo), inicial:true});
+  return out.sort((a,b)=>a.due<b.due?-1:1);
+}
+function orDueEstado(due){
+  const d=Math.round((parseDate(due)-parseDate(gkToday()))/86400000);
+  if(d<0) return {cls:'venc', txt:'vencida '+Math.abs(d)+'d', d};
+  if(d<=7) return {cls:'soon', txt:'vence en '+d+'d', d};
+  return {cls:'ok', txt:'al día · '+due.slice(5), d};
+}
+function orCcGlobal(){ return oroshi.provs.filter(p=>orCcOf(p)).map(p=>({p, saldo:orCcSaldo(p), open:orCcOpen(p)})); }
+
+/* ---- render ---- */
+function renderOroshi(){
+  const sorted=oroshi.provs.map(p=>({p,s:orStats(p)})).sort((a,b)=>b.s.usd-a.s.usd);
+  if(orUI.sel && !orById(orUI.sel)) orUI.sel=null;
+  if(!orUI.sel && sorted.length) orUI.sel=sorted[0].p.id;
+  orRenderKpis(); orRenderList(sorted); orRenderDetail(); orRenderOrphans(); orRenderRanking(sorted); orRenderGaps(); orRenderDue();
+}
+
+function orRenderKpis(){
+  const mk=monthKey(gkToday());
+  const buysM=compras.filter(c=>monthKey(c.date)===mk && orMatch(c.prov));
+  const usdM=buysM.reduce((a,c)=>a+cpUsd(c),0);
+  const stats=oroshi.provs.map(p=>({p,s:orStats(p)})).filter(x=>x.s.usd>0).sort((a,b)=>b.s.usd-a.s.usd);
+  const tot=stats.reduce((a,x)=>a+x.s.usd,0)||1;
+  const topShare=stats.length? (stats[0].s.usd/tot*100) : 0;
+  const orph=orOrphans().length;
+  const ccs=orCcGlobal();
+  const deuda=ccs.reduce((a,x)=>a+Math.max(x.saldo,0),0);
+  const venc=ccs.reduce((a,x)=>a+x.open.filter(o=>orDueEstado(o.due).d<0).length,0);
+  const kpi=(lab,val,sub)=>'<div class="kpi"><div class="lab">'+lab+'</div><div class="val">'+val+'</div><div class="ksub">'+sub+'</div></div>';
+  document.getElementById('orKpis').innerHTML =
+    kpi('Con ficha', oroshi.provs.length, orph? orph+' suelto'+(orph>1?'s':'')+' sin ficha' : 'directorio completo')
+    + kpi('Gasto '+monthLabel(mk), fmt(usdM), buysM.length+' facturas con ficha · USD neto')
+    + kpi('Concentración', stats.length? topShare.toFixed(0)+'%':'—', stats.length? 'del gasto en '+escapeHtml(stats[0].p.n) : 'sin gasto adoptado')
+    + kpi('Deuda viva', ccs.length? orFmtArs(deuda) : '—',
+        ccs.length? (venc? '<span style="color:var(--bad);font-weight:600">'+venc+' factura'+(venc>1?'s':'')+' vencida'+(venc>1?'s':'')+'</span>' : ccs.length+' cta'+(ccs.length>1?'s':'')+' cte al día') : 'sin ctas ctes activas');
+}
+
+function orMatchQ(p){
+  const q=orNorm(orUI.q); if(!q) return true;
+  const st=orStats(p);
+  const insNames=Object.keys(st.porIns).map(id=>{const i=gkInsById(id);return i?i.n:'';}).join(' ');
+  const hay=orNorm([p.n, OR_RUBRO[p.rubro]||'', p.contacto, p.notas, (p.aliases||[]).join(' '), insNames].join(' '));
+  return hay.includes(q);
+}
+
+function orRenderList(sorted){
+  const items=sorted.filter(x=>orMatchQ(x.p));
+  document.getElementById('orList').innerHTML =
+    !oroshi.provs.length? '<div class="svempty">Todavía no hay fichas. Creá la primera con el formulario de la izquierda — o adoptá un proveedor suelto de las compras con un click.</div>'
+    : items.length? items.map(x=>{
+      const p=x.p, s=x.s;
+      const dsl=s.last? orDaysSince(s.last) : null;
+      const stale=(dsl!=null && dsl>30)? '<span class="stalechip">▲ sin compras '+dsl+'d</span>' : '';
+      const ra=orRatAvg(p);
+      return '<div class="prrow'+(orUI.sel===p.id?' on':'')+'" onclick="orSelect(\''+p.id+'\')">'
+        +'<div><div class="nm">'+escapeHtml(p.n)+stale+'</div>'
+        +'<div class="meta">'+(s.n? s.n+' fact. · últ. '+s.last : 'sin compras adoptadas')
+        +(ra? ' · <span class="ratmini">'+ra.toFixed(1)+'★</span>':'')+'</div></div>'
+        +'<span class="rub '+(OR_RUBRO[p.rubro]?p.rubro:'otro')+'">'+escapeHtml(OR_RUBRO[p.rubro]||p.rubro||'—')+'</span>'
+        +'<div><div class="usd">'+(s.usd?fmt(s.usd):'—')+'</div><div class="usdlab">histórico</div></div>'
+        +'</div>';
+    }).join('') : '<div class="svempty">Ningún proveedor coincide con la búsqueda.</div>';
+}
+
+function orRenderDetail(){
+  const box=document.getElementById('orDetail');
+  const p=orById(orUI.sel);
+  if(!p){ box.innerHTML=''; return; }
+  const s=orStats(p);
+  const tot=oroshi.provs.reduce((a,x)=>a+orStats(x).usd,0)||1;
+
+  const fr=(l,v)=> v? '<div class="frow"><span class="fl2">'+l+'</span><span class="fv">'+v+'</span></div>':'';
+  const wa=p.tel? '<a class="wabtn" href="https://wa.me/'+encodeURIComponent(p.tel)+'" target="_blank" rel="noopener">WhatsApp ↗</a>' : '';
+  const ficha=
+    '<div class="fgrid">'
+    + fr('Contacto', escapeHtml(p.contacto||'')+(wa?' &nbsp;'+wa:''))
+    + fr('Dirección', escapeHtml(p.dir))
+    + fr('CUIT', p.cuit?'<span class="mono">'+escapeHtml(p.cuit)+'</span>':'')
+    + fr('Pago', escapeHtml(OR_PAGO[p.pago]||p.pago||''))
+    + fr('Entrega', escapeHtml(p.entrega))
+    + fr('Pedido mínimo', p.minimo? '<span class="mono">AR$ '+(+p.minimo).toLocaleString('en-US')+'</span>':'')
+    +'</div>'
+    + (p.notas? '<p class="desc" style="margin-top:10px;font-style:italic">“'+escapeHtml(p.notas)+'”</p>':'');
+
+  const alias=
+    '<div style="margin-top:12px"><div class="hslab"><span>Alias en facturas</span></div>'
+    +'<div style="margin-top:6px">'
+    + (p.aliases||[]).map((a,ix)=>'<span class="alchip">'+escapeHtml(a)+'<button title="Quitar" onclick="orAlDel(\''+p.id+'\','+ix+')">×</button></span>').join('')
+    +'<span class="alchip" style="background:none;border-style:dashed"><input type="text" id="orAlNew" placeholder="agregar alias…" style="border:none;background:none;width:110px;text-align:left;font-family:Inter,sans-serif;font-size:11px;padding:0" onkeydown="if(event.key===\'Enter\')orAlAdd(\''+p.id+'\')"><button title="Agregar" onclick="orAlAdd(\''+p.id+'\')" style="color:var(--indigo)">+</button></span>'
+    +'</div>'
+    +'<p class="desc" style="margin-top:4px">Las compras de Shiire 仕入 cuyo proveedor coincida con el nombre o un alias se adoptan solas.</p></div>';
+
+  const insRows=Object.keys(s.porIns).map(insId=>{
+    const i=gkInsById(insId); const list=s.porIns[insId];
+    const lastC=list[list.length-1];
+    const lastU=lastC.ars/lastC.qty;
+    const prevC=list.length>1? list[list.length-2] : null;
+    const d=prevC? (lastU/(prevC.ars/prevC.qty)-1)*100 : null;
+    const mine=orAvg90(p,insId), best=orBest(insId);
+    let comp='—';
+    if(mine!=null && best){
+      if(best.p===p) comp='<span class="orbest">mejor precio</span>';
+      else comp='<span class="orprem">+'+((mine/best.u-1)*100).toFixed(0)+'%</span><span class="gcat">vs '+escapeHtml(best.p.n)+'</span>';
+    }
+    const dCol=d==null?'var(--ink-soft)':(d>8?'var(--bad)':d>3?'var(--brass-deep)':d<-1?'var(--good)':'var(--ink)');
+    return '<tr><td>'+escapeHtml(i?i.n:'(insumo eliminado)')+'<span class="gcat">'+list.length+' compra'+(list.length>1?'s':'')+'</span></td>'
+      +'<td>AR$ '+Math.round(lastU).toLocaleString('en-US')+'<span class="gcat">/'+(i?i.unit:'un')+' · '+lastC.date.slice(5)+'</span></td>'
+      +'<td style="color:'+dCol+';font-weight:700">'+(d==null?'—':(d>=0?'+':'')+d.toFixed(1)+'%')+'</td>'
+      +'<td>'+comp+'</td></tr>';
+  }).join('');
+
+  /* cuenta corriente */
+  let ccHtml='';
+  const cc=orCcOf(p);
+  if(!cc){
+    ccHtml='<p class="desc" style="margin-top:4px">Sin cuenta corriente. Para llevarla, cargá <b>desde cuándo</b> y <b>cuánto le debés hoy</b> — nunca se inventa deuda desde el historial.</p>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px">'
+      +'<label style="font-size:11.5px;color:var(--ink-soft)">Corte</label><input type="date" id="orCcD" value="'+gkToday()+'">'
+      +'<label style="font-size:11.5px;color:var(--ink-soft)">Saldo inicial</label><span class="ifield"><span class="pre">AR$</span><input type="number" id="orCcI" placeholder="0"></span>'
+      +'<button class="minib" onclick="orCcActivate(\''+p.id+'\')">Activar cta. cte.</button></div>';
+  }else{
+    const saldo=orCcSaldo(p), open=orCcOpen(p), plazo=orPlazo(p);
+    const chips=open.map(o=>{ const e=orDueEstado(o.due);
+      return '<span class="due '+e.cls+'" title="'+(o.inicial?'saldo inicial':'factura '+o.date)+'">'+orFmtArs(o.open)+' · '+e.txt+'</span>'; }).join(' ');
+    const movs=[
+      ...orCcInv(p).map(c=>{ const i=c.ins?gkInsById(c.ins):null;
+        return {date:c.date, kind:'fac', ars:c.ars, det:(i?i.n:(c.desc||'compra'))+(c.qty&&i?' · '+c.qty+' '+i.unit:'')}; }),
+      ...(cc.pagos||[]).map(g=>({date:g.date, kind:'pag', ars:g.ars, det:(OR_MEDIOLABEL[g.medio]||g.medio)+(g.nota?' · '+g.nota:''), gid:g.id}))
+    ].sort((a,b)=>a.date<b.date?1:-1).slice(0,10);
+    const mvRows=movs.map(m=>'<div class="mvrow"><span class="d">'+m.date+'</span>'
+      +'<span class="mvtag '+m.kind+'">'+(m.kind==='fac'?'Factura':'Pago')+'</span>'
+      +'<span style="color:var(--ink-soft)">'+escapeHtml(m.det)+'</span>'
+      +'<span class="amt '+m.kind+'">'+(m.kind==='fac'?'+':'−')+orFmtArs(m.ars).replace('AR$ ','')+'</span>'
+      +(m.gid?'<button class="delrow" title="Eliminar pago" onclick="orPagoDel(\''+p.id+'\',\''+m.gid+'\')">×</button>':'<span></span>')
+      +'</div>').join('');
+    ccHtml=
+      '<div class="ccsaldo"><span class="big" style="color:'+(saldo>0?'var(--ink)':'var(--good)')+'">'+orFmtArs(Math.max(saldo,0))+'</span>'
+      +'<span class="ccsub">saldo · desde '+cc.desde+(cc.inicial?' · inicial '+orFmtArs(cc.inicial):'')+' · plazo '+(plazo?plazo+' días':'contado')+'</span>'
+      +(saldo<0?'<span class="due ok">a favor '+orFmtArs(-saldo)+'</span>':'')
+      +'</div>'
+      +(chips?'<div style="margin-top:7px;display:flex;gap:6px;flex-wrap:wrap">'+chips+'</div>':'')
+      +'<div style="margin-top:8px">'+(mvRows||'<p class="desc">Sin movimientos desde el corte.</p>')+'</div>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px;padding-top:10px;border-top:1px dotted var(--rule)">'
+      +'<input type="date" id="orPgD" value="'+gkToday()+'">'
+      +'<span class="ifield"><span class="pre">AR$</span><input type="number" id="orPgA" placeholder="0"></span>'
+      +'<select class="sel" id="orPgM">'+OR_MEDIOS.map(m=>'<option value="'+m[0]+'">'+m[1]+'</option>').join('')+'</select>'
+      +'<input type="text" class="name" id="orPgN" placeholder="Nota (opcional)" style="flex:1;min-width:120px" onkeydown="if(event.key===\'Enter\')orPagoAdd(\''+p.id+'\')">'
+      +'<button class="minib" onclick="orPagoAdd(\''+p.id+'\')">Registrar pago</button>'
+      +'<button class="minib del" onclick="orCcDeactivate(\''+p.id+'\')" title="Desactiva sin borrar los pagos">Desactivar</button>'
+      +'</div>';
+  }
+
+  const ratRow=(key,label)=>{
+    const v=(p.rating&&p.rating[key])||0;
+    let dots='';
+    for(let k=1;k<=5;k++) dots+='<button class="dot'+(k<=v?' on':'')+'" title="'+k+'" onclick="orRatSet(\''+p.id+'\',\''+key+'\','+k+')"></button>';
+    return '<div class="orrat"><span class="rl">'+label+'</span><span class="dots">'+dots+'</span></div>';
+  };
+
+  const logs=[...(p.log||[])].sort((a,b)=>a.date<b.date?1:-1);
+  const logRows=logs.map(e=>'<div class="logrow"><span class="d">'+escapeHtml(e.date)+'</span>'
+    +'<span class="logtag '+(OR_LOGLABEL[e.tipo]?e.tipo:'nota')+'">'+escapeHtml(OR_LOGLABEL[e.tipo]||e.tipo)+'</span>'
+    +'<span>'+escapeHtml(e.txt)+'</span>'
+    +'<button class="delrow" title="Eliminar" onclick="orLogDel(\''+p.id+'\',\''+e.id+'\')">×</button></div>').join('');
+
+  box.innerHTML=
+    '<div class="panel">'
+    +'<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">'
+    +'<h3 style="margin:0">'+escapeHtml(p.n)+' <span class="rub '+(OR_RUBRO[p.rubro]?p.rubro:'otro')+'" style="vertical-align:2px">'+escapeHtml(OR_RUBRO[p.rubro]||p.rubro||'—')+'</span></h3>'
+    +'<span><button class="minib" onclick="orEdit(\''+p.id+'\')">Editar ficha</button> <button class="minib del" onclick="orDel(\''+p.id+'\')">Eliminar</button></span>'
+    +'</div>'
+    +'<div class="hslab" style="margin-top:10px"><span>Ficha</span></div>'
+    +'<div style="margin-top:6px">'+ficha+'</div>'
+    +alias
+    +'<div class="hslab" style="margin-top:16px"><span>Números</span><b class="mono" style="font-size:12px">'+(s.usd?fmt(s.usdM)+' este mes · '+fmt(s.usd)+' hist. · '+(s.usd/tot*100).toFixed(0)+'% share':'sin compras')+'</b></div>'
+    +(insRows? '<div style="overflow-x:auto;margin-top:6px"><table class="gkins"><thead><tr><th style="text-align:left">Insumo</th><th>Último precio</th><th>Δ</th><th>Competitividad 90d</th></tr></thead><tbody>'+insRows+'</tbody></table></div>'
+      : '<p class="desc" style="margin-top:6px">Cuando una compra de Shiire 仕入 matchee con esta ficha, acá aparecen sus insumos y precios.</p>')
+    +'<div class="hslab" style="margin-top:16px"><span>Cuenta corriente <span style="color:var(--brass)">支払</span></span></div>'
+    +ccHtml
+    +'<div class="hslab" style="margin-top:16px"><span>Calificación del itamae</span><b class="ratmini">'+(orRatAvg(p)?orRatAvg(p).toFixed(1)+'★':'—')+'</b></div>'
+    +'<div style="margin-top:4px">'+ratRow('cal','Calidad')+ratRow('cum','Cumplimiento')+ratRow('pre','Precio')+'</div>'
+    +'<div class="hslab" style="margin-top:16px"><span>Bitácora</span></div>'
+    +'<div style="margin-top:4px">'+(logRows||'<p class="desc">Sin registros. Incidencias, negociaciones y pedidos especiales quedan acá — con fecha, para la próxima charla de precios.</p>')+'</div>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px;padding-top:10px;border-top:1px dotted var(--rule)">'
+    +'<input type="date" id="orLgD" value="'+gkToday()+'">'
+    +'<select class="sel" id="orLgT">'+OR_LOGTIPOS.map(t=>'<option value="'+t[0]+'">'+t[1]+'</option>').join('')+'</select>'
+    +'<input type="text" class="name" id="orLgX" placeholder="Qué pasó…" style="flex:1;min-width:160px" onkeydown="if(event.key===\'Enter\')orLogAdd(\''+p.id+'\')">'
+    +'<button class="minib" onclick="orLogAdd(\''+p.id+'\')">Registrar</button>'
+    +'</div>'
+    +'</div>';
+}
+
+function orRenderOrphans(){
+  const list=orOrphans();
+  orUI._orphans=list;
+  document.getElementById('orOrphans').innerHTML = list.length? list.map((o,ix)=>
+    '<div class="ororphan"><div><div class="on2">'+escapeHtml(o.name)+'</div>'
+    +'<div class="om">'+o.n+' factura'+(o.n>1?'s':'')+' · '+fmt(o.usd)+' · últ. '+o.last+'</div></div>'
+    +'<button class="minib" onclick="orAdopt('+ix+')">Crear ficha</button></div>'
+  ).join('') : '<p class="desc">Todo el historial de compras tiene ficha. Nada suelto.</p>';
+}
+
+function orRenderRanking(sorted){
+  const mk=monthKey(gkToday());
+  document.getElementById('orRkMes').textContent=monthLabel(mk);
+  const tot=sorted.reduce((a,x)=>a+x.s.usd,0)||1;
+  document.getElementById('orRkBody').innerHTML= sorted.length? sorted.map(x=>{
+    const p=x.p, s=x.s, ra=orRatAvg(p);
+    return '<tr style="cursor:pointer" onclick="orSelect(\''+p.id+'\');window.scrollTo(0,0)">'
+      +'<td>'+escapeHtml(p.n)+'</td>'
+      +'<td><span class="rub '+(OR_RUBRO[p.rubro]?p.rubro:'otro')+'">'+escapeHtml(OR_RUBRO[p.rubro]||p.rubro||'—')+'</span></td>'
+      +'<td>'+s.n+'</td><td>'+(s.usdM?fmt(s.usdM):'—')+'</td><td>'+(s.usd?fmt(s.usd):'—')+'</td>'
+      +'<td style="font-weight:700">'+(s.usd? (s.usd/tot*100).toFixed(0)+'%':'—')+'</td>'
+      +'<td>'+(ra? ra.toFixed(1)+'★':'—')+'</td>'
+      +'<td>'+(s.last||'—')+'</td></tr>';
+  }).join('') : '<tr><td colspan="8" style="text-align:left;font-family:Inter,sans-serif;color:var(--ink-soft)">Sin fichas todavía.</td></tr>';
+}
+
+function orRenderGaps(){
+  const comp=[];
+  (G.insumos||[]).forEach(i=>{
+    const list=oroshi.provs.map(p=>({p,u:orAvg90(p,i.id)})).filter(x=>x.u!=null).sort((a,b)=>a.u-b.u);
+    if(list.length>=2){
+      const best=list[0], worst=list[list.length-1];
+      const gap=(worst.u/best.u-1)*100;
+      if(gap>=5) comp.push({i, best, worst, gap});
+    }
+  });
+  comp.sort((a,b)=>b.gap-a.gap);
+  document.getElementById('orGaps').innerHTML = comp.length?
+    '<div class="alerts">'+comp.slice(0,8).map(x=>'<div class="alert warn"><b>'+escapeHtml(x.i.n)+'</b>: '
+      +escapeHtml(x.worst.p.n)+' cobra AR$ '+Math.round(x.worst.u).toLocaleString('en-US')+'/'+x.i.unit
+      +' vs AR$ '+Math.round(x.best.u).toLocaleString('en-US')+' de '+escapeHtml(x.best.p.n)
+      +' — <b>+'+x.gap.toFixed(0)+'%</b>. Munición para negociar o mover el pedido.</div>').join('')+'</div>'
+    : '<p class="desc">Cuando dos proveedores con ficha vendan el mismo insumo, acá aparece la brecha de precio.</p>';
+}
+
+function orRenderDue(){
+  const ccs=orCcGlobal();
+  const box=document.getElementById('orDue');
+  if(!ccs.length){ box.innerHTML='<p class="desc">Ninguna ficha tiene cuenta corriente activa. Se activa por proveedor desde su ficha, con fecha de corte y saldo inicial.</p>'; return; }
+  const rows=[];
+  ccs.forEach(x=>x.open.forEach(o=>rows.push({p:x.p, o, e:orDueEstado(o.due)})));
+  rows.sort((a,b)=>a.o.due<b.o.due?-1:1);
+  const tot=ccs.reduce((a,x)=>a+Math.max(x.saldo,0),0);
+  box.innerHTML=
+    '<div style="overflow-x:auto"><table class="gkins"><thead><tr><th style="text-align:left">Proveedor</th><th>Origen</th><th>Abierto</th><th>Vence</th><th>Estado</th></tr></thead><tbody>'
+    +(rows.length? rows.map(r=>'<tr style="cursor:pointer" onclick="orSelect(\''+r.p.id+'\');window.scrollTo(0,0)">'
+      +'<td>'+escapeHtml(r.p.n)+'</td>'
+      +'<td>'+(r.o.inicial?'saldo inicial':'factura '+r.o.date)+'</td>'
+      +'<td>'+orFmtArs(r.o.open)+'</td><td>'+r.o.due+'</td>'
+      +'<td style="text-align:right"><span class="due '+r.e.cls+'">'+r.e.txt+'</span></td></tr>').join('')
+      : '<tr><td colspan="5" style="text-align:left;font-family:Inter,sans-serif;color:var(--ink-soft)">Todo pagado — saldo cero en todas las cuentas.</td></tr>')
+    +'</tbody></table></div>'
+    +'<p class="desc" style="margin:8px 0 0">Deuda viva total: <b class="mono">'+orFmtArs(tot)+'</b>. El vencimiento sale de la condición de pago de cada ficha (contado / 15 / 30 días); aging FIFO: el saldo vivo son las últimas facturas.</p>';
+}
+
+/* ---- acciones ---- */
+function orSearch(v){ orUI.q=v; orRenderList(oroshi.provs.map(p=>({p,s:orStats(p)})).sort((a,b)=>b.s.usd-a.s.usd)); }
+function orSelect(id){ orUI.sel=id; renderOroshi(); }
+
+function orFormReset(){
+  orUI.editing=null;
+  ['orfN','orfC','orfT','orfD','orfCu','orfE','orfM','orfNo'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('orfR').value='pescados';
+  document.getElementById('orfP').value='contado';
+  document.getElementById('orFormTtl').textContent='Nueva ficha de proveedor';
+  document.getElementById('orSaveBtn').textContent='Crear ficha';
+  document.getElementById('orCancelBtn').hidden=true;
+}
+function orEdit(id){
+  const p=orById(id); if(!p) return;
+  orUI.editing=id;
+  document.getElementById('orfN').value=p.n;
+  document.getElementById('orfR').value=OR_RUBRO[p.rubro]?p.rubro:'otro';
+  document.getElementById('orfC').value=p.contacto||'';
+  document.getElementById('orfT').value=p.tel||'';
+  document.getElementById('orfD').value=p.dir||'';
+  document.getElementById('orfCu').value=p.cuit||'';
+  document.getElementById('orfP').value=OR_PAGO[p.pago]?p.pago:'contado';
+  document.getElementById('orfE').value=p.entrega||'';
+  document.getElementById('orfM').value=p.minimo||'';
+  document.getElementById('orfNo').value=p.notas||'';
+  document.getElementById('orFormTtl').textContent='Editar — '+p.n;
+  document.getElementById('orSaveBtn').textContent='Guardar cambios';
+  document.getElementById('orCancelBtn').hidden=false;
+  window.scrollTo(0,0);
+}
+function orSave(){
+  const n=document.getElementById('orfN').value.trim();
+  if(!n){ flash('El nombre es obligatorio'); return; }
+  const clash=oroshi.provs.find(p=>p.id!==orUI.editing && orKeys(p).includes(orNorm(n)));
+  if(clash){ flash('Ya existe una ficha que matchea ese nombre: '+clash.n); return; }
+  const data={
+    n, rubro:document.getElementById('orfR').value,
+    contacto:document.getElementById('orfC').value.trim(),
+    tel:document.getElementById('orfT').value.trim().replace(/\D/g,''),
+    dir:document.getElementById('orfD').value.trim(),
+    cuit:document.getElementById('orfCu').value.trim(),
+    pago:document.getElementById('orfP').value,
+    entrega:document.getElementById('orfE').value.trim(),
+    minimo:+document.getElementById('orfM').value||0,
+    notas:document.getElementById('orfNo').value.trim()
+  };
+  if(orUI.editing){
+    const p=orById(orUI.editing); if(!p){ orFormReset(); return; }
+    Object.assign(p,data);
+    flash('Ficha actualizada ✓');
+  }else{
+    const p=Object.assign({id:rid(), aliases:[], rating:{cal:0,cum:0,pre:0}, log:[]}, data);
+    oroshi.provs.push(p); orUI.sel=p.id;
+    flash('Ficha creada ✓');
+  }
+  orPersist(); orFormReset(); renderOroshi();
+}
+function orDel(id){
+  const p=orById(id); if(!p) return;
+  oroshi.provs=oroshi.provs.filter(x=>x.id!==id);
+  if(orUI.sel===id) orUI.sel=null;
+  if(orUI.editing===id) orFormReset();
+  orPersist(); flash('Ficha eliminada — sus compras vuelven a "sueltos"');
+  renderOroshi();
+}
+
+function orAlAdd(pid){
+  const p=orById(pid); const el=document.getElementById('orAlNew');
+  if(!p||!el) return;
+  const v=orNorm(el.value); if(!v) return;
+  const clash=oroshi.provs.find(x=>orKeys(x).includes(v));
+  if(clash){ flash(clash===p?'Ese alias ya está en la ficha':'Ese alias ya pertenece a '+clash.n); return; }
+  p.aliases=p.aliases||[]; p.aliases.push(v);
+  orPersist(); flash('Alias agregado — historial adoptado ✓'); renderOroshi();
+}
+function orAlDel(pid,ix){
+  const p=orById(pid); if(!p||!p.aliases) return;
+  p.aliases.splice(ix,1);
+  orPersist(); flash('Alias quitado'); renderOroshi();
+}
+
+function orRatSet(pid,key,v){
+  const p=orById(pid); if(!p) return;
+  p.rating=p.rating||{};
+  p.rating[key]= p.rating[key]===v? 0 : v;   /* click de nuevo = borrar */
+  orPersist(); orRenderDetail();
+  orRenderList(oroshi.provs.map(x=>({p:x,s:orStats(x)})).sort((a,b)=>b.s.usd-a.s.usd));
+  orRenderRanking(oroshi.provs.map(x=>({p:x,s:orStats(x)})).sort((a,b)=>b.s.usd-a.s.usd));
+}
+
+function orLogAdd(pid){
+  const p=orById(pid); if(!p) return;
+  const date=document.getElementById('orLgD').value||gkToday();
+  const tipo=document.getElementById('orLgT').value;
+  const txt=document.getElementById('orLgX').value.trim();
+  if(!txt){ flash('Escribí qué pasó'); return; }
+  p.log=p.log||[]; p.log.push({id:rid(), date, tipo, txt});
+  orPersist(); flash('Registrado ✓'); orRenderDetail();
+}
+function orLogDel(pid,lid){
+  const p=orById(pid); if(!p||!p.log) return;
+  p.log=p.log.filter(e=>e.id!==lid);
+  orPersist(); orRenderDetail();
+}
+
+function orCcActivate(pid){
+  const p=orById(pid); if(!p) return;
+  const desde=document.getElementById('orCcD').value;
+  const inicial=+document.getElementById('orCcI').value||0;
+  if(!desde){ flash('Elegí la fecha de corte'); return; }
+  if(inicial<0){ flash('El saldo inicial no puede ser negativo'); return; }
+  const prev=p.cc||{};
+  p.cc={ on:true, desde, inicial, pagos:prev.pagos||[] };
+  orPersist(); flash('Cuenta corriente activada ✓'); renderOroshi();
+}
+function orCcDeactivate(pid){
+  const p=orById(pid); if(!p||!p.cc) return;
+  p.cc.on=false;
+  orPersist(); flash('Cuenta corriente desactivada — pagos conservados'); renderOroshi();
+}
+function orPagoAdd(pid){
+  const p=orById(pid); const cc=orCcOf(p); if(!cc) return;
+  const date=document.getElementById('orPgD').value||gkToday();
+  const ars=+document.getElementById('orPgA').value||0;
+  const medio=document.getElementById('orPgM').value;
+  const nota=document.getElementById('orPgN').value.trim();
+  if(ars<=0){ flash('Cargá el monto del pago'); return; }
+  if(date<cc.desde){ flash('El pago es anterior al corte — ajustá el saldo inicial en su lugar'); return; }
+  cc.pagos=cc.pagos||[]; cc.pagos.push({id:rid(), date, ars, medio, nota});
+  orPersist(); flash('Pago registrado ✓'); renderOroshi();
+}
+function orPagoDel(pid,gid){
+  const p=orById(pid); const cc=p&&p.cc; if(!cc) return;
+  cc.pagos=(cc.pagos||[]).filter(g=>g.id!==gid);
+  orPersist(); flash('Pago eliminado'); renderOroshi();
+}
+
+function orAdopt(ix){
+  const o=(orUI._orphans||[])[ix]; if(!o) return;
+  if(orMatch(o.name)){ flash('Ese nombre ya tiene ficha'); renderOroshi(); return; }
+  const p={id:rid(), n:o.name, rubro:'otro', contacto:'', tel:'', dir:'', cuit:'', pago:'contado',
+    entrega:'', minimo:0, notas:'', aliases:[], rating:{cal:0,cum:0,pre:0}, log:[]};
+  oroshi.provs.push(p); orUI.sel=p.id;
+  orPersist(); flash('Ficha creada — completala con rubro y contacto');
+  renderOroshi(); window.scrollTo(0,0);
+}
+
 async function loadMe(){
   try{
     const r=await fetch('/api/me');
@@ -8092,7 +8763,7 @@ Promise.all([
   loadGenka().then(()=>{ meEnsureMix(); }),
   loadCompras(), loadMermas(), loadFxlog(),
   loadCaja(), loadReservas(),
-  loadStock(), loadCRM(), loadAuth(), loadCierres(), loadAisho(), loadKata(), loadKataRuns(), loadWa(), loadDou(), loadShun(), loadZaiko()
+  loadStock(), loadCRM(), loadAuth(), loadCierres(), loadAisho(), loadKata(), loadKataRuns(), loadWa(), loadDou(), loadShun(), loadZaiko(), loadOroshi()
 ]).then(()=>{
   renderInputs(); renderOutputs();             /* re-render con la baseline real */
   loadScenarios();
