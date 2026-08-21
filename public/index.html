@@ -910,6 +910,149 @@
   .ororphan .om{font-size:10.5px;color:var(--ink-soft)}
   .orprem{color:var(--vermilion);font-weight:700}
   .orbest{color:var(--good);font-weight:700}
+  /* ---------- Hito 人 · Kondate 献立 · Seki 席 ---------- */
+  .httabs{display:flex;gap:4px;margin-bottom:12px;border-bottom:1px solid var(--rule)}
+  .httab{font-family:'Zilla Slab',serif;font-weight:600;font-size:13.5px;color:var(--ink-soft);background:none;border:1px solid transparent;border-bottom:0;border-radius:3px 3px 0 0;padding:6px 12px;cursor:pointer;margin-bottom:-1px}
+  .httab.on{color:var(--ink);background:var(--panel);border-color:var(--rule)}
+  .htwk{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-soft);margin-left:10px}
+  .htgrid{display:grid;grid-template-columns:170px repeat(7,1fr);gap:1px;background:var(--rule);border-bottom:1px solid var(--rule)}
+  .htgrid>div{background:var(--panel);padding:6px 8px;min-height:46px;font-size:12px}
+  .htgrid .rh{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);font-weight:600;min-height:auto;display:flex;flex-direction:column;gap:1px}
+  .htgrid .rh .d{font-family:'JetBrains Mono',monospace;color:var(--ink);font-size:12px;text-transform:none;letter-spacing:0}
+  .htgrid .rh.svc{background:var(--paper)}
+  .htgrid .rh.today .d{color:var(--vermilion)}
+  .htgrid .nm{display:flex;flex-direction:column;gap:1px}
+  .htgrid .nm b{font-weight:600}.htgrid .nm span{font-size:10.5px;color:var(--ink-soft)}
+  .htgrid .cell{cursor:pointer;display:flex;flex-direction:column;justify-content:center;gap:2px}
+  .htgrid .cell:hover{background:#fff}
+  .htgrid .cell.off{background:repeating-linear-gradient(135deg,var(--panel) 0 6px,color-mix(in srgb,var(--rule) 40%,var(--panel)) 6px 7px)}
+  .htgrid .cell .sh{font-family:'JetBrains Mono',monospace;font-size:11px}
+  .htgrid .cell .st{font-size:10px;color:var(--ink-soft)}
+  .htgrid .cell.svc{border-top:2px solid var(--brass)}
+  .htgrid .cell.mise .sh{color:var(--indigo-soft)}
+  .htgrid .cell.lic .sh{color:var(--warn)}
+  .htcellform{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;padding:10px 14px;background:#fff;border-bottom:1px solid var(--rule);font-size:12px}
+  .htcellform label{display:flex;flex-direction:column;gap:3px;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft)}
+  .htcellform input,.htcellform select,.htform input,.htform select,.kdnew input,.kdnew select,.skhdr input,.skhdr select,.htinl input,.htinl select{background:#fff;border:1px solid var(--rule);border-radius:2px;padding:5px 7px;font-size:12.5px;font-family:'Inter',sans-serif;color:var(--ink)}
+  .htinl{display:flex;gap:6px;align-items:center;font-size:11px;color:var(--ink-soft)}
+  .htpunch{display:flex;flex-direction:column;gap:8px}
+  .htpunch .p{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--rule);border-radius:3px;background:#fff;flex-wrap:wrap}
+  .htpunch .p .who{flex:1;min-width:160px}.htpunch .p .who b{display:block}.htpunch .p .who span{font-size:11px;color:var(--ink-soft)}
+  .htpunch .p .tm{font-family:'JetBrains Mono',monospace;font-size:12px;min-width:150px;text-align:right}
+  .htpunch .p .dot{width:8px;height:8px;border-radius:50%;background:var(--rule);flex:none}
+  .htpunch .p.in .dot{background:var(--good)}.htpunch .p.late .dot{background:var(--warn)}.htpunch .p.done .dot{background:var(--indigo)}
+  .htlegajo{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+  .lg{border:1px solid var(--rule);border-radius:3px;padding:10px 12px;background:#fff;cursor:pointer}
+  .lg:hover{border-color:var(--indigo)}.lg.inactive{opacity:.55}
+  .lg b{font-family:'Zilla Slab',serif;font-size:15px}.lg .r{font-size:11px;color:var(--ink-soft)}
+  .lg .docs{margin-top:8px;display:flex;gap:4px;flex-wrap:wrap}
+  .lg .sal{margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-soft)}
+  .tag.ok{color:var(--good);border:1px solid var(--good);background:none}
+  .tag.warn{color:var(--warn);border:1px solid var(--warn);background:none}
+  .tag.bad{color:var(--bad);border:1px solid var(--bad);background:none}
+  .lg .tag,.kdrow .tag,.kdpub .tag,.kdpasos .tag,.sksteps .tag,.skhdr .tag{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:1px 6px;border-radius:2px;font-weight:600}
+  .htform{background:#fff;border:1px solid var(--rule);border-radius:3px;padding:12px 14px;margin-bottom:14px}
+  .row3{display:flex;gap:10px;flex-wrap:wrap}.row3>label{flex:1;min-width:120px;display:flex;flex-direction:column;gap:3px;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft)}
+  .row3 textarea{background:#fff;border:1px solid var(--rule);border-radius:2px;padding:5px 7px;font:12.5px 'Inter',sans-serif;color:var(--ink);resize:vertical}
+  .htdocs{margin-top:10px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+  .htdocs .lab,.htpay .lab{width:100%;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft)}
+  .htdoc{font-size:12px;display:flex;gap:6px;align-items:center}.htdoc input[type=date]{padding:2px 5px;font-size:11px}
+  .htpay{margin-top:10px;padding-top:10px;border-top:1px dashed var(--rule)}
+  .httbl{border-collapse:collapse;width:100%;font-size:12px}
+  .httbl th{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);text-align:left;font-weight:600;padding:6px 10px;border-bottom:1px solid var(--rule)}
+  .httbl td{padding:7px 10px;border-bottom:1px solid color-mix(in srgb,var(--rule) 55%,transparent);vertical-align:middle}
+  .httbl td.num,.httbl th.num{text-align:right;font-family:'JetBrains Mono',monospace}
+  .httbl td.warn{color:var(--warn)}.httbl td.good{color:var(--good)}
+  .muted{color:var(--ink-soft)}.small{font-size:11px}.mono{font-family:'JetBrains Mono',monospace}
+  /* kondate */
+  .kdlist{display:flex;flex-direction:column;gap:4px;margin:14px 0}
+  .kdnew{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;padding:10px 12px;background:var(--panel);border:1px solid var(--rule);border-radius:3px;margin-bottom:6px}
+  .kdnew label{display:flex;flex-direction:column;gap:3px;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft)}
+  .kdrow{display:flex;gap:10px;align-items:center;padding:7px 12px;border:1px solid transparent;border-radius:3px;cursor:pointer;font-size:12.5px}
+  .kdrow:hover{background:var(--panel)}.kdrow.on{background:var(--panel);border-color:var(--rule)}
+  .kdrow b{font-family:'Zilla Slab',serif;font-weight:600}
+  .kdgrid{display:grid;grid-template-columns:1fr 360px;gap:16px;align-items:start}
+  .kdshow{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:12px;align-items:center}
+  .kdpasos{list-style:none;margin:0;padding:0}
+  .kdpasos li{display:grid;grid-template-columns:26px 1fr auto;gap:10px;align-items:start;padding:10px 0;border-bottom:1px solid color-mix(in srgb,var(--rule) 55%,transparent)}
+  .kdpasos li.hidden{opacity:.45}
+  .kdpasos .n{font-family:'JetBrains Mono',monospace;color:var(--brass);font-size:12px;padding-top:2px}
+  .kdpasos .ttl2 b{font-family:'Zilla Slab',serif;font-size:14px;font-weight:600}
+  .kdf{display:flex;flex-direction:column;gap:2px;margin-top:5px;flex:1}
+  .kdf .lab{font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft)}
+  .kdf .ai{color:var(--brass);font-weight:700}
+  .kdf input{background:#fff;border:1px solid var(--rule);border-radius:2px;padding:5px 7px;font:12.5px 'Inter',sans-serif;color:var(--ink);width:100%;box-sizing:border-box}
+  .kdf2{display:flex;gap:8px}
+  .kdalg{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+  .kdalg span{font-size:10px;border:1px solid var(--rule);padding:0 5px;border-radius:2px;color:var(--ink-soft);cursor:pointer;background:#fff}
+  .kdalg span.on{background:var(--vermilion);border-color:var(--vermilion);color:#fff}
+  .kdact{display:flex;flex-direction:column;gap:4px}.kdact .btn{padding:3px 8px;font-size:11px}
+  .kdphone{width:100%;max-width:300px;margin:0 auto;border:6px solid var(--ink);border-radius:26px;background:#FBF8F1;overflow:hidden;box-shadow:0 12px 30px -14px rgba(0,0,0,.4)}
+  .kdphone .scr{height:480px;overflow:auto;padding:22px 18px;font-size:12px}
+  .kdphone .scr h4{font-family:'Zilla Slab',serif;font-size:19px;margin:0;line-height:1.1}
+  .kdphone .scr .sub{color:var(--ink-soft);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;margin:6px 0 14px}
+  .kdphone .scr .intro{font-size:11.5px;color:var(--ink-soft);margin:0 0 10px}
+  .kdphone .scr .ps{padding:8px 0;border-top:1px solid var(--rule)}
+  .kdphone .scr .ps b{font-family:'Zilla Slab',serif;font-size:13px;display:block}
+  .kdphone .scr .ps .n{font-family:'JetBrains Mono',monospace;color:var(--brass);font-size:10px;margin-right:5px}
+  .kdphone .scr .ps .o{font-size:10.5px;color:var(--ink-soft)}.kdphone .scr .ps .m{font-size:10.5px;color:var(--indigo)}
+  .kdphone .scr .ps .a{font-size:9.5px;color:var(--vermilion);margin-top:2px}.kdphone .scr .ps .en{font-size:11px;color:var(--ink-soft);font-style:italic}
+  .kdphone .scr .ft{margin-top:14px;font-size:10px;color:var(--ink-soft);border-top:1px solid var(--rule);padding-top:8px}
+  .kdpub{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+  .kdqr{display:flex;gap:14px;align-items:flex-start}
+  .kdqr img{background:#fff;padding:6px;border:1px solid var(--rule);display:block}
+  .kdqrph{width:130px;height:130px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--ink-soft);text-align:center;background:repeating-linear-gradient(45deg,#fff 0 4px,#f0ece3 4px 8px);border:1px solid var(--rule);flex:none}
+  .kdqr .u{word-break:break-all;color:var(--ink-soft)}
+  .kdbtns{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}.kdbtns .btn{text-decoration:none;display:inline-block}
+  .kdhist{font-size:11px;border-top:1px solid var(--rule);padding-top:8px;margin-top:8px}
+  .kdhist div{display:flex;justify-content:space-between;padding:2px 0}
+  /* seki */
+  .skhdr{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:14px;padding:10px 12px;background:var(--panel);border:1px solid var(--rule);border-radius:3px;font-size:12px}
+  .skhdr label{display:flex;gap:6px;align-items:center;color:var(--ink-soft)}
+  .skgrid{display:grid;grid-template-columns:1fr 330px;gap:16px;align-items:start}
+  .skritmo{display:flex;gap:2px;margin:0 0 10px;flex-wrap:wrap}
+  .skritmo div{flex:1;min-width:26px;height:22px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--ink-soft);background:var(--panel);border:1px solid var(--rule)}
+  .skritmo div.done{background:var(--indigo);color:#fff;border-color:var(--indigo)}
+  .skritmo div.cur{background:var(--brass);color:#fff;border-color:var(--brass)}
+  .skcounter{overflow-x:auto}.skbar{width:100%;min-width:700px;height:auto;display:block}
+  .skbar .itm{font-family:'Zilla Slab',serif;font-size:12px;fill:var(--paper);font-weight:600}
+  .skbar .rail{fill:none;stroke:var(--brass);stroke-width:1.2;stroke-dasharray:2 4}
+  .skbar .seat{cursor:pointer}.skbar .seat rect.bg{fill:#fff;stroke:var(--rule);stroke-width:1}
+  .skbar .seat:hover rect.bg,.skbar .seat.sel rect.bg{stroke:var(--indigo);stroke-width:1.5}
+  .skbar .seat.empty rect.bg{fill:var(--paper);stroke-dasharray:3 3}
+  .skbar .seat .no{font-family:'JetBrains Mono',monospace;font-size:9px;fill:var(--brass)}
+  .skbar .seat .nm{font-family:'Zilla Slab',serif;font-weight:600;font-size:11px;fill:var(--ink)}
+  .skbar .seat .cs{font-family:'Inter',sans-serif;font-size:8.5px;fill:var(--ink-soft)}
+  .skbar .seat .flag{font-family:'Inter',sans-serif;font-size:7.5px;fill:#fff}.skbar .seat .flagbg{fill:var(--vermilion)}
+  .skbar .pg{fill:var(--rule)}.skbar .pg.d{fill:var(--indigo)}.skbar .pg.c{fill:var(--brass)}
+  .sksplit{display:grid;gap:3px;margin-top:8px}
+  .sksplit div{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:9.5px;border:1px solid var(--rule);cursor:pointer;background:#fff}
+  .sksplit .g1,.skg.g1{background:var(--indigo);color:#fff;border-color:var(--indigo)}
+  .sksplit .g2,.skg.g2{background:var(--brass);color:#fff;border-color:var(--brass)}
+  .sksplit .g3,.skg.g3{background:var(--good);color:#fff;border-color:var(--good)}
+  .sksplit .g4,.skg.g4{background:var(--vermilion);color:#fff;border-color:var(--vermilion)}
+  .sksplit .none{background:var(--paper);color:var(--rule)}
+  .skg{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:1px 6px;border-radius:2px;font-weight:600}
+  .skh3{font-family:'Zilla Slab',serif;font-size:18px;margin:0 0 2px;font-weight:700}
+  .skmeta{font-size:11px;color:var(--ink-soft);margin-bottom:10px}
+  .skrestf input,.skhits+div input,.sk .body>input{width:100%;box-sizing:border-box;background:#fff;border:1px solid var(--rule);border-radius:2px;padding:6px 8px;font:12.5px 'Inter',sans-serif;color:var(--ink)}
+  #skRoot .body>input[type=text]{width:100%;box-sizing:border-box;background:#fff;border:1px solid var(--rule);border-radius:2px;padding:6px 8px;font:12.5px 'Inter',sans-serif;color:var(--ink)}
+  .skrest{background:color-mix(in srgb,var(--vermilion) 10%,#fff);border:1px solid var(--vermilion);color:var(--vermilion);padding:7px 10px;border-radius:2px;font-size:12px;margin-top:6px}
+  .skhits div{padding:6px 8px;border:1px solid var(--rule);border-top:0;background:#fff;cursor:pointer;display:flex;justify-content:space-between;gap:8px;font-size:12px}
+  .skhits div:hover{background:var(--panel)}
+  .skpace{display:flex;gap:6px;align-items:baseline;margin-top:10px}
+  .skpace .v{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:16px}.skpace .v.late{color:var(--warn)}
+  .sksteps{list-style:none;padding:0;margin:8px 0 0}
+  .sksteps li{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px solid color-mix(in srgb,var(--rule) 55%,transparent);font-size:12px}
+  .sksteps li.cur{font-weight:600}.sksteps li.cur::before{content:'▶ ';color:var(--brass)}
+  .sksteps li.done{color:var(--ink-soft);text-decoration:line-through}
+  .sksteps li span{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--ink-soft)}
+  .skbtns{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}.skbtns .btn{padding:4px 9px;font-size:11px}
+  .skex{font-size:11.5px;margin-top:8px;border-top:1px dashed var(--rule);padding-top:6px}.skex div{display:flex;justify-content:space-between;padding:2px 0}
+  .skhist{font-size:11px;border-top:1px solid var(--rule);padding-top:8px;margin-top:10px}
+  .skhist div{display:flex;justify-content:space-between;padding:2px 0}.skhist span.mono{color:var(--ink-soft)}
+  @media (max-width:980px){.kdgrid,.skgrid{grid-template-columns:1fr}.htgrid{grid-template-columns:120px repeat(7,minmax(70px,1fr));overflow-x:auto}}
+
 </style>
 
 <div class="wrap">
@@ -939,6 +1082,9 @@
       <button class="tab" data-tab="wa" onclick="switchTab('wa')">Rueda <span class="tk">輪</span></button>
       <button class="tab" data-tab="kata" onclick="switchTab('kata')">Manual <span class="tk">型</span></button>
       <button class="tab" data-tab="dou" onclick="switchTab('dou')">Procedimientos <span class="tk">道</span></button>
+      <button class="tab" data-tab="hito" onclick="switchTab('hito')">Equipo <span class="tk">人</span></button>
+      <button class="tab" data-tab="kondate" onclick="switchTab('kondate')">Carta QR <span class="tk">献立</span></button>
+      <button class="tab" data-tab="seki" onclick="switchTab('seki')">Servicio <span class="tk">席</span></button>
       <span class="navutils">
         <button class="roletab kjqlaunch" onclick="kjQuick()">⚡ carga rápida</button>
         <button class="roletab" id="roleBtn" onclick="kjRoleToggle()">⚙ roles</button>
@@ -1843,6 +1989,33 @@
     </div>
   </div><!-- /tab-wa -->
 
+  <div id="tab-hito" class="tabpanel">
+    <header class="top">
+      <div class="brand"><div><h1>Equipo <span class="kanji">人</span></h1><p class="sub">Legajo · grilla de turnos · fichaje · costo laboral real por servicio</p></div></div>
+      <span class="warotag">ficha cada uno · edita admin</span>
+    </header>
+    <p class="assume"><span>※</span><span>Las horas <b>fichadas</b> por servicio, multiplicadas por la tarifa de cada persona, dan el <b>costo laboral real</b>. Cuando un servicio tiene todos sus fichajes cerrados, el Analista de Turnos usa ese número en lugar del prorrateo de Esquema; si no, queda el plan. Sin fichaje no hay número inventado. Sueldos y tarifas viven en una clave que el servidor no entrega al staff.</span></p>
+    <div id="htRoot"></div>
+  </div><!-- /tab-hito -->
+
+  <div id="tab-kondate" class="tabpanel">
+    <header class="top">
+      <div class="brand"><div><h1>Carta <span class="kanji">献立</span></h1><p class="sub">La carta del servicio, pública por QR · solo lectura para el comensal</p></div></div>
+      <span class="warotag">aprueba y publica admin</span>
+    </header>
+    <p class="assume"><span>※</span><span>No es una carta de pedidos: es el <b>recorrido de esa noche</b>. Los pasos se leen de Genka 原価, el maridaje sugerido de Aishō 相性, y la IA puede redactar las descripciones para el comensal (quedan ✦ hasta que las apruebes). Los alérgenos se marcan a mano. El QR lleva a una URL con token aleatorio por carta, servida por el servidor sin sesión; republicar no cambia la URL, así el QR impreso sigue sirviendo.</span></p>
+    <div id="kdRoot"></div>
+  </div><!-- /tab-kondate -->
+
+  <div id="tab-seki" class="tabpanel">
+    <header class="top">
+      <div class="brand"><div><h1>Servicio <span class="kanji">席</span></h1><p class="sub">La barra en vivo · quién está en cada asiento, qué restricción tiene, en qué paso va</p></div></div>
+      <span class="warotag">opera la sala</span>
+    </header>
+    <p class="assume"><span>※</span><span>Trece lugares, un ritmo. Se sienta a cada persona desde el <b>CRM</b> (las alergias vienen con la ficha), se avanza <b>toda la barra</b> paso a paso y se desfasan sólo los asientos que lo necesiten. El ritmo se compara con los minutos plan de la carta 献立. Al <b>cerrar</b>, el servicio se crea en el Analista a precio de lista (para corregir con la caja real), las visitas quedan en el CRM y la carta se archiva.</span></p>
+    <div id="skRoot"></div>
+  </div><!-- /tab-seki -->
+
   <div id="waOvl" onclick="waCloseDrawer()"></div>
   <aside id="waDrawer"><button class="wadrx" onclick="waCloseDrawer()">✕</button><div id="waDrc"></div></aside>
   <div id="waMadd"><div class="wambox" id="waMbox"></div></div>
@@ -2740,6 +2913,9 @@ function switchTab(name){
   if(name==='dou') renderDou();
   if(name==='shun') renderShun();
   if(name==='zaiko') renderZaiko();
+  if(name==='hito') renderHito();
+  if(name==='kondate') renderKondate();
+  if(name==='seki') renderSeki();
   window.scrollTo(0,0);
 }
 
@@ -2804,7 +2980,9 @@ function serviceMetrics(sv){
   const cardRate=(S.pagos.cardRate||0)/100, qrRate=(S.pagos.qrRate||0)/100;
   const pagos = cardAmt*cardRate + qrAmt*qrRate;       // efectivo no paga comisión
   const imp = declaredNet*(S.impuestos.iibbPct+S.impuestos.debCredPct)/100;  // sólo lo declarado tributa
-  const allocLabor = laborAlloc(sv.turno);
+  /* Hito 人: si el servicio tiene fichajes cerrados y tarifas, el costo laboral es el real */
+  const laborRealV = (typeof htLaborReal==='function') ? htLaborReal(sv) : null;
+  const allocLabor = laborRealV!=null ? laborRealV : laborAlloc(sv.turno);
   const allocOther = otherFixedAlloc();
   const allocFixed = allocLabor + allocOther;
   const variable = cmv+pagos+imp;
@@ -2812,7 +2990,7 @@ function serviceMetrics(sv){
   const covers=sv.covers||0;
   const occ = S.revenue.seats ? covers/S.revenue.seats*100 : 0;
   return {grossTotal:listTotal, collected, netTotal, cmv, pagos, imp, variable, allocFixed, allocLabor, allocOther, profit, covers, occ,
-    cardAmt, qrAmt, cashAmt, cashDiscount, undeclared, declared};
+    cardAmt, qrAmt, cashAmt, cashDiscount, undeclared, declared, laborReal: laborRealV!=null};
 }
 
 function agg(list){
@@ -5413,9 +5591,9 @@ function renderCRM(){
    Control operativo del lado del cliente: la aplicación real de permisos
    llega con el servidor (Railway). Esto ordena quién ve qué en el local.
    ===================================================================== */
-const TAB_LABELS={ resumen:'Resumen 週報', costos:'Esquema 勘定', turnos:'Turnos 番付', heika:'Precios 平価', yoso:'Pronóstico 予想', genka:'Costeo 原価', aisho:'Maridaje 相性', compras:'Compras 仕入', oroshi:'Proveedores 卸', caja:'Caja 現金', reservas:'Reservas 予約', crm:'Clientes 顧客', kata:'Manual 型', wa:'Rueda 輪', dou:'Procedimientos 道', shun:'Estacionalidad 旬', zaiko:'Inventario 在庫' };
+const TAB_LABELS={ resumen:'Resumen 週報', costos:'Esquema 勘定', turnos:'Turnos 番付', heika:'Precios 平価', yoso:'Pronóstico 予想', genka:'Costeo 原価', aisho:'Maridaje 相性', compras:'Compras 仕入', oroshi:'Proveedores 卸', caja:'Caja 現金', reservas:'Reservas 予約', crm:'Clientes 顧客', kata:'Manual 型', wa:'Rueda 輪', dou:'Procedimientos 道', shun:'Estacionalidad 旬', zaiko:'Inventario 在庫', hito:'Equipo 人', kondate:'Carta 献立', seki:'Servicio 席' };
 let auth={ pin:'', algo:'', modules:{} };
-function authDefaults(){ return { resumen:'staff', costos:'admin', turnos:'staff', heika:'admin', yoso:'admin', genka:'staff', aisho:'staff', compras:'staff', oroshi:'staff', caja:'admin', reservas:'staff', crm:'staff', kata:'staff', wa:'staff' }; }
+function authDefaults(){ return { resumen:'staff', costos:'admin', turnos:'staff', heika:'admin', yoso:'admin', genka:'staff', aisho:'staff', compras:'staff', oroshi:'staff', caja:'admin', reservas:'staff', crm:'staff', kata:'staff', wa:'staff', hito:'staff', kondate:'admin', seki:'staff' }; }
 function authEnsure(a){
   const d={ pin:'', algo:'', modules:authDefaults() };
   if(!a||typeof a!=='object') return d;
@@ -8781,6 +8959,554 @@ function orAdopt(ix){
   renderOroshi(); window.scrollTo(0,0);
 }
 
+/* =====================================================================
+   TAB · HITO 人 — equipo: legajo, grilla de turnos y fichaje.
+   Tres claves, por sensibilidad:
+     kanjo:hito       plantel + documentación + grilla   (lee staff · escribe admin)
+     kanjo:hitopay    sueldos y tarifas por hora          (solo admin, lectura y escritura)
+     kanjo:hitopunch  fichajes                            (escribe staff: cada uno ficha lo suyo)
+   Las horas fichadas × tarifa dan el costo laboral REAL por servicio. Cuando
+   existe para un servicio, serviceMetrics() lo usa en lugar del prorrateo de
+   Esquema; sin fichaje cerrado no se inventa nada y queda el plan.
+   Regla de fechas: el punch se asigna a la fecha de SERVICIO (una salida a la
+   01:30 pertenece a la noche anterior), por eso la fecha se elige al fichar.
+   ===================================================================== */
+let HT={ v:1, people:[], shifts:{} };
+let HTP=null;                       /* null = no cargó (staff o error): sin costos */
+let HTK={ v:1, punches:[] };
+const htUI={ week:null, sel:null, editP:null, formOpen:false, cell:null, tab:'grilla' };
+const HT_ROLES=['Itamae','Segundo de barra','Cocina fría / mise','Sala','Sommelier','Bacha / limpieza','Administración','Otro'];
+const HT_DOCS=['Libreta sanitaria','ART','Alta AFIP / monotributo','Examen preocupacional','Contrato'];
+const HT_KIND={svc:'servicio',mise:'mise / tarea',lic:'licencia'};
+
+function htEnsure(v){ const d={v:1,people:[],shifts:{}}; if(!v||typeof v!=='object') return d; v=Object.assign({},d,v);
+  if(!Array.isArray(v.people)) v.people=[]; if(!v.shifts||typeof v.shifts!=='object') v.shifts={};
+  v.people.forEach(p=>{ if(!p.id) p.id=rid(); if(!Array.isArray(p.docs)) p.docs=[]; if(p.active===undefined) p.active=true; if(!p.tipo) p.tipo='fijo'; });
+  return v; }
+function htpEnsure(v){ const d={v:1,pay:{}}; if(!v||typeof v!=='object') return d; v=Object.assign({},d,v); if(!v.pay||typeof v.pay!=='object') v.pay={}; return v; }
+function htkEnsure(v){ const d={v:1,punches:[]}; if(!v||typeof v!=='object') return d; v=Object.assign({},d,v); if(!Array.isArray(v.punches)) v.punches=[]; return v; }
+function htPersist(){ persistSafe('kanjo:hito', HT); }
+function htpPersist(){ if(HTP) persistSafe('kanjo:hitopay', HTP); }
+function htkPersist(){ persistSafe('kanjo:hitopunch', HTK); }
+async function loadHito(){
+  HT=htEnsure(null); HTK=htkEnsure(null); HTP=null;
+  await kjLoadKey('kanjo:hito', v=>{ HT=htEnsure(v); });
+  await kjLoadKey('kanjo:hitopunch', v=>{ HTK=htkEnsure(v); });
+  /* hitopay: al staff le da 403 (esperado) → HTP queda null y no se calcula costo */
+  const r=await kjLoadKey('kanjo:hitopay', v=>{ HTP=htpEnsure(v); });
+  if(r==='empty' && kjIsAdmin()) HTP=htpEnsure(null);
+}
+function htById(id){ return HT.people.find(p=>p.id===id); }
+function htToday(){ return fmtDate(new Date()); }
+function htMonday(d){ const x=parseDate(d); const dow=(x.getDay()+6)%7; x.setDate(x.getDate()-dow); return fmtDate(x); }
+function htAddDays(d,n){ const x=parseDate(d); x.setDate(x.getDate()+n); return fmtDate(x); }
+function htWeekDays(){ const m=htUI.week||htMonday(htToday()); return Array.from({length:7},(_,i)=>htAddDays(m,i)); }
+const HT_DOW=['lun','mar','mié','jue','vie','sáb','dom'];
+function htHours(a,b){ if(!a||!b) return 0; const [h1,m1]=a.split(':').map(Number),[h2,m2]=b.split(':').map(Number); let t=(h2*60+m2)-(h1*60+m1); if(t<0) t+=1440; return t/60; }
+function htServiceDay(date){ return services.some(s=>s.date===date) || reservas.some(r=>r.date===date); }
+function htServiceTurnos(date){ const set=new Set(); services.forEach(s=>{ if(s.date===date) set.add(s.turno); }); reservas.forEach(r=>{ if(r.date===date) set.add(r.turno); }); return [...set]; }
+
+/* ---- costo por hora (solo admin con HTP) ---- */
+function htHourly(pid){
+  if(!HTP) return null; const p=HTP.pay[pid]; if(!p||!(p.usd>0)) return null;
+  const mult=p.mult>0?p.mult:1;
+  if(p.mode==='hora') return p.usd*mult;
+  if(!(p.hsMes>0)) return null;                 /* mensual sin horas/mes declaradas: no se prorratea a ciegas */
+  return p.usd*mult/p.hsMes;
+}
+/* Costo laboral real de un servicio: suma de fichajes cerrados de esa fecha+turno.
+   Devuelve null si no hay fichajes cerrados o si a alguno le falta tarifa. */
+function htLaborReal(sv){
+  if(!sv||!sv.date||!HTP||!HTK.punches.length) return null;
+  const ps=HTK.punches.filter(k=>k.date===sv.date && k.turno===sv.turno && k.in && k.out);
+  if(!ps.length) return null;
+  let tot=0;
+  for(const k of ps){ const h=htHourly(k.pid); if(h==null) return null; tot+=htHours(k.in,k.out)*h; }
+  return tot;
+}
+function htLaborDetail(date,turno){
+  const ps=HTK.punches.filter(k=>k.date===date && k.turno===turno);
+  const closed=ps.filter(k=>k.in&&k.out);
+  const hs=closed.reduce((a,k)=>a+htHours(k.in,k.out),0);
+  let usd=0, missing=false; closed.forEach(k=>{ const h=htHourly(k.pid); if(h==null) missing=true; else usd+=htHours(k.in,k.out)*h; });
+  return { n:ps.length, nClosed:closed.length, hs, usd: (HTP&&!missing&&closed.length)?usd:null, open:ps.length-closed.length };
+}
+
+/* ---- render ---- */
+function renderHito(){
+  const el=document.getElementById('htRoot'); if(!el) return;
+  const admin=kjIsAdmin();
+  const wd=htWeekDays(); const today=htToday();
+  const active=HT.people.filter(p=>p.active);
+  const wkHs=active.reduce((a,p)=>a+wd.reduce((b,d)=>{ const s=(HT.shifts[d]||{})[p.id]; return b+(s&&s.k!=='lic'?htHours(s.a,s.b):0); },0),0);
+  const vencs=[]; HT.people.forEach(p=>p.docs.forEach(d=>{ if(d.venc){ const dd=(parseDate(d.venc)-new Date())/864e5; if(dd<30) vencs.push({p,d,dd}); } }));
+  /* semana anterior: real vs plan */
+  const prevDays=Array.from({length:7},(_,i)=>htAddDays(wd[0],i-7));
+  let realUsd=0, planUsd=0, realN=0, cov=0;
+  services.filter(s=>prevDays.includes(s.date)).forEach(s=>{ const r=htLaborReal(s); if(r!=null){ realUsd+=r; planUsd+=laborAlloc(s.turno); realN++; cov+=(s.covers||0); } });
+  const kpis=`<div class="kpis" style="margin:14px 0 16px">
+    <div class="kpi"><div class="lab">Plantel</div><div class="val">${active.length}</div><div class="ksub">${active.filter(p=>p.tipo==='fijo').length} fijos · ${active.filter(p=>p.tipo!=='fijo').length} eventuales</div></div>
+    <div class="kpi"><div class="lab">Horas planificadas</div><div class="val">${wkHs.toLocaleString('es-AR',{maximumFractionDigits:1})}</div><div class="ksub">semana ${wd[0].slice(8)}→${wd[6].slice(8)}/${wd[6].slice(5,7)}</div></div>
+    ${admin?`<div class="kpi"><div class="lab">Laboral real (sem. ant.)</div><div class="val">${realN?fmt(realUsd):'—'}</div><div class="ksub">${realN?realN+' servicios con fichaje cerrado':'sin fichajes cerrados'}</div></div>
+    <div class="kpi"><div class="lab">vs. Esquema</div><div class="val" style="color:${realN?(realUsd>planUsd?'var(--warn)':'var(--good)'):'inherit'}">${realN&&planUsd?((realUsd/planUsd-1)*100).toFixed(1).replace('.',',')+' %':'—'}</div><div class="ksub">${realN?'plan prorrateado '+fmt(planUsd):'aparece al cerrar fichajes'}</div></div>
+    <div class="kpi"><div class="lab">Por cubierto</div><div class="val">${realN&&cov?fmt1(realUsd/cov):'—'}</div><div class="ksub">${cov?cov+' cubiertos':'—'}</div></div>`:''}
+    <div class="kpi"><div class="lab">Vencimientos</div><div class="val" style="color:${vencs.length?'var(--bad)':'inherit'}">${vencs.length}</div><div class="ksub">${vencs.slice(0,2).map(v=>v.d.n.split(' ')[0]+' '+v.p.n.split(' ')[0]).join(' · ')||'nada en 30 días'}</div></div>
+  </div>`;
+  const tabs=`<div class="httabs">${[['grilla','Grilla de turnos'],['fichaje','Fichaje'],['legajo','Legajo'],['costos','Horas → Analista']].filter(t=>admin||t[0]!=='costos').map(t=>`<button class="httab ${htUI.tab===t[0]?'on':''}" onclick="htUI.tab='${t[0]}';renderHito()">${t[1]}</button>`).join('')}</div>`;
+  let body='';
+  if(htUI.tab==='grilla') body=htRenderGrid(wd,today,admin);
+  else if(htUI.tab==='fichaje') body=htRenderPunch(today,admin);
+  else if(htUI.tab==='legajo') body=htRenderLegajo(admin);
+  else body=htRenderCostos(admin);
+  el.innerHTML=kpis+tabs+body;
+}
+function htRenderGrid(wd,today,admin){
+  const people=HT.people.filter(p=>p.active);
+  if(!people.length) return `<div class="card"><div class="body"><p class="note">Todavía no hay nadie en el plantel. ${admin?'Cargá a cada persona desde la pestaña <b>Legajo</b> y después armá la grilla acá.':'El admin carga el plantel desde Legajo.'}</p></div></div>`;
+  let h=`<div class="card"><div class="head" style="cursor:default"><span class="ttl">Grilla semanal</span><span class="htwk">${wd[0]} → ${wd[6]}</span><span style="margin-left:auto;display:flex;gap:6px">
+    <button class="btn ghost" onclick="htUI.week=htAddDays(htWeekDays()[0],-7);renderHito()">‹ semana</button><button class="btn ghost" onclick="htUI.week=htMonday(htToday());renderHito()">hoy</button><button class="btn ghost" onclick="htUI.week=htAddDays(htWeekDays()[0],7);renderHito()">semana ›</button>
+    ${admin?`<button class="btn" onclick="htCopyWeek()">Copiar a semana siguiente</button>`:''}</span></div><div class="body" style="padding:0">
+    <div class="htgrid"><div class="rh">Persona</div>`;
+  wd.forEach((d,i)=>{ const svc=htServiceDay(d); const tu=htServiceTurnos(d).map(t=>TURNO_SHORT[t]||t).join('·'); h+=`<div class="rh ${svc?'svc':''} ${d===today?'today':''}"><span class="d">${HT_DOW[i]} ${d.slice(8)}</span><span>${svc?(tu||'servicio'):'sin servicio'}</span></div>`; });
+  people.forEach(p=>{
+    h+=`<div class="nm"><b>${escapeHtml(p.n)}</b><span>${escapeHtml(p.role||'')}</span></div>`;
+    wd.forEach(d=>{ const s=(HT.shifts[d]||{})[p.id]; const svc=htServiceDay(d);
+      const click=admin?`onclick="htCellEdit('${d}','${p.id}')"`:'';
+      if(!s) h+=`<div class="cell off ${svc?'svc':''}" ${click}><span class="st">franco</span></div>`;
+      else if(s.k==='lic') h+=`<div class="cell lic ${svc?'svc':''}" ${click}><span class="sh">licencia</span><span class="st">${escapeHtml(s.nota||'')}</span></div>`;
+      else h+=`<div class="cell ${svc?'svc':''} ${s.k==='mise'?'mise':''}" ${click}><span class="sh">${s.a}–${s.b}</span><span class="st">${htHours(s.a,s.b).toLocaleString('es-AR',{maximumFractionDigits:1})} h · ${HT_KIND[s.k]||s.k}</span></div>`;
+    });
+  });
+  h+=`</div>${htUI.cell?htCellForm():''}<p class="note" style="margin:10px 14px">Las columnas con borde dorado tienen servicio cargado (Analista o Reservas). Sin celda = franco. "Mise / tarea" son horas fuera de servicio: se fichan igual pero no se asignan a un turno en el Analista.</p></div></div>`;
+  return h;
+}
+function htCellEdit(d,pid){ htUI.cell={d,pid}; renderHito(); }
+function htCellForm(){
+  const {d,pid}=htUI.cell; const p=htById(pid); const s=(HT.shifts[d]||{})[pid]||{a:'15:00',b:'01:00',k:'svc'};
+  return `<div class="htcellform"><b>${escapeHtml(p?p.n:'')}</b> · ${d}
+    <label>Tipo <select id="htcK">${Object.entries(HT_KIND).map(([k,v])=>`<option value="${k}" ${s.k===k?'selected':''}>${v}</option>`).join('')}</select></label>
+    <label>Entra <input type="time" id="htcA" value="${s.a||''}"></label><label>Sale <input type="time" id="htcB" value="${s.b||''}"></label>
+    <label>Nota <input type="text" id="htcN" value="${escapeHtml(s.nota||'')}" placeholder="opcional"></label>
+    <button class="btn" onclick="htCellSave()">Guardar</button><button class="btn ghost" onclick="htCellClear()">Franco</button><button class="btn ghost" onclick="htUI.cell=null;renderHito()">Cerrar</button></div>`;
+}
+function htCellSave(){
+  const {d,pid}=htUI.cell; const k=document.getElementById('htcK').value, a=document.getElementById('htcA').value, b=document.getElementById('htcB').value, nota=document.getElementById('htcN').value.trim();
+  if(k!=='lic' && (!a||!b)){ flash('Completá entrada y salida'); return; }
+  HT.shifts[d]=HT.shifts[d]||{}; HT.shifts[d][pid]={a,b,k,nota}; htPersist(); htUI.cell=null; flash('Turno guardado ✓'); renderHito();
+}
+function htCellClear(){ const {d,pid}=htUI.cell; if(HT.shifts[d]){ delete HT.shifts[d][pid]; if(!Object.keys(HT.shifts[d]).length) delete HT.shifts[d]; } htPersist(); htUI.cell=null; renderHito(); }
+function htCopyWeek(){
+  const wd=htWeekDays(); let n=0;
+  wd.forEach(d=>{ const src=HT.shifts[d]; if(!src) return; const dst=htAddDays(d,7); HT.shifts[dst]=JSON.parse(JSON.stringify(src)); n+=Object.keys(src).length; });
+  if(!n){ flash('Esta semana no tiene turnos que copiar'); return; }
+  htPersist(); flash(n+' turnos copiados a la semana siguiente ✓'); htUI.week=htAddDays(wd[0],7); renderHito();
+}
+
+/* ---- fichaje ---- */
+async function htServerTime(){
+  try{ const r=await fetch('/api/time',{cache:'no-store'}); if(r.ok){ const j=await r.json(); return { t:new Date(j.now), src:'srv' }; } }catch(e){}
+  return { t:new Date(), src:'local' };
+}
+function htHM(dt){ return pad2(dt.getHours())+':'+pad2(dt.getMinutes()); }
+function htDefaultSvcDate(now){ /* antes de las 06:00 seguimos en la noche anterior */ const d=new Date(now); if(d.getHours()<6) d.setDate(d.getDate()-1); return fmtDate(d); }
+function htRenderPunch(today,admin){
+  const date=htUI.pdate||htDefaultSvcDate(new Date());
+  const turnos=htServiceTurnos(date); const defTurno=htUI.pturno||turnos[turnos.length-1]||'N1';
+  const people=HT.people.filter(p=>p.active);
+  const ps=HTK.punches.filter(k=>k.date===date);
+  let h=`<div class="card"><div class="head" style="cursor:default"><span class="ttl">Fichaje</span><span style="margin-left:auto;display:flex;gap:8px;align-items:center">
+    <label class="htinl">Fecha de servicio <input type="date" value="${date}" onchange="htUI.pdate=this.value;renderHito()"></label>
+    <label class="htinl">Turno <select onchange="htUI.pturno=this.value;renderHito()">${TURNOS.map(t=>`<option value="${t.id}" ${t.id===defTurno?'selected':''}>${t.label}</option>`).join('')}<option value="mise" ${defTurno==='mise'?'selected':''}>mise / tarea</option></select></label></span></div>
+    <div class="body"><div class="htpunch">`;
+  if(!people.length) h+=`<p class="note">Sin plantel cargado.</p>`;
+  people.forEach(p=>{
+    const k=ps.find(x=>x.pid===p.id && x.turno===defTurno);
+    const plan=(HT.shifts[date]||{})[p.id];
+    const late=k&&plan&&plan.a&&htHours(plan.a,k.in)>0.25&&htHours(plan.a,k.in)<12;
+    h+=`<div class="p ${k?(k.out?'done':(late?'late':'in')):''}"><div class="dot"></div><div class="who"><b>${escapeHtml(p.n)}</b><span>${escapeHtml(p.role||'')}${plan&&plan.k!=='lic'?' · plan '+plan.a+'–'+plan.b:''}${late?' · <i style="color:var(--warn)">+'+Math.round(htHours(plan.a,k.in)*60)+'′</i>':''}${k&&k.src==='local'?' · <i style="color:var(--warn)" title="El servidor no respondió: hora del dispositivo">hora local</i>':''}${k&&k.edited?' · <i title="Corregido por admin">corregido</i>':''}</span></div>
+      <div class="tm">${k?('entró '+k.in+(k.out?' · salió '+k.out+' · <b>'+htHours(k.in,k.out).toLocaleString('es-AR',{maximumFractionDigits:2})+' h</b>':'')):'<span class="muted">sin fichar</span>'}</div>
+      ${!k?`<button class="btn" onclick="htPunch('${p.id}','${date}','${defTurno}','in')">Entrada</button>`:(!k.out?`<button class="btn ghost" onclick="htPunch('${p.id}','${date}','${defTurno}','out')">Salida</button>`:'')}
+      ${admin&&k?`<button class="btn ghost" title="Corregir" onclick="htPunchEdit('${k.id}')">✎</button>`:''}</div>`;
+  });
+  h+=`</div><p class="note" style="margin-top:12px">Cada persona ficha desde su celular con la sesión staff; se guarda la hora del servidor. La fecha es la del <b>servicio</b>: una salida a la 01:30 se ficha con la fecha de la noche anterior (el selector ya lo propone así hasta las 06:00). Un admin puede corregir un fichaje y la corrección queda marcada.</p></div></div>`;
+  return h;
+}
+async function htPunch(pid,date,turno,dir){
+  const {t,src}=await htServerTime(); const hm=htHM(t);
+  let k=HTK.punches.find(x=>x.pid===pid&&x.date===date&&x.turno===turno);
+  if(dir==='in'){ if(k){ flash('Ya tiene entrada fichada'); return; } HTK.punches.push({id:rid(),pid,date,turno,in:hm,out:null,src,at:t.toISOString()}); }
+  else { if(!k||k.out){ flash('No hay entrada abierta'); return; } k.out=hm; if(src==='local') k.src='local'; }
+  const ok=await htkPersist(); if(ok!==false){ flash((dir==='in'?'Entrada':'Salida')+' fichada '+hm+' ✓'); } renderHito();
+}
+function htPunchEdit(id){
+  const k=HTK.punches.find(x=>x.id===id); if(!k) return;
+  const a=window.prompt('Entrada (HH:MM):',k.in); if(a==null) return;
+  const b=window.prompt('Salida (HH:MM, vacío = sigue abierto):',k.out||''); if(b==null) return;
+  if(!/^\d{2}:\d{2}$/.test(a)||(b&&!/^\d{2}:\d{2}$/.test(b))){ flash('Formato HH:MM'); return; }
+  if(window.confirm('¿Borrar este fichaje en lugar de corregirlo? (Aceptar = borrar · Cancelar = guardar corrección)')){ HTK.punches=HTK.punches.filter(x=>x.id!==id); }
+  else { k.in=a; k.out=b||null; k.edited=true; }
+  htkPersist(); renderHito();
+}
+
+/* ---- legajo ---- */
+function htRenderLegajo(admin){
+  let h=`<div class="card"><div class="head" style="cursor:default"><span class="ttl">Legajo digital</span><span class="tag mix" style="margin-left:8px">${admin?'edita admin':'solo lectura'}</span>${admin?`<button class="btn" style="margin-left:auto" onclick="htUI.editP='new';renderHito()">+ Alta</button>`:''}</div><div class="body">`;
+  if(htUI.editP) h+=htPersonForm(htUI.editP==='new'?null:htById(htUI.editP),admin);
+  if(!HT.people.length) h+=`<p class="note">Sin personas cargadas.</p>`;
+  h+=`<div class="htlegajo">`+HT.people.slice().sort((a,b)=>(b.active-a.active)||a.n.localeCompare(b.n)).map(p=>{
+    const pay=HTP&&HTP.pay[p.id];
+    return `<div class="lg ${p.active?'':'inactive'}" ${admin?`onclick="htUI.editP='${p.id}';renderHito();window.scrollTo(0,0)"`:''}><b>${escapeHtml(p.n)}</b> <span class="tag mix">${p.tipo}</span>${p.active?'':' <span class="tag mix">baja</span>'}<div class="r">${escapeHtml(p.role||'')}${p.alta?' · desde '+p.alta:''}</div>
+      <div class="docs">${p.docs.map(d=>{ const dd=d.venc?(parseDate(d.venc)-new Date())/864e5:null; const cls=dd==null?'':(dd<0?'bad':dd<30?'warn':'ok'); return `<span class="tag ${cls}" title="${d.venc?'vence '+d.venc:'sin vencimiento'}">${escapeHtml(d.n)}${dd!=null&&dd<30?(dd<0?' · vencido':' · '+Math.ceil(dd)+' d'):''}</span>`; }).join('')||'<span class="muted small">sin documentación cargada</span>'}</div>
+      ${admin?`<div class="sal">${pay&&pay.usd>0?('USD '+pay.usd.toLocaleString('en-US')+(pay.mode==='hora'?' / hora':' mensual'+(pay.hsMes?' · '+pay.hsMes+' hs/mes':' · <i style=\"color:var(--warn)\">faltan hs/mes</i>'))+(pay.mult>1?' · ×'+pay.mult:'')):'<i style="color:var(--warn)">sin tarifa: no computa en costos</i>'}</div>`:''}
+    </div>`; }).join('')+`</div>
+    <p class="note" style="margin-top:12px">Tarifas y sueldos viven en una clave que el servidor no entrega al staff (<code>kanjo:hitopay</code>). El multiplicador sigue la lógica de Esquema: cargas + ART + SAC + vacaciones sobre el bruto. Para mensuales, las horas/mes declaradas son las que convierten el sueldo en costo por hora; sin ese dato la persona no entra en el costo real y el servicio sigue con el plan.</p></div></div>`;
+  return h;
+}
+function htPersonForm(p,admin){
+  const pay=(HTP&&p&&HTP.pay[p.id])||{mode:'mensual',usd:'',mult:1.45,hsMes:''};
+  const docs=p?p.docs:[];
+  return `<div class="htform"><div class="row3">
+    <label>Nombre<input type="text" id="htfN" value="${escapeHtml(p?p.n:'')}"></label>
+    <label>Rol<select id="htfR">${HT_ROLES.map(r=>`<option ${p&&p.role===r?'selected':''}>${r}</option>`).join('')}</select></label>
+    <label>Tipo<select id="htfT"><option value="fijo" ${!p||p.tipo==='fijo'?'selected':''}>fijo</option><option value="eventual" ${p&&p.tipo==='eventual'?'selected':''}>eventual</option></select></label>
+    <label>Alta<input type="date" id="htfA" value="${p&&p.alta||''}"></label>
+    <label>Activo<select id="htfAct"><option value="1" ${!p||p.active?'selected':''}>sí</option><option value="0" ${p&&!p.active?'selected':''}>no (baja)</option></select></label></div>
+    <div class="row3" style="margin-top:8px"><label>Teléfono<input type="text" id="htfTel" value="${escapeHtml(p&&p.tel||'')}"></label><label>CUIL<input type="text" id="htfCuil" value="${escapeHtml(p&&p.cuil||'')}"></label><label style="flex:2">Notas<input type="text" id="htfNot" value="${escapeHtml(p&&p.notas||'')}"></label></div>
+    <div class="htdocs"><span class="lab">Documentación</span>${HT_DOCS.map((d,i)=>{ const cur=docs.find(x=>x.n===d); return `<label class="htdoc"><input type="checkbox" id="htfD${i}" ${cur?'checked':''}> ${d} <input type="date" id="htfDV${i}" value="${cur&&cur.venc||''}" title="vencimiento"></label>`; }).join('')}</div>
+    ${HTP?`<div class="row3 htpay"><span class="lab">Remuneración (solo admin)</span>
+      <label>Modo<select id="htfPM"><option value="mensual" ${pay.mode!=='hora'?'selected':''}>mensual</option><option value="hora" ${pay.mode==='hora'?'selected':''}>por hora</option></select></label>
+      <label>USD bruto<input type="number" step="0.5" id="htfPU" value="${pay.usd}"></label>
+      <label>Multiplicador<input type="number" step="0.05" id="htfPX" value="${pay.mult}"></label>
+      <label>Hs/mes (si mensual)<input type="number" step="1" id="htfPH" value="${pay.hsMes||''}" placeholder="ej. 180"></label></div>`:'<p class="note">Las tarifas no cargaron (sin permiso o error): se guardan los datos del legajo solamente.</p>'}
+    <div style="display:flex;gap:8px;margin-top:10px"><button class="btn" onclick="htPersonSave()">Guardar</button><button class="btn ghost" onclick="htUI.editP=null;renderHito()">Cancelar</button>${p?`<button class="btn ghost" style="margin-left:auto;color:var(--bad);border-color:var(--bad)" onclick="htPersonDel('${p.id}')">Eliminar</button>`:''}</div></div>`;
+}
+function htPersonSave(){
+  const n=document.getElementById('htfN').value.trim(); if(!n){ flash('Falta el nombre'); return; }
+  const isNew=htUI.editP==='new'; const p=isNew?{id:rid(),docs:[]}:htById(htUI.editP); if(!p) return;
+  Object.assign(p,{ n, role:document.getElementById('htfR').value, tipo:document.getElementById('htfT').value, alta:document.getElementById('htfA').value, active:document.getElementById('htfAct').value==='1',
+    tel:document.getElementById('htfTel').value.trim(), cuil:document.getElementById('htfCuil').value.trim(), notas:document.getElementById('htfNot').value.trim() });
+  p.docs=HT_DOCS.map((d,i)=>document.getElementById('htfD'+i).checked?{n:d,venc:document.getElementById('htfDV'+i).value||''}:null).filter(Boolean);
+  if(isNew) HT.people.push(p);
+  htPersist();
+  if(HTP&&document.getElementById('htfPU')){ const usd=+document.getElementById('htfPU').value||0; if(usd>0) HTP.pay[p.id]={ mode:document.getElementById('htfPM').value, usd, mult:+document.getElementById('htfPX').value||1, hsMes:+document.getElementById('htfPH').value||0 }; else delete HTP.pay[p.id]; htpPersist(); }
+  htUI.editP=null; flash(isNew?'Persona dada de alta ✓':'Legajo actualizado ✓'); renderHito();
+}
+function htPersonDel(id){
+  const hasP=HTK.punches.some(k=>k.pid===id);
+  if(!window.confirm(hasP?'Tiene fichajes registrados. ¿Dar de baja (conserva historial) en lugar de eliminar?\nAceptar = baja · Cancelar = no hacer nada':'¿Eliminar a esta persona del plantel?')) return;
+  if(hasP){ const p=htById(id); p.active=false; } else { HT.people=HT.people.filter(p=>p.id!==id); Object.values(HT.shifts).forEach(d=>{ delete d[id]; }); if(HTP) delete HTP.pay[id]; htpPersist(); }
+  htPersist(); htUI.editP=null; renderHito();
+}
+
+/* ---- horas → Analista ---- */
+function htRenderCostos(admin){
+  if(!admin) return '';
+  const rows=services.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,30).map(s=>{
+    const d=htLaborDetail(s.date,s.turno); const plan=laborAlloc(s.turno); const planHs=Object.values(HT.shifts[s.date]||{}).filter(x=>x.k==='svc').reduce((a,x)=>a+htHours(x.a,x.b),0);
+    const real=d.usd;
+    return `<tr><td>${s.date} <span class="muted">${TURNO_SHORT[s.turno]||s.turno}</span></td><td class="num">${planHs?planHs.toLocaleString('es-AR',{maximumFractionDigits:1}):'—'}</td><td class="num ${d.hs&&planHs&&d.hs>planHs*1.08?'warn':''}">${d.nClosed?d.hs.toLocaleString('es-AR',{maximumFractionDigits:1}):'—'}${d.open?` <span class="muted" title="fichajes abiertos">(+${d.open} abierto${d.open>1?'s':''})</span>`:''}</td><td class="num">${fmt(plan)}</td><td class="num">${real!=null?'<b>'+fmt(real)+'</b>':'<span class="muted">plan</span>'}</td><td class="num ${real!=null?(real>plan?'warn':'good'):''}">${real!=null&&plan?((real/plan-1)*100).toFixed(1).replace('.',',')+' %':'—'}</td></tr>`;
+  }).join('');
+  return `<div class="card"><div class="head" style="cursor:default"><span class="ttl">Horas y costo por servicio</span><span class="tag fij" style="margin-left:8px">alimenta el Analista</span></div><div class="body" style="padding:0">
+    <table class="httbl"><thead><tr><th>Servicio</th><th class="num">Hs plan</th><th class="num">Hs fichadas</th><th class="num">USD plan (Esquema)</th><th class="num">USD real</th><th class="num">Δ</th></tr></thead><tbody>${rows||'<tr><td colspan="6" class="muted">Sin servicios cargados en el Analista.</td></tr>'}</tbody></table>
+    <p class="note" style="margin:10px 14px">Cuando un servicio tiene todos sus fichajes cerrados y todas las personas con tarifa, el Analista usa ese costo real (la fila muestra el número en negrita y la métrica del servicio se marca <b>real</b>). En cualquier otro caso queda el prorrateo de Esquema: sin fichaje no hay número inventado.</p></div></div>`;
+}
+
+/* =====================================================================
+   TAB · KONDATE 献立 — la carta que ve el comensal, pública por QR.
+   kanjo:kondate (admin-only write): lista de cartas, una por servicio.
+   Los pasos se leen de Genka (G.pasos) y el maridaje sugerido de Aishō
+   (mejor puntaje dentro del flight). Descripciones ✦ vía /api/ai/kondate:
+   no se publica con ✦ pendientes — la IA propone, el itamae decide.
+   El token nace con la carta y no cambia al republicar: el QR impreso sigue
+   sirviendo. La página pública la sirve el servidor en /c/:token.
+   ===================================================================== */
+let KD={ v:1, cartas:[] };
+const kdUI={ sel:null, busy:false };
+const KD_ALG=['pescado','mariscos','crustáceos','gluten','soja','sésamo','huevo','lácteos','frutos secos','alcohol'];
+function kdEnsure(v){ const d={v:1,cartas:[]}; if(!v||typeof v!=='object') return d; v=Object.assign({},d,v); if(!Array.isArray(v.cartas)) v.cartas=[]; v.cartas.forEach(c=>{ if(!Array.isArray(c.pasos)) c.pasos=[]; if(!c.show) c.show={origen:true,mar:true,alg:true,precio:false}; if(!c.state) c.state='borrador'; if(!Array.isArray(c.hist)) c.hist=[]; }); return v; }
+function kdPersist(){ persistSafe('kanjo:kondate', KD); }
+async function loadKondate(){ KD=kdEnsure(null); await kjLoadKey('kanjo:kondate', v=>{ KD=kdEnsure(v); }); }
+function kdToken(){ const a=new Uint8Array(12); (window.crypto||{}).getRandomValues?crypto.getRandomValues(a):a.forEach((_,i)=>a[i]=Math.random()*256|0); return [...a].map(b=>(b%36).toString(36)).join(''); }
+function kdById(id){ return KD.cartas.find(c=>c.id===id); }
+function kdSel(){ return kdById(kdUI.sel); }
+function kdUrl(c){ return location.origin+'/c/'+c.token; }
+function kdMaridajeFor(pid){
+  if(!AW||!AW.bebidas) return '';
+  const ov=AW.override&&AW.override[pid]; if(ov){ const b=awBebById(ov); if(b) return b.n; }
+  let best=null,bs=1; (AW.flight||[]).forEach(bid=>{ const s=AW.m[bid]&&AW.m[bid][pid]; if(s!=null&&s>bs){ bs=s; best=bid; } });
+  const b=best&&awBebById(best); return b?b.n:'';
+}
+function kdPasoFromGenka(p){ const ing=p.ing.map(l=>gkInsById(l.ins)).filter(Boolean).map(i=>i.n); return { gk:p.id, n:p.n, d:p.d||'', den:'', o:'', m:kdMaridajeFor(p.id), alg:[], min:null, hidden:false, ai:{}, ing, prem:!!p.prem }; }
+function kdNew(){
+  const date=document.getElementById('kdNewDate').value, turno=document.getElementById('kdNewTurno').value;
+  if(!date){ flash('Elegí la fecha del servicio'); return; }
+  const c={ id:rid(), token:kdToken(), date, turno, title:'Omakase · '+parseDate(date).toLocaleDateString('es-AR',{day:'numeric',month:'long'}), sub:'Omakase · '+(S.revenue.seats||13)+' lugares · Buenos Aires', intro:'', lang:'es', tono:'sobrio', precio:'', show:{origen:true,mar:true,alg:true,precio:false}, state:'borrador', pasos:G.pasos.map(kdPasoFromGenka), pub:null, hist:[], created:new Date().toISOString() };
+  KD.cartas.unshift(c); kdUI.sel=c.id; kdPersist(); flash('Carta creada desde Genka: '+c.pasos.length+' pasos'); renderKondate();
+}
+function kdReread(){
+  const c=kdSel(); if(!c) return; let add=0;
+  G.pasos.forEach(p=>{ const ex=c.pasos.find(x=>x.gk===p.id); if(ex){ ex.ing=p.ing.map(l=>gkInsById(l.ins)).filter(Boolean).map(i=>i.n); if(!ex.m) ex.m=kdMaridajeFor(p.id); } else { c.pasos.push(kdPasoFromGenka(p)); add++; } });
+  c.pasos.forEach(x=>{ x.gone=!G.pasos.some(p=>p.id===x.gk); });
+  kdPersist(); flash(add?add+' pasos nuevos agregados':'Sin pasos nuevos; ingredientes actualizados'); renderKondate();
+}
+function kdSet(k,v){ const c=kdSel(); if(!c) return; if(k.startsWith('show.')) c.show[k.slice(5)]=!!v; else c[k]=v; kdPersist(); kdPreview(); }
+function kdPasoSet(i,k,v){ const c=kdSel(); if(!c||!c.pasos[i]) return; const p=c.pasos[i]; p[k]=k==='min'?(+v||null):v; if(p.ai&&p.ai[k]) delete p.ai[k]; kdPersist(); kdPreview(); }
+function kdTogAlg(i,a){ const c=kdSel(); const p=c.pasos[i]; p.alg.includes(a)?p.alg=p.alg.filter(x=>x!==a):p.alg.push(a); kdPersist(); renderKondate(); }
+function kdTogHide(i){ const c=kdSel(); c.pasos[i].hidden=!c.pasos[i].hidden; kdPersist(); renderKondate(); }
+function kdMove(i,dir){ const c=kdSel(); const j=i+dir; if(j<0||j>=c.pasos.length) return; [c.pasos[i],c.pasos[j]]=[c.pasos[j],c.pasos[i]]; kdPersist(); renderKondate(); }
+function kdApprovePaso(i){ const c=kdSel(); c.pasos[i].ai={}; kdPersist(); renderKondate(); }
+function kdApproveAll(){ const c=kdSel(); c.pasos.forEach(p=>{ p.ai={}; }); kdPersist(); flash('Textos ✦ aprobados'); renderKondate(); }
+function kdPendingAi(c){ return c.pasos.filter(p=>!p.hidden&&p.ai&&Object.keys(p.ai).length).length; }
+async function kdDraftAI(){
+  const c=kdSel(); if(!c||kdUI.busy) return;
+  if(!kjIsAdmin()){ flash('Solo admin'); return; }
+  const pasos=c.pasos.filter(p=>!p.hidden).map(p=>({ id:p.gk, n:p.n, d:p.d, i:p.ing, o:p.o, m:p.m }));
+  if(!pasos.length){ flash('No hay pasos visibles'); return; }
+  kdUI.busy=true; renderKondate();
+  try{
+    const r=await fetch('/api/ai/kondate',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ pasos, tono:c.tono }) });
+    if(r.status===501){ flash('El servidor no tiene OPENAI_API_KEY'); return; }
+    if(r.status===429){ flash('Límite de IA alcanzado: esperá unos minutos'); return; }
+    if(!r.ok){ flash('La IA no respondió ('+r.status+')'); return; }
+    const j=await r.json(); let n=0;
+    c.pasos.forEach(p=>{ const v=j.pasos&&j.pasos[p.gk]; if(!v) return; p.ai=p.ai||{}; if(v.d){ p.d=v.d; p.ai.d=1; n++; } if(v.den){ p.den=v.den; p.ai.den=1; } if(v.m&&p.m){ p.m=v.m?p.m+' — '+v.m:p.m; p.ai.m=1; } });
+    kdPersist(); flash('✦ '+n+' descripciones propuestas: revisá y aprobá antes de publicar');
+  }catch(e){ flash('Error llamando a la IA'); }
+  finally{ kdUI.busy=false; renderKondate(); }
+}
+function kdPublish(){
+  const c=kdSel(); if(!c) return;
+  if(!kjIsAdmin()){ flash('Solo un admin publica la carta'); return; }
+  const pend=kdPendingAi(c); if(pend){ flash('Hay '+pend+' paso'+(pend>1?'s':'')+' con texto ✦ sin aprobar'); return; }
+  if(!c.pasos.some(p=>!p.hidden)){ flash('La carta no tiene pasos visibles'); return; }
+  const v=(c.pub?c.pub.v:0)+1;
+  c.pub={ v, at:new Date().toISOString(), title:c.title, sub:c.sub, intro:c.intro, lang:c.lang, precio:c.precio, show:Object.assign({},c.show), pasos:c.pasos.filter(p=>!p.hidden).map(p=>({ n:p.n, d:p.d, den:p.den, o:p.o, m:p.m, alg:p.alg.slice() })) };
+  c.state='publicada'; c.hist.push({v, at:c.pub.at});
+  kdPersist(); flash('Carta publicada v'+v+' ✓ · el QR ya responde'); renderKondate();
+}
+function kdArchive(id){ const c=id?kdById(id):kdSel(); if(!c) return; if(c.state==='archivada'){ c.state=c.pub?'publicada':'borrador'; } else c.state='archivada'; kdPersist(); renderKondate(); }
+function kdDel(){ const c=kdSel(); if(!c) return; if(!window.confirm('¿Eliminar esta carta? El QR dejará de responder.')) return; KD.cartas=KD.cartas.filter(x=>x.id!==c.id); kdUI.sel=null; kdPersist(); renderKondate(); }
+function kdDup(){ const c=kdSel(); if(!c) return; const n=JSON.parse(JSON.stringify(c)); n.id=rid(); n.token=kdToken(); n.state='borrador'; n.pub=null; n.hist=[]; n.title=c.title+' (copia)'; n.created=new Date().toISOString(); KD.cartas.unshift(n); kdUI.sel=n.id; kdPersist(); renderKondate(); }
+function kdCopyUrl(){ const c=kdSel(); if(!c) return; const u=kdUrl(c); if(navigator.clipboard){ navigator.clipboard.writeText(u).then(()=>flash('Link copiado')); } else window.prompt('Link de la carta:',u); }
+
+function renderKondate(){
+  const el=document.getElementById('kdRoot'); if(!el) return;
+  const admin=kjIsAdmin(); const c=kdSel();
+  const list=KD.cartas.map(x=>`<div class="kdrow ${x.id===kdUI.sel?'on':''}" onclick="kdUI.sel='${x.id}';renderKondate()"><span class="tag ${x.state==='publicada'?'ok':x.state==='archivada'?'mix':'warn'}">${x.state}</span><b>${escapeHtml(x.title)}</b><span class="muted">${x.date} · ${TURNO_SHORT[x.turno]||x.turno}${x.pub?' · v'+x.pub.v:''}</span></div>`).join('')||'<p class="note">Todavía no hay cartas.</p>';
+  const newForm=admin?`<div class="kdnew"><label>Fecha<input type="date" id="kdNewDate" value="${htToday()}"></label><label>Turno<select id="kdNewTurno">${TURNOS.map(t=>`<option value="${t.id}" ${t.id==='N1'?'selected':''}>${t.label}</option>`).join('')}</select></label><button class="btn" onclick="kdNew()">+ Nueva carta desde Genka</button></div>`:'';
+  let detail='';
+  if(c){
+    const ro=!admin;
+    const dis=ro?'disabled':'';
+    const pend=kdPendingAi(c);
+    detail=`<div class="kdgrid"><div>
+      <div class="card"><div class="head" style="cursor:default"><span class="ttl">${escapeHtml(c.title)}</span><span class="tag ${c.state==='publicada'?'ok':c.state==='archivada'?'mix':'warn'}" style="margin-left:8px">${c.state}</span><span style="margin-left:auto;display:flex;gap:6px">${admin?`<button class="btn ghost" onclick="kdDup()">Duplicar</button><button class="btn ghost" onclick="kdArchive()">${c.state==='archivada'?'Desarchivar':'Archivar'}</button><button class="btn ghost" style="color:var(--bad);border-color:var(--bad)" onclick="kdDel()">Eliminar</button>`:''}</span></div>
+        <div class="body">
+          <div class="row3"><label style="flex:2">Título que ve el comensal<input type="text" value="${escapeHtml(c.title)}" ${dis} oninput="kdSet('title',this.value)"></label><label>Subtítulo<input type="text" value="${escapeHtml(c.sub||'')}" ${dis} oninput="kdSet('sub',this.value)"></label>
+            <label>Idioma<select ${dis} onchange="kdSet('lang',this.value)"><option value="es" ${c.lang==='es'?'selected':''}>Castellano</option><option value="en" ${c.lang==='en'?'selected':''}>English</option><option value="both" ${c.lang==='both'?'selected':''}>Ambos</option></select></label></div>
+          <div class="row3" style="margin-top:8px"><label style="flex:3">Nota de apertura<textarea rows="2" ${dis} oninput="kdSet('intro',this.value)">${escapeHtml(c.intro||'')}</textarea></label><label>Precio (texto libre)<input type="text" value="${escapeHtml(c.precio||'')}" placeholder="ej. USD 95 · maridaje USD 38" ${dis} oninput="kdSet('precio',this.value)"></label></div>
+          <div class="kdshow">${[['origen','origen del producto'],['mar','maridaje'],['alg','alérgenos'],['precio','precio']].map(([k,l])=>`<label><input type="checkbox" ${c.show[k]?'checked':''} ${dis} onchange="kdSet('show.${k}',this.checked)"> ${l}</label>`).join('')}
+            <label style="margin-left:auto">Tono IA <select ${dis} onchange="kdSet('tono',this.value)">${['sobrio','cálido','poético'].map(t=>`<option ${c.tono===t?'selected':''}>${t}</option>`).join('')}</select></label></div>
+        </div></div>
+      <div class="card"><div class="head" style="cursor:default"><span class="ttl">Pasos</span><span class="tag mix" style="margin-left:8px">desde Genka 原価 · maridaje de Aishō 相性</span><span style="margin-left:auto;display:flex;gap:6px">${admin?`<button class="btn ghost" onclick="kdReread()">↻ Releer Genka</button><button class="btn ghost" ${kdUI.busy?'disabled':''} onclick="kdDraftAI()">${kdUI.busy?'✦ redactando…':'✦ Redactar con IA'}</button>${pend?`<button class="btn" onclick="kdApproveAll()">Aprobar ${pend} ✦</button>`:''}`:''}</span></div>
+        <div class="body" style="padding:6px 14px">
+          <ul class="kdpasos">${c.pasos.map((p,i)=>`<li class="${p.hidden?'hidden':''}"><span class="n">${String(i+1).padStart(2,'0')}</span><div class="t">
+            <div class="ttl2"><b>${escapeHtml(p.n)}</b>${p.prem?' <span class="tag mix">premium</span>':''}${p.gone?' <span class="tag bad" title="Ya no está en Genka">sin paso en Genka</span>':''}<span class="muted small"> · ${escapeHtml(p.ing.slice(0,5).join(', '))}</span></div>
+            <div class="kdf"><span class="lab">Descripción${p.ai&&p.ai.d?' <span class="ai">✦</span>':''}</span><input type="text" value="${escapeHtml(p.d)}" ${dis} oninput="kdPasoSet(${i},'d',this.value)"></div>
+            ${c.lang!=='es'?`<div class="kdf"><span class="lab">English${p.ai&&p.ai.den?' <span class="ai">✦</span>':''}</span><input type="text" value="${escapeHtml(p.den||'')}" ${dis} oninput="kdPasoSet(${i},'den',this.value)"></div>`:''}
+            <div class="kdf2"><div class="kdf"><span class="lab">Origen</span><input type="text" value="${escapeHtml(p.o||'')}" placeholder="ej. Atún · Mar del Plata" ${dis} oninput="kdPasoSet(${i},'o',this.value)"></div>
+              <div class="kdf"><span class="lab">Maridaje${p.ai&&p.ai.m?' <span class="ai">✦</span>':''}</span><input type="text" value="${escapeHtml(p.m||'')}" ${dis} oninput="kdPasoSet(${i},'m',this.value)"></div>
+              <div class="kdf" style="flex:.4"><span class="lab">Min. plan</span><input type="number" min="1" value="${p.min||''}" placeholder="—" ${dis} oninput="kdPasoSet(${i},'min',this.value)"></div></div>
+            <div class="kdalg">${KD_ALG.map(a=>`<span class="${p.alg.includes(a)?'on':''}" ${admin?`onclick="kdTogAlg(${i},'${a}')"`:''}>${a}</span>`).join('')}</div></div>
+            <div class="kdact">${admin?`${p.ai&&Object.keys(p.ai).length?`<button class="btn ghost" onclick="kdApprovePaso(${i})">aprobar ✦</button>`:''}<button class="btn ghost" onclick="kdMove(${i},-1)">↑</button><button class="btn ghost" onclick="kdMove(${i},1)">↓</button><button class="btn ghost" onclick="kdTogHide(${i})">${p.hidden?'mostrar':'ocultar'}</button>`:''}</div></li>`).join('')}</ul>
+          <p class="note">Los textos ✦ los propuso la IA a partir del escandallo y las notas de maridaje; editarlos o aprobarlos quita la marca. No se publica con ✦ pendientes. Los alérgenos no los propone la IA: se marcan a mano. "Min. plan" es el tiempo previsto de cada paso, que usa Servicio 席 para medir el ritmo; si lo dejás vacío, el ritmo no se compara con nada.</p>
+        </div></div>
+    </div><div>
+      <div class="card"><div class="head" style="cursor:default"><span class="ttl">Vista previa</span><span class="tag mix" style="margin-left:auto">celular</span></div><div class="body"><div class="kdphone"><div class="scr" id="kdPhone"></div></div></div></div>
+      <div class="card"><div class="head" style="cursor:default"><span class="ttl">Publicación</span><span class="tag fij" style="margin-left:8px">aprueba admin</span></div><div class="body">
+        <div class="kdpub"><span class="tag ${c.state==='publicada'?'ok':c.state==='archivada'?'mix':'warn'}">${c.state}</span><span class="mono small muted">${c.pub?'v'+c.pub.v+' · '+new Date(c.pub.at).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'sin publicar'}${c.pub&&c.pub.v<(c.hist.length)?'':''}</span></div>
+        <div class="kdqr">${c.pub?`<a href="/c/${c.token}/qr" target="_blank" rel="noopener"><img src="/c/${c.token}/qr.png?w=260" alt="QR" width="130" height="130"></a>`:`<div class="kdqrph">QR al<br>publicar</div>`}
+          <div><div class="u mono small">${escapeHtml(kdUrl(c).replace(/^https?:\/\//,''))}</div>
+          <div class="kdbtns">${admin?`<button class="btn" onclick="kdPublish()">${c.pub?'Republicar (v'+(c.pub.v+1)+')':'Aprobar y publicar'}</button>`:''}<button class="btn ghost" onclick="kdCopyUrl()">Copiar link</button>
+            <a class="btn ghost" ${c.pub?`href="/c/${c.token}/qr.png?w=1200" download="carta-${c.date}.png"`:'aria-disabled="true" style="opacity:.45;pointer-events:none"'}>PNG</a>
+            <a class="btn ghost" ${c.pub?`href="/c/${c.token}/qr" target="_blank" rel="noopener"`:'aria-disabled="true" style="opacity:.45;pointer-events:none"'}>Hoja / PDF</a>
+            <a class="btn ghost" ${c.pub?`href="/c/${c.token}" target="_blank" rel="noopener"`:'aria-disabled="true" style="opacity:.45;pointer-events:none"'}>Abrir</a></div></div></div>
+        ${c.pub&&JSON.stringify(c.pub.pasos)!==JSON.stringify(c.pasos.filter(p=>!p.hidden).map(p=>({ n:p.n, d:p.d, den:p.den, o:p.o, m:p.m, alg:p.alg.slice() })))?'<p class="note" style="color:var(--warn)">Hay cambios sin publicar: el QR sigue mostrando la v'+c.pub.v+'.</p>':''}
+        <p class="note">La URL lleva un token aleatorio que nace con la carta y no cambia al republicar, así el QR impreso sigue sirviendo. Cada publicación es una versión (historial abajo). Archivar deja el link vivo mostrando solo el título: al cerrar el servicio en 席 se archiva sola.</p>
+        ${c.hist.length?`<div class="kdhist">${c.hist.slice().reverse().map(h=>`<div><span>v${h.v}</span><span class="mono muted">${new Date(h.at).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</span></div>`).join('')}</div>`:''}
+      </div></div>
+    </div></div>`;
+  }
+  el.innerHTML=`<div class="kdlist">${newForm}${list}</div>${detail}`;
+  kdPreview();
+}
+function kdPreview(){
+  const c=kdSel(); const ph=document.getElementById('kdPhone'); if(!c||!ph) return;
+  const sh=c.show, lang=c.lang, vis=c.pasos.filter(p=>!p.hidden);
+  ph.innerHTML=`<h4>${escapeHtml(c.title)}</h4><div class="sub">${escapeHtml(c.sub||'')}</div>${c.intro?`<p class="intro">${escapeHtml(c.intro)}</p>`:''}
+    ${vis.map((p,i)=>`<div class="ps"><b><span class="n">${String(i+1).padStart(2,'0')}</span>${escapeHtml(p.n)}</b>${lang!=='en'&&p.d?`<div>${escapeHtml(p.d)}</div>`:''}${lang!=='es'&&p.den?`<div class="en">${escapeHtml(p.den)}</div>`:(lang==='en'&&p.d?`<div>${escapeHtml(p.d)}</div>`:'')}${sh.origen&&p.o?`<div class="o">${escapeHtml(p.o)}</div>`:''}${sh.mar&&p.m?`<div class="m">${escapeHtml(p.m)}</div>`:''}${sh.alg&&p.alg.length?`<div class="a">${p.alg.join(' · ')}</div>`:''}</div>`).join('')}
+    ${sh.precio&&c.precio?`<div class="ps"><b>${lang==='en'?'Full menu':'Menú completo'}</b><div>${escapeHtml(c.precio)}</div></div>`:''}
+    <div class="ft">${lang==='en'?'Please tell us about any allergy or restriction before we begin.':'Avisanos cualquier alergia o restricción antes de empezar.'}</div>`;
+}
+
+/* =====================================================================
+   TAB · SEKI 席 — el servicio por asiento: quién está en cada lugar (CRM),
+   restricciones, en qué paso va cada uno y el ritmo de la barra contra el
+   plan de la carta (献立). kanjo:seki lo escribe el staff (lo opera la sala).
+   Al cerrar: crea el registro del servicio en el Analista (estimado a precio
+   de lista, para corregir con la caja real), registra las visitas en el CRM
+   y archiva la carta publicada. Nada se inventa: sin precio de maridaje
+   cargado, la columna queda vacía.
+   ===================================================================== */
+let SK={ v:1, svcs:{} };
+const skUI={ date:null, turno:null, sel:null, q:'' };
+const SK_REST=[ /* palabra clave en CRM → alérgenos de la carta que disparan sustitución */
+  {re:/marisc|crust|camar|langost|centolla|vieir|molusc/i, alg:['mariscos','crustáceos'], lbl:'Alergia mariscos'},
+  {re:/cel[ií]a|gluten|tacc|trigo/i, alg:['gluten'], lbl:'Celíaco/a · sin gluten'},
+  {re:/pescado|pez/i, alg:['pescado'], lbl:'No come pescado'},
+  {re:/l[aá]cteo|lactosa|leche/i, alg:['lácteos'], lbl:'Sin lácteos'},
+  {re:/huevo/i, alg:['huevo'], lbl:'Sin huevo'},
+  {re:/soja|soya/i, alg:['soja'], lbl:'Sin soja'},
+  {re:/s[eé]samo/i, alg:['sésamo'], lbl:'Sin sésamo'},
+  {re:/nuez|nueces|almendra|man[ií]|frutos secos/i, alg:['frutos secos'], lbl:'Sin frutos secos'},
+  {re:/alcohol|embaraz|abstem/i, alg:['alcohol'], lbl:'Sin alcohol'},
+  {re:/vegetarian|vegan/i, alg:['pescado','mariscos','crustáceos','huevo','lácteos'], lbl:'Vegetariano/a'},
+];
+function skEnsure(v){ const d={v:1,svcs:{}}; if(!v||typeof v!=='object') return d; v=Object.assign({},d,v); if(!v.svcs||typeof v.svcs!=='object') v.svcs={}; return v; }
+function skPersist(){ persistSafe('kanjo:seki', SK); }
+async function loadSeki(){ SK=skEnsure(null); await kjLoadKey('kanjo:seki', v=>{ SK=skEnsure(v); }); }
+function skKey(){ return (skUI.date||htDefaultSvcDate(new Date()))+'|'+(skUI.turno||'N1'); }
+function skCur(){ return SK.svcs[skKey()]||null; }
+function skCarta(sv){ return sv&&sv.cartaId?kdById(sv.cartaId):null; }
+function skPasos(sv){ const c=skCarta(sv); if(c&&c.pub) return c.pub.pasos.map((p,i)=>Object.assign({min:(c.pasos.filter(x=>!x.hidden)[i]||{}).min||null},p)); if(c) return c.pasos.filter(p=>!p.hidden); return G.pasos.map(p=>({n:p.n,d:p.d,alg:[],min:null})); }
+function skStart(){
+  const [date,turno]=skKey().split('|'); const n=S.revenue.seats||13;
+  const carta=KD.cartas.find(c=>c.date===date&&c.turno===turno&&c.state!=='archivada')||KD.cartas.find(c=>c.date===date&&c.state!=='archivada')||null;
+  SK.svcs[skKey()]={ date, turno, cartaId:carta?carta.id:null, cur:-1, startedAt:null, stepAt:[], precioMar:null, seats:Array.from({length:n},(_,i)=>({ n:i+1, client:null, name:'', rest:'', grp:0, mar:false, off:0, extras:[], hist:[] })), closed:false };
+  skPersist(); renderSeki();
+}
+function skSetCarta(id){ const sv=skCur(); sv.cartaId=id||null; skPersist(); renderSeki(); }
+function skRestFor(text){ const t=String(text||''); const hits=SK_REST.filter(r=>r.re.test(t)); return hits; }
+function skSeat(n){ const sv=skCur(); return sv&&sv.seats[n-1]; }
+function skSit(n,clientId){
+  const s=skSeat(n); const c=clientId?crmById(clientId):null;
+  s.client=c?c.id:null; s.name=c?c.name:s.name; s.rest=c?(c.allerg||''):s.rest; s.hist=[{t:'sentado',at:new Date().toISOString()}];
+  skPersist(); skUI.sel=n; skUI.q=''; renderSeki();
+}
+function skWalkin(n){ const nm=window.prompt('Nombre del walk-in (se puede cargar al CRM después):'); if(!nm) return; const s=skSeat(n); s.client=null; s.name=nm.trim(); s.rest=''; s.hist=[{t:'sentado',at:new Date().toISOString()}]; skPersist(); skUI.sel=n; renderSeki(); }
+function skClear(n){ const s=skSeat(n); Object.assign(s,{client:null,name:'',rest:'',grp:0,mar:false,off:0,extras:[],hist:[]}); skPersist(); renderSeki(); }
+function skSetRest(n,v){ skSeat(n).rest=v; skPersist(); renderSeki(); }
+function skTogMar(n){ const s=skSeat(n); s.mar=!s.mar; skPersist(); renderSeki(); }
+function skCycleGrp(n){ const s=skSeat(n); if(!s.name) return; s.grp=(s.grp+1)%5; skPersist(); renderSeki(); }
+function skExtra(n){ const nm=window.prompt('Extra (ej. nigiri de ōtoro, copa de sake):'); if(!nm) return; const usd=+window.prompt('Precio de lista USD c/IVA:')||0; skSeat(n).extras.push({n:nm.trim(),usd}); skPersist(); renderSeki(); }
+function skNoteCRM(n){ const s=skSeat(n); if(!s.client){ flash('Este asiento no está vinculado a un cliente del CRM'); return; } const c=crmById(s.client); const t=window.prompt('Nota para la ficha de '+c.name+':'); if(!t) return; c.notes=(c.notes?c.notes+'\n':'')+s.hist[0].at.slice(0,10)+': '+t.trim(); crmPersist(); flash('Nota guardada en el CRM ✓'); }
+function skNow(){ return new Date().toISOString(); }
+function skNext(){ const sv=skCur(); const P=skPasos(sv); if(sv.cur>=P.length-1) return; if(sv.cur<0) sv.startedAt=sv.startedAt||skNow(); sv.cur++; sv.stepAt[sv.cur]=skNow(); sv.seats.forEach(s=>{ if(s.name){ s.hist.push({t:'paso '+(sv.cur+1+s.off),at:sv.stepAt[sv.cur]}); } }); skPersist(); renderSeki(); }
+function skPrev(){ const sv=skCur(); if(sv.cur<0) return; sv.cur--; skPersist(); renderSeki(); }
+function skSeatNext(n){ const s=skSeat(n); s.off++; s.hist.push({t:'paso '+(skCur().cur+1+s.off)+' (solo acá)',at:skNow()}); skPersist(); renderSeki(); }
+function skSeatPrev(n){ const s=skSeat(n); s.off--; skPersist(); renderSeki(); }
+function skStep(sv,s){ return Math.max(-1,sv.cur+(s.off||0)); }
+function skElapsed(sv){ if(!sv.startedAt) return null; return (Date.now()-new Date(sv.startedAt))/60000; }
+function skPace(sv){
+  const P=skPasos(sv); if(sv.cur<0||!sv.startedAt) return null;
+  const mins=P.slice(0,sv.cur+1).map(p=>p.min);
+  if(mins.some(m=>!m)) return { elapsed:skElapsed(sv), delta:null };
+  const plan=mins.slice(0,-1).reduce((a,b)=>a+b,0);      /* el paso actual todavía corre */
+  const real=(new Date(sv.stepAt[sv.cur])-new Date(sv.startedAt))/60000;
+  return { elapsed:skElapsed(sv), delta:real-plan };
+}
+function skPrices(sv){
+  const t=S.turnos.find(x=>x.id===sv.turno); const menu=t?(t.price||0):0;
+  return { menu, mar:sv.precioMar>0?sv.precioMar:null };
+}
+function skGroups(sv){
+  const g={}; sv.seats.filter(s=>s.name).forEach(s=>{ const k=s.grp?'g'+s.grp:'s'+s.n; (g[k]=g[k]||[]).push(s); }); return g;
+}
+function skBill(sv,ss){ const pr=skPrices(sv); const menu=ss.length*pr.menu; const nm=ss.filter(s=>s.mar).length; const mar=pr.mar!=null?nm*pr.mar:null; const ex=ss.reduce((a,s)=>a+s.extras.reduce((b,e)=>b+(e.usd||0),0),0); return { menu, nm, mar, ex, total: menu+(mar||0)+ex, marMissing: nm>0&&pr.mar==null }; }
+function skClose(){
+  const sv=skCur(); if(!sv||sv.closed) return;
+  const seated=sv.seats.filter(s=>s.name); if(!seated.length){ flash('No hay nadie sentado'); return; }
+  const pr=skPrices(sv); const bills=Object.values(skGroups(sv)).map(ss=>skBill(sv,ss));
+  const covers=seated.length, omakase=covers*pr.menu, bebidas=pr.mar!=null?bills.reduce((a,b)=>a+(b.mar||0),0):0, extras=bills.reduce((a,b)=>a+b.ex,0);
+  const exists=services.find(s=>s.date===sv.date&&s.turno===sv.turno);
+  if(!window.confirm('Cerrar el servicio:\n· '+covers+' cubiertos · menú '+fmt(omakase)+(pr.mar!=null?' · maridaje '+fmt(bebidas):' · maridaje sin precio (queda en 0)')+' · extras '+fmt(extras)+'\n· '+(exists?'El Analista YA tiene este servicio: no se pisa, solo se marcan visitas.':'Se crea el servicio en el Analista a precio de lista, para que lo corrijas con la caja real.')+'\n· Se registran '+seated.filter(s=>s.client).length+' visitas en el CRM.\n¿Continuar?')) return;
+  if(!exists){ services.push({ id:rid(), date:sv.date, turno:sv.turno, covers, omakase, premium:0, bebidas, extras, payCard:0, payCash:0, payQR:0, cashDiscPct:0, cashUndeclared:false, note:'estimado desde Servicio 席 · corregir con caja real' }); if(typeof persistServices==='function') persistServices(); else persistSafe('kanjo:services', services); }
+  /* visitas al CRM: por grupo, gasto prorrateado por persona */
+  let nv=0; Object.values(skGroups(sv)).forEach(ss=>{ const b=skBill(sv,ss); ss.forEach(s=>{ if(!s.client) return; if(crm.visits.some(v=>v.client===s.client&&v.date===sv.date&&v.turno===sv.turno)) return; crm.visits.push({ id:rid(), client:s.client, date:sv.date, turno:sv.turno, party:ss.length, spend:Math.round(b.total/ss.length), notes:(s.mar?'con maridaje':'sin maridaje')+(s.extras.length?' · extras: '+s.extras.map(e=>e.n).join(', '):'')+(s.rest?' · '+s.rest:'') }); nv++; }); });
+  if(nv) crmPersist();
+  const c=skCarta(sv); if(c&&c.state==='publicada'&&kjIsAdmin()){ c.state='archivada'; kdPersist(); }
+  sv.closed=true; sv.closedAt=skNow(); skPersist();
+  flash('Servicio cerrado ✓ · '+(exists?'Analista intacto':'servicio creado en Analista')+' · '+nv+' visitas al CRM'); renderSeki();
+}
+function skReopen(){ const sv=skCur(); sv.closed=false; skPersist(); renderSeki(); }
+
+function renderSeki(){
+  const el=document.getElementById('skRoot'); if(!el) return;
+  if(!skUI.date){ skUI.date=htDefaultSvcDate(new Date()); const tu=htServiceTurnos(skUI.date); skUI.turno=tu[tu.length-1]||'N1'; }
+  const sv=skCur();
+  const hdr=`<div class="skhdr"><label>Servicio <input type="date" value="${skUI.date}" onchange="skUI.date=this.value;skUI.sel=null;renderSeki()"></label><label>Turno <select onchange="skUI.turno=this.value;skUI.sel=null;renderSeki()">${TURNOS.map(t=>`<option value="${t.id}" ${t.id===skUI.turno?'selected':''}>${t.label}</option>`).join('')}</select></label>
+    ${sv?`<label>Carta <select onchange="skSetCarta(this.value)"><option value="">— sin carta (pasos de Genka) —</option>${KD.cartas.map(c=>`<option value="${c.id}" ${sv.cartaId===c.id?'selected':''}>${escapeHtml(c.title)} · ${c.state}</option>`).join('')}</select></label>
+      <label>Precio maridaje USD <input type="number" step="0.5" style="width:80px" value="${sv.precioMar||''}" placeholder="—" onchange="skCur().precioMar=+this.value||null;skPersist();renderSeki()"></label>`:''}
+    <span style="margin-left:auto">${sv?(sv.closed?`<span class="tag mix">cerrado ${sv.closedAt?new Date(sv.closedAt).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}):''}</span> <button class="btn ghost" onclick="skReopen()">Reabrir</button>`:`<button class="btn" onclick="skClose()">Cerrar servicio → Analista + CRM</button>`):`<button class="btn" onclick="skStart()">Abrir servicio</button>`}</span></div>`;
+  if(!sv){ el.innerHTML=hdr+`<p class="note">Este servicio todavía no se abrió. Al abrirlo se arman los ${S.revenue.seats||13} asientos y se engancha la carta 献立 de la fecha si existe.</p>`; return; }
+  const P=skPasos(sv); const seated=sv.seats.filter(s=>s.name); const pace=skPace(sv);
+  const rests=seated.filter(s=>s.rest).length;
+  const bills=Object.values(skGroups(sv)).map(ss=>skBill(sv,ss)); const tot=bills.reduce((a,b)=>a+b.total,0); const marMissing=bills.some(b=>b.marMissing);
+  const kpis=`<div class="kpis" style="margin:12px 0 14px">
+    <div class="kpi"><div class="lab">Ocupación</div><div class="val">${seated.length}<span class="muted" style="font-size:13px">/${sv.seats.length}</span></div><div class="ksub">${sv.seats.length-seated.length} libres</div></div>
+    <div class="kpi"><div class="lab">Paso actual</div><div class="val">${sv.cur>=0?sv.cur+1:'—'}<span class="muted" style="font-size:13px">/${P.length}</span></div><div class="ksub">${sv.cur>=0?escapeHtml(P[sv.cur].n):'sin empezar'}</div></div>
+    <div class="kpi"><div class="lab">Ritmo</div><div class="val" style="color:${pace&&pace.delta!=null?(pace.delta>3?'var(--warn)':'var(--good)'):'inherit'}">${pace?(pace.delta!=null?(pace.delta>=0?'+':'−')+Math.abs(Math.round(pace.delta))+'′':Math.round(pace.elapsed)+'′'):'—'}</div><div class="ksub">${pace?(pace.delta!=null?'vs. plan de la carta':'transcurridos · sin minutos plan'):'—'}</div></div>
+    <div class="kpi"><div class="lab">Restricciones</div><div class="val" style="color:${rests?'var(--vermilion)':'inherit'}">${rests}</div><div class="ksub">${seated.filter(s=>s.rest).slice(0,2).map(s=>s.name.split(' ')[0]).join(' · ')||'ninguna'}</div></div>
+    <div class="kpi"><div class="lab">Desfasados</div><div class="val">${seated.filter(s=>s.off).length}</div><div class="ksub">asientos fuera del ritmo de la barra</div></div>
+    <div class="kpi"><div class="lab">Ticket estimado</div><div class="val">${seated.length?fmt(tot):'—'}</div><div class="ksub">lista c/IVA${marMissing?' · <span style="color:var(--warn)">falta precio de maridaje</span>':''}</div></div></div>`;
+  /* barra SVG */
+  const n=sv.seats.length, W=Math.max(700,n*66+40), H=250;
+  let svg=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" class="skbar"><rect x="${W/2-210}" y="8" width="420" height="42" rx="3" fill="var(--ink)"/><text x="${W/2}" y="34" text-anchor="middle" class="itm">itamae · 板前</text><path d="M30 66 H${W-30}" class="rail"/>`;
+  sv.seats.forEach((s,i)=>{ const x=30+i*((W-60)/n), y=80, w=(W-60)/n-7, h=122; const st=skStep(sv,s); const sel=skUI.sel===s.n;
+    svg+=`<g class="seat ${s.name?'':'empty'} ${sel?'sel':''}" transform="translate(${x},${y})" onclick="skUI.sel=${s.n};renderSeki()"><rect class="bg" width="${w}" height="${h}" rx="3"/>`;
+    if(s.rest) svg+=`<rect class="flagbg" width="${w}" height="12" rx="3"/><text class="flag" x="${w/2}" y="9" text-anchor="middle">${escapeHtml((skRestFor(s.rest)[0]||{}).lbl||s.rest).toUpperCase().slice(0,15)}</text>`;
+    svg+=`<text class="no" x="6" y="24">${String(s.n).padStart(2,'0')}</text>`;
+    if(s.name){ const parts=s.name.split(' '); svg+=`<text class="nm" x="6" y="42">${escapeHtml(parts[0].slice(0,10))}</text><text class="nm" x="6" y="55">${escapeHtml(parts.slice(1).join(' ').slice(0,10))}</text><text class="cs" x="6" y="70">${st>=0?escapeHtml(String(P[Math.min(st,P.length-1)].n).slice(0,12)):'—'}</text><g transform="translate(6,80)">`;
+      for(let k=0;k<P.length&&k<18;k++){ const cls=k<st?'d':k===st?'c':''; svg+=`<rect x="${(k%6)*8}" y="${Math.floor(k/6)*8}" width="6" height="6" class="pg ${cls}"/>`; }
+      svg+=`</g><text class="cs" x="6" y="112">${s.mar?'maridaje':'sin mar.'}${s.off?' · '+(s.off>0?'+':'')+s.off:''}</text>`; }
+    else svg+=`<text class="cs" x="${w/2}" y="64" text-anchor="middle">libre</text>`;
+    svg+=`</g>`; });
+  svg+=`</svg>`;
+  const ritmo=`<div class="skritmo">${P.map((p,i)=>`<div class="${i<sv.cur?'done':i===sv.cur?'cur':''}" title="${escapeHtml(p.n)}${p.min?' · '+p.min+'′':''}">${String(i+1).padStart(2,'0')}</div>`).join('')}</div>`;
+  const barCard=`<div class="card"><div class="head" style="cursor:default"><span class="ttl">La barra</span><span style="margin-left:auto;display:flex;gap:6px">${sv.closed?'':`<button class="btn ghost" onclick="skPrev()">‹ paso anterior</button><button class="btn" onclick="skNext()" ${sv.cur>=P.length-1?'disabled':''}>${sv.cur<0?'Empezar el servicio ›':'Toda la barra al paso siguiente ›'}</button>`}</span></div><div class="body">${ritmo}<div class="skcounter">${svg}</div>
+    <p class="note">Cada asiento muestra la progresión: azul servidos, dorado el que se está sirviendo. Banda roja = restricción cargada (se lee del CRM al sentar). El ritmo compara contra los "min. plan" de la carta 献立. Click en un asiento para sentar, ver sustituciones o mover sólo ese lugar.</p></div></div>`;
+  /* cuentas */
+  const G5={0:'',1:'g1',2:'g2',3:'g3',4:'g4'};
+  const split=`<div class="card"><div class="head" style="cursor:default"><span class="ttl">Cuentas y división</span><span class="tag mix" style="margin-left:8px">al cerrar → Analista 番付 y CRM 顧客</span></div><div class="body">
+    <div class="small muted">Tocá un asiento para rotarlo de grupo (individual → 1 → 2 → 3 → 4). Precios de lista c/IVA: menú ${fmt(skPrices(sv).menu)} desde Esquema${skPrices(sv).mar!=null?', maridaje '+fmt(skPrices(sv).mar):', maridaje sin precio cargado'}.</div>
+    <div class="sksplit" style="grid-template-columns:repeat(${n},1fr)">${sv.seats.map(s=>`<div class="${s.name?G5[s.grp]:'none'}" onclick="skCycleGrp(${s.n})" title="${escapeHtml(s.name||'libre')}">${String(s.n).padStart(2,'0')}</div>`).join('')}</div>
+    <table class="httbl" style="margin-top:10px"><thead><tr><th>Cuenta</th><th>Asientos</th><th class="num">Menú</th><th class="num">Maridaje</th><th class="num">Extras</th><th class="num">Total</th></tr></thead><tbody>
+    ${Object.entries(skGroups(sv)).sort((a,b)=>a[0].localeCompare(b[0])).map(([k,ss])=>{ const b=skBill(sv,ss); return `<tr><td>${k[0]==='g'?`<span class="skg ${G5[k[1]]}">grupo ${k[1]}</span>`:'<span class="muted">individual</span>'}</td><td class="mono small">${ss.map(s=>String(s.n).padStart(2,'0')).join(' ')}</td><td class="num">${fmt(b.menu)}</td><td class="num">${b.mar!=null?fmt(b.mar):(b.nm?'<span style="color:var(--warn)">'+b.nm+' × ?</span>':'—')}</td><td class="num">${b.ex?fmt(b.ex):'—'}</td><td class="num"><b>${fmt(b.total)}</b></td></tr>`; }).join('')||'<tr><td colspan="6" class="muted">Nadie sentado todavía.</td></tr>'}</tbody></table></div></div>`;
+  /* detalle */
+  let det='';
+  const s=skUI.sel?skSeat(skUI.sel):null;
+  if(!s) det=`<div class="card"><div class="body"><p class="note">Elegí un asiento en la barra.</p></div></div>`;
+  else if(!s.name){
+    const q=skUI.q.toLowerCase(); const hits=q?crm.clients.filter(c=>(c.name+' '+(c.phone||'')).toLowerCase().includes(q)).slice(0,8):[];
+    det=`<div class="card"><div class="body"><div class="small mono muted">asiento ${String(s.n).padStart(2,'0')}</div><h3 class="skh3">libre</h3>
+      <input type="text" placeholder="buscar en el CRM…" value="${escapeHtml(skUI.q)}" oninput="skUI.q=this.value;renderSeki();this.focus();this.setSelectionRange(this.value.length,this.value.length)">
+      <div class="skhits">${hits.map(c=>`<div onclick="skSit(${s.n},'${c.id}')"><b>${escapeHtml(c.name)}</b><span class="muted small">${crmVisitsOf(c.id).length} visitas${c.allerg?' · <i style=\"color:var(--vermilion)\">'+escapeHtml(c.allerg)+'</i>':''}</span></div>`).join('')}${q&&!hits.length?'<div class="muted small">Sin resultados en el CRM.</div>':''}</div>
+      <div style="display:flex;gap:6px;margin-top:8px"><button class="btn ghost" onclick="skWalkin(${s.n})">Walk-in sin ficha</button></div></div></div>`;
+  } else {
+    const st=skStep(sv,s); const hits=skRestFor(s.rest); const algs=new Set(hits.flatMap(h=>h.alg)); const c=s.client?crmById(s.client):null;
+    det=`<div class="card"><div class="body"><div class="small mono muted">asiento ${String(s.n).padStart(2,'0')}</div><h3 class="skh3">${escapeHtml(s.name)}</h3>
+      <div class="skmeta">${c?crmVisitsOf(c.id).length+' visitas previas':'walk-in'} · ${s.grp?'grupo '+s.grp:'cuenta individual'} · ${s.mar?'con maridaje':'sin maridaje'}${c?` · <a href="#" onclick="crmUI.sel='${c.id}';switchTab('crm');return false">ficha CRM →</a>`:''}</div>
+      <div class="skrestf"><input type="text" value="${escapeHtml(s.rest)}" placeholder="restricción o alergia (libre)" onchange="skSetRest(${s.n},this.value)">${s.rest?`<div class="skrest">⚠ ${hits.map(h=>h.lbl).join(' · ')||escapeHtml(s.rest)}${algs.size?' · pasos marcados <b>sust.</b> llevan alguno de: '+[...algs].join(', '):' · sin alérgeno reconocido: revisá a mano'}</div>`:''}</div>
+      <div class="skpace"><span class="v ${s.off?'late':''}">${s.off?(s.off>0?'+':'')+s.off+' paso'+(Math.abs(s.off)>1?'s':''):'al ritmo'}</span><span class="small muted">${s.off?'desfasado de la barra':'vs. barra'}</span></div>
+      <ul class="sksteps">${P.map((p,i)=>`<li class="${i<st?'done':i===st?'cur':''}"><div>${String(i+1).padStart(2,'0')} · ${escapeHtml(p.n)}${(p.alg||[]).some(a=>algs.has(a))?' <span class="tag bad">sust.</span>':''}</div><span>${p.min?p.min+'′':''}</span></li>`).join('')}</ul>
+      <div class="skbtns">${sv.closed?'':`<button class="btn" onclick="skSeatNext(${s.n})">Servir siguiente solo acá</button><button class="btn ghost" onclick="skSeatPrev(${s.n})">−1</button><button class="btn ghost" onclick="skTogMar(${s.n})">${s.mar?'Quitar maridaje':'+ Maridaje'}</button><button class="btn ghost" onclick="skExtra(${s.n})">+ Extra</button><button class="btn ghost" onclick="skNoteCRM(${s.n})">Nota al CRM</button><button class="btn ghost" style="color:var(--bad)" onclick="if(confirm('¿Vaciar el asiento?'))skClear(${s.n})">Vaciar</button>`}</div>
+      ${s.extras.length?`<div class="skex">${s.extras.map((e,i)=>`<div><span>${escapeHtml(e.n)}</span><span class="mono">${fmt(e.usd)} <a href="#" onclick="skSeat(${s.n}).extras.splice(${i},1);skPersist();renderSeki();return false">✕</a></span></div>`).join('')}</div>`:''}
+      <div class="skhist">${s.hist.slice(-8).map(h=>`<div><span>${escapeHtml(h.t)}</span><span class="mono">${new Date(h.at).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}</span></div>`).join('')}</div>
+    </div></div>`;
+  }
+  el.innerHTML=hdr+kpis+`<div class="skgrid"><div>${barCard}${split}</div><div>${det}</div></div>`;
+}
+
 async function loadMe(){
   try{
     const r=await fetch('/api/me');
@@ -8794,8 +9520,9 @@ Promise.all([
   loadGenka().then(()=>{ meEnsureMix(); }),
   loadCompras(), loadMermas(), loadFxlog(),
   loadCaja(), loadReservas(),
-  loadStock(), loadCRM(), loadAuth(), loadCierres(), loadAisho(), loadKata(), loadKataRuns(), loadWa(), loadDou(), loadShun(), loadZaiko(), loadOroshi()
-]).then(()=>{
+  loadStock(), loadCRM(), loadAuth(), loadCierres(), loadAisho(), loadKata(), loadKataRuns(), loadWa(), loadDou(), loadShun(), loadZaiko(), loadOroshi(),
+  loadKondate(), loadSeki()
+]).then(()=>loadHito()).then(()=>{          /* Hito después de auth+me: hitopay es admin-only y el rol decide */
   renderInputs(); renderOutputs();             /* re-render con la baseline real */
   loadScenarios();
   renderServiceList(); renderTurnos();         /* las métricas por servicio dependen de S */
