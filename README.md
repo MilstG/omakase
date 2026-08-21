@@ -1,13 +1,16 @@
 # Kanjō 勘定 — deployment en Railway
 
 Tablero financiero y operativo del omakase, con persistencia en **PostgreSQL**,
-sesiones firmadas y **dos roles aplicados por el servidor** (admin / staff).
+sesiones firmadas y **control de acceso por roles (RBAC) aplicado por el servidor**:
+cada persona entra con su usuario, y su rol define qué módulos ve y cuáles edita.
 
 ## Qué hay acá
 
 ```
-server.js          Express: estáticos + /api/storage + login por roles
-lib/db.js          Clave-valor versionado: Postgres (Railway) o data.json (local)
+server.js          Express: estáticos + /api/storage + login, usuarios y roles
+lib/rbac.js        LA POLÍTICA: módulos, qué clave pertenece a cuál, roles de fábrica
+lib/auth.js        Contraseñas (scrypt), caché de sesiones, siembra del primer admin
+lib/db.js          Clave-valor versionado + tablas users/roles: Postgres o data.json
 public/index.html  El tablero completo (kanjo v4, 11 tabs) con el shim inyectado
 public/shim.js     window.storage contra la API: login, versiones, conflictos 409
 public/login.html  Página de acceso (el tablero solo se sirve con sesión)
@@ -29,8 +32,9 @@ public/login.html  Página de acceso (el tablero solo se sirve con sesión)
 4. **Variables** (en el servicio web, *Variables*):
    | Variable | Valor |
    |---|---|
-   | `APP_PASSWORD_ADMIN` | contraseña del dueño (fuerte) |
-   | `APP_PASSWORD_STAFF` | contraseña del equipo (distinta) |
+   | `APP_PASSWORD_ADMIN` | contraseña inicial del usuario `admin`. **Solo se usa la primera vez**, para sembrarlo; después la contraseña vive hasheada en la base y esta variable no hace nada. |
+   | `APP_PASSWORD_STAFF` | opcional: si está, siembra un usuario `staff` con rol *Encargado* para no cortarle el acceso al equipo el día del deploy. Misma regla: solo cuenta en el primer arranque. |
+   | `LEGACY_LOGIN` | opcional: `off` desactiva el login sin usuario (solo contraseña). Ponelo cuando cada persona tenga la suya. |
    | `SESSION_SECRET` | **recomendada**: 64 caracteres al azar (`openssl rand -hex 32`). Si falta, se genera una efímera por proceso y las sesiones caen en cada deploy/restart. Nunca se deriva de las contraseñas. |
    | `OPENAI_API_KEY` | opcional: habilita ✦ Puntuar con IA en Maridaje 相性 (solo admin) |
    | `OPENAI_MODEL` | opcional, default `gpt-5.5`. El endpoint dispara pocas veces por mes: usá un modelo grande, cuesta centavos. Si el modelo rechaza `temperature` (razonadores), el servidor reintenta solo sin el parámetro. |
@@ -40,8 +44,9 @@ public/login.html  Página de acceso (el tablero solo se sirve con sesión)
    (Dominio propio: agregá el CNAME que Railway indica.)
 
 6. **Verificar.** `https://tu-dominio/healthz` debe responder `{"ok":true,"db":"postgres"}`.
-   Entrá al dominio: aparece el login de Kanjō. Con la contraseña admin ves todo;
-   con la de staff, solo los tabs habilitados.
+   Entrá al dominio: aparece el login. Usuario `admin` + `APP_PASSWORD_ADMIN`.
+   Si no definiste esa variable, el server imprime **una vez** en los logs de Railway
+   una contraseña de un solo uso — buscá la línea `[auth] usuarios iniciales creados`.
 
 ## Migrar los datos actuales
 
@@ -49,18 +54,63 @@ En la versión que venías usando: **Resumen 週報 → Administración → ⬇ 
 (baja un JSON). En la versión deployada, con sesión **admin**: **⬆ Restaurar** y elegí
 ese archivo. Listo — todo el historial pasa a Postgres.
 
-## Cómo funcionan los roles
+## Cómo funcionan los roles (RBAC)
 
-- La **contraseña define el rol** (el botón de roles del tablero queda informativo).
-- Staff puede **leer** todo lo que la app necesita para renderizar — con una excepción:
-  `kanjo:caja` (saldos y proyección de caja) es **admin-only también en lectura** —
-  y **escribir** las claves operativas: servicios, compras, mermas, TC, reservas,
-  clientes, stock, genka.
-- Staff **no puede escribir** (el servidor devuelve 403, aunque manipulen el navegador):
-  `kanjo:baseline` (esquema), `kanjo:scenarios`, `kanjo:caja`, `kanjo:auth` (permisos),
-  `kanjo:cierres`. Tampoco puede borrar claves ni listar.
-- La visibilidad de tabs se sigue configurando en *Resumen → Administración* y viaja
-  en `kanjo:auth` — que solo un admin puede modificar.
+**Una persona = un usuario.** El audit log dice quién hizo cada cosa, y dar de baja a
+alguien no obliga a cambiarle la contraseña a todo el equipo.
+
+**Un rol = una matriz módulo × acción.** Cada uno de los 20 tabs, más tres candados sin
+tab propio (*Cierre de mes 締*, *Sueldos y tarifas 給*, *Usuarios y backup 管*), tiene
+uno de tres estados:
+
+| | qué significa |
+|---|---|
+| `— no lo ve` | el tab no aparece y el servidor no entrega el dato |
+| `lo ve` | el tab aparece sin los controles de edición |
+| `lo edita` | acceso completo a ese módulo |
+
+Roles de fábrica: **Admin** (todo, y no se edita: es la salida de emergencia para que el
+tablero nunca quede sin quien lo administre), **Encargado**, **Cocina · itamae**,
+**Sala · sommelier** y **Contador · solo lectura**. Todos menos Admin se ajustan desde
+*Resumen 週報 → Administración → Permisos por rol*, y el cambio aplica sin que nadie
+vuelva a loguearse.
+
+**El servidor es la autoridad.** La política vive en `lib/rbac.js`, que mapea cada clave
+`kanjo:*` a su módulo. Esconder un tab no alcanza si la API igual entrega el dato, así que
+las claves sensibles están cerradas **también en lectura**: `kanjo:caja`, `kanjo:cierres`,
+`kanjo:hitopay` (sueldos) y `kanjo:crm` (datos personales de clientes). El resto se lee
+libremente porque la app las necesita para calcular, pero **escribir** siempre pide
+permiso sobre el módulo dueño de la clave. Aunque alguien manipule el navegador, el
+servidor devuelve 403.
+
+### Administrar el equipo
+
+*Resumen 週報 → Administración*:
+
+- **Usuarios** — alta, baja, cambio de rol y reseteo de contraseña. Cada usuario puede
+  ligarse a una persona del plantel de *Equipo 人*, para que el legajo y la llave sean
+  la misma cosa. La contraseña la genera el servidor y **se muestra una sola vez**: se
+  pasa a mano y la persona elige la suya al entrar. Nadie —ni el admin— puede volver a
+  verla; si se pierde, se genera otra.
+- **Permisos por rol** — la matriz de arriba.
+- **Actividad** — el audit log, ahora con la columna *Quién*.
+
+Dar de baja a alguien o cambiarle el rol **corta al instante sus sesiones abiertas**;
+no hay que esperar a que venza la cookie.
+
+### Migrar desde las contraseñas compartidas
+
+En el primer arranque con esta versión el server siembra los usuarios `admin` y `staff`
+con las contraseñas que ya tenías en las variables de entorno, así que **nadie queda
+afuera el día del deploy**. Después:
+
+1. Entrá como `admin` y creá un usuario por persona, con su rol.
+2. Cambiá tu propia contraseña (*Tu cuenta → Cambiar mi contraseña*).
+3. Borrá o dá de baja el usuario `staff`.
+4. Poné `LEGACY_LOGIN=off` en Railway y reiniciá, para cerrar el login sin usuario.
+
+(El login heredado también se apaga solo: deja de funcionar en cuanto esas dos cuentas
+cambian de contraseña.)
 
 ## Concurrencia
 
@@ -73,6 +123,8 @@ un aviso: *pisar con tu versión* o *recargar y traer lo último*. Sin pérdidas
 npm install
 APP_PASSWORD_ADMIN=admin123 APP_PASSWORD_STAFF=staff123 node server.js
 # → http://localhost:3000  (sin DATABASE_URL usa data.json)
+# Entrás con usuario `admin` y contraseña `admin123`.
+# Para empezar de cero: borrá data.json (ahí viven también usuarios y roles).
 ```
 
 ## Novedades v4
