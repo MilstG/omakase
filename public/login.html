@@ -1,5 +1,6 @@
 <!doctype html>
-<!-- Kanjō 勘定 — login. El tablero (index.html) solo se sirve con sesión válida. -->
+<!-- Kanjō 勘定 — login. El tablero (index.html) solo se sirve con sesión válida.
+     Dos pasos: entrar, y — si la contraseña es de un solo uso — elegir la propia. -->
 <html lang="es">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,30 +13,78 @@
   h1{font-family:'Zilla Slab',Georgia,serif;font-size:22px;font-weight:600;color:#26221c;margin:0}
   h1 span{color:#A87338}
   .sub{font-size:11.5px;color:#8a8377;margin:4px 0 18px}
+  label{display:block;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:#8a8377;margin:0 0 4px}
   input{width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #d8d2c4;border-radius:3px;font:13px 'JetBrains Mono',monospace;background:#fff;outline:none}
+  input:focus{border-color:#A87338}
+  .f{margin-bottom:10px}
   .err{font-size:11px;color:#A8392B;min-height:16px;margin-top:6px}
   button{width:100%;margin-top:8px;padding:10px;border:none;border-radius:3px;background:#26221c;color:#f4efe6;font:600 12.5px Inter,sans-serif;letter-spacing:.04em;cursor:pointer}
   button:disabled{opacity:.6;cursor:default}
+  .hint{font-size:11px;color:#8a8377;margin-top:12px;line-height:1.5}
 </style>
 <div class="box">
   <h1>Kanjō <span>勘定</span></h1>
-  <div class="sub">El tablero del omakase · ingresá tu contraseña</div>
-  <input id="pw" type="password" placeholder="Contraseña" autocomplete="current-password" autofocus>
-  <div class="err" id="err"></div>
-  <button id="go">Entrar</button>
+
+  <div id="step1">
+    <div class="sub">El tablero del omakase · entrá con tu usuario</div>
+    <div class="f"><label for="us">Usuario</label>
+      <input id="us" type="text" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" autofocus></div>
+    <div class="f"><label for="pw">Contraseña</label>
+      <input id="pw" type="password" autocomplete="current-password"></div>
+    <div class="err" id="err"></div>
+    <button id="go">Entrar</button>
+  </div>
+
+  <div id="step2" style="display:none">
+    <div class="sub">Primera entrada · elegí tu contraseña</div>
+    <div class="f"><label for="np">Contraseña nueva</label>
+      <input id="np" type="password" autocomplete="new-password" placeholder="mínimo 8 caracteres"></div>
+    <div class="f"><label for="np2">Repetila</label>
+      <input id="np2" type="password" autocomplete="new-password"></div>
+    <div class="err" id="err2"></div>
+    <button id="go2">Guardar y entrar</button>
+    <p class="hint">Nadie más ve esta contraseña — ni el admin, que solo puede volver a generarte una de un solo uso.</p>
+  </div>
 </div>
 <script>
-  const pw=document.getElementById('pw'), err=document.getElementById('err'), go=document.getElementById('go');
+  const $=id=>document.getElementById(id);
+  const us=$('us'), pw=$('pw'), err=$('err'), go=$('go');
+  let firstPw='';
+
   async function attempt(){
     err.textContent=''; go.disabled=true; go.textContent='…';
     try{
-      const r=await fetch('/api/login',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ password: pw.value }) });
-      if(r.ok){ location.replace('/'); return; }
-      err.textContent = r.status===429 ? 'Demasiados intentos: esperá unos minutos.' : 'Contraseña incorrecta.';
+      const r=await fetch('/api/login',{ method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ username: us.value.trim(), password: pw.value }) });
+      if(r.ok){
+        const j=await r.json();
+        if(j.session && j.session.mustChange){ firstPw=pw.value; showStep2(); return; }
+        location.replace('/'); return;
+      }
+      err.textContent = r.status===429 ? 'Demasiados intentos: esperá unos minutos.' : 'Usuario o contraseña incorrectos.';
     }catch(e){ err.textContent='No se pudo conectar con el servidor.'; }
     go.disabled=false; go.textContent='Entrar'; pw.select();
   }
   go.addEventListener('click', attempt);
-  pw.addEventListener('keydown', e=>{ if(e.key==='Enter') attempt(); });
+  [us,pw].forEach(el=>el.addEventListener('keydown', e=>{ if(e.key==='Enter') attempt(); }));
+
+  function showStep2(){ $('step1').style.display='none'; $('step2').style.display=''; setTimeout(()=>$('np').focus(),50); }
+  const np=$('np'), np2=$('np2'), err2=$('err2'), go2=$('go2');
+  async function change(){
+    err2.textContent='';
+    if(np.value.length<8){ err2.textContent='Mínimo 8 caracteres.'; return; }
+    if(np.value!==np2.value){ err2.textContent='No coinciden.'; return; }
+    go2.disabled=true; go2.textContent='…';
+    try{
+      const r=await fetch('/api/password',{ method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ current:firstPw, next:np.value }) });
+      if(r.ok){ location.replace('/'); return; }
+      const j=await r.json().catch(()=>({}));
+      err2.textContent = j.error==='password_too_short' ? 'Mínimo 8 caracteres.' : 'No se pudo cambiar. Volvé a entrar.';
+    }catch(e){ err2.textContent='No se pudo conectar con el servidor.'; }
+    go2.disabled=false; go2.textContent='Guardar y entrar';
+  }
+  go2.addEventListener('click', change);
+  [np,np2].forEach(el=>el.addEventListener('keydown', e=>{ if(e.key==='Enter') change(); }));
 </script>
 </html>

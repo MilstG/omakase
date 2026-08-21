@@ -351,7 +351,16 @@
   .tglab{font-family:'Inter',sans-serif;font-size:9.5px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-soft);width:96px;flex:none;padding-right:8px}
   @media(max-width:640px){.tglab{width:100%;padding:2px 0 1px}}
   .tab[data-hidden="1"]{display:none}
-  body.staff .adminonly{display:none!important}
+  body.staff .adminonly{display:none!important}          /* sesión sin permisos de administración */
+  .tabpanel.ro .adminonly{display:none!important}        /* módulo que esta sesión solo puede mirar */
+  /* administración: el subtítulo de cada usuario y de cada módulo va en su propia línea */
+  #kjUsersBox .gcat,#kjRolesBox .gcat{display:block;font-size:9.5px;font-weight:400;color:var(--ink-soft);letter-spacing:0}
+  /* la columna lateral es angosta: cada usuario ocupa dos renglones, nombre arriba y controles abajo */
+  #kjUsersBox .svrow{display:block;padding:8px 0}
+  #kjUsersBox .kjuctl{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+  #kjUsersBox .kjuctl select,#kjUsersBox .kjuctl input{flex:1 1 118px;min-width:0;max-width:100%}
+  #kjUsersBox .kjuctl button{margin:0;flex:0 0 auto}
+  #kjRolesBox .ystat span{line-height:1.35}
   .navutils{margin-left:auto;display:flex;align-items:center;gap:4px}
   .roletab{background:none;border:1px solid transparent;border-radius:2px;font-family:'Inter',sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);cursor:pointer;padding:5px 9px;white-space:nowrap}
   .roletab:hover{color:var(--ink);background:var(--panel);border-color:var(--rule)}
@@ -5587,101 +5596,218 @@ function renderCRM(){
 }
 
 /* =====================================================================
-   ROLES · admin/staff con PIN + visibilidad por módulo + backup total
-   Control operativo del lado del cliente: la aplicación real de permisos
-   llega con el servidor (Railway). Esto ordena quién ve qué en el local.
+   RBAC · la sesión del servidor manda
+   El servidor dice quién sos, con qué rol, y qué puede hacer ese rol en
+   cada módulo: none (no lo ve) · read (lo ve) · write (lo edita).
+   Todo lo de acá abajo es pintura: oculta tabs y saca botones para que
+   nadie choque contra un 403. La seguridad real vive en lib/rbac.js —
+   aunque alguien fuerce el navegador, el servidor no le escribe.
    ===================================================================== */
 const TAB_LABELS={ resumen:'Resumen 週報', costos:'Esquema 勘定', turnos:'Turnos 番付', heika:'Precios 平価', yoso:'Pronóstico 予想', genka:'Costeo 原価', aisho:'Maridaje 相性', compras:'Compras 仕入', oroshi:'Proveedores 卸', caja:'Caja 現金', reservas:'Reservas 予約', crm:'Clientes 顧客', kata:'Manual 型', wa:'Rueda 輪', dou:'Procedimientos 道', shun:'Estacionalidad 旬', zaiko:'Inventario 在庫', hito:'Equipo 人', kondate:'Carta 献立', seki:'Servicio 席' };
-let auth={ pin:'', algo:'', modules:{} };
-function authDefaults(){ return { resumen:'staff', costos:'admin', turnos:'staff', heika:'admin', yoso:'admin', genka:'staff', aisho:'staff', compras:'staff', oroshi:'staff', caja:'admin', reservas:'staff', crm:'staff', kata:'staff', wa:'staff', hito:'staff', kondate:'admin', seki:'staff' }; }
-function authEnsure(a){
-  const d={ pin:'', algo:'', modules:authDefaults() };
-  if(!a||typeof a!=='object') return d;
-  a=Object.assign({},d,a);
-  a.modules=Object.assign({},authDefaults(),a.modules||{});
-  return a;
+const KJ_LVL={ none:0, read:1, write:2 };
+function kjSession(){ return window.KANJO_SESSION || null; }
+function kjModules(){ return window.KANJO_MODULES || []; }
+function kjModLabel(m){ const x=kjModules().find(y=>y.id===m); return (x&&x.label) || TAB_LABELS[m] || m; }
+/* Sin servidor (abrir el html suelto) no hay a quién preguntarle: no estorbar. */
+function kjPerm(mod){
+  const s=kjSession();
+  if(!s) return 'write';
+  if(s.isAdmin) return 'write';
+  return (s.perms && s.perms[mod]) || 'none';
 }
-function authPersist(){ persistSafe('kanjo:auth', auth); }
-async function loadAuth(){ auth=authEnsure(null); await kjLoadKey('kanjo:auth', v=>{ auth=authEnsure(v); }); }
+function kjR(mod){ return KJ_LVL[kjPerm(mod)]>=1; }
+function kjW(mod){ return KJ_LVL[kjPerm(mod)]>=2; }
+function kjIsAdmin(){ const s=kjSession(); return s? !!s.isAdmin : true; }
+function kjCanAdmin(){ return kjW('admin'); }
+function kjWho(){ const s=kjSession(); return s? (s.name||s.username) : ''; }
+/* Un solo aviso para todo el tablero cuando alguien intenta editar lo que
+   solo puede mirar. Devuelve false para poder escribir `if(!kjNeed(...)) return;` */
+function kjNeed(mod, what){
+  if(kjW(mod)) return true;
+  flash((what||'Eso')+' no lo edita tu rol — '+kjModLabel(mod)+' está en solo lectura');
+  return false;
+}
 
-async function kjHash(s){
-  try{
-    if(window.crypto && crypto.subtle){
-      const buf=await crypto.subtle.digest('SHA-256', new TextEncoder().encode('kanjo·'+s));
-      return { algo:'sha256', hash:[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('') };
-    }
-  }catch(e){}
-  let h=5381; const t='kanjo·'+s; for(let i=0;i<t.length;i++) h=((h<<5)+h+t.charCodeAt(i))>>>0;
-  return { algo:'djb2', hash:h.toString(16) };
-}
-let kjMemRole=null;   /* fallback si sessionStorage no está disponible */
-function kjRoleGet(){ try{ return sessionStorage.getItem('kanjoRole'); }catch(e){ return kjMemRole; } }
-function kjRoleSet(v){ kjMemRole=v; try{ if(v==null) sessionStorage.removeItem('kanjoRole'); else sessionStorage.setItem('kanjoRole',v); }catch(e){} }
-function kjIsAdmin(){
-  if(window.KANJO_SERVER_ROLE==='staff') return false;   /* el rol del servidor manda */
-  if(window.KANJO_SERVER_ROLE==='admin') return true;
-  if(!auth.pin) return true;                       /* sin PIN configurado, todos ven todo */
-  return kjRoleGet()==='admin';
-}
-async function kjSetPin(){
-  const p1=window.prompt('Nuevo PIN de administración (mínimo 4 caracteres):'); if(p1==null) return;
-  if(p1.length<4){ flash('Muy corto: mínimo 4 caracteres'); return; }
-  const p2=window.prompt('Repetilo para confirmar:'); if(p2!==p1){ flash('No coinciden'); return; }
-  const h=await kjHash(p1);
-  auth.pin=h.hash; auth.algo=h.algo; authPersist();
-  kjRoleSet('admin');
-  flash('PIN configurado ✓ — sos admin en esta sesión');
-  applyRoles(); renderResumen();
-}
-async function kjClearPin(){
-  const p=window.prompt('PIN actual para desactivar el control:'); if(p==null) return;
-  const h=await kjHash(p);
-  if(h.hash!==auth.pin){ flash('PIN incorrecto'); return; }
-  auth.pin=''; auth.algo=''; authPersist();
-  kjRoleSet(null);
-  flash('Control desactivado: todos ven todo');
-  applyRoles(); renderResumen();
-}
 async function kjRoleToggle(){
-  if(window.KANJO_SERVER_ROLE){
-    if(window.KANJO_SERVER_ROLE==='admin'){
-      switchTab('resumen');
-      setTimeout(()=>{ const el=document.getElementById('kjAdminPanel'); if(el){ try{ el.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){ el.scrollIntoView(); } } },150);
-      flash('Sos admin — acá elegís qué tabs ve el staff');
-    } else {
-      flash('Sos staff: el rol lo define la contraseña de acceso. Para entrar como admin, salí (⎋) y volvé a entrar con la otra contraseña.');
-    }
-    return;
-  }
-  if(!auth.pin){ flash('Sin PIN no hay roles: configuralo en Resumen → Administración'); switchTab('resumen'); return; }
-  if(kjIsAdmin()){
-    kjRoleSet(null);
-    flash('Modo staff'); applyRoles(); return;
-  }
-  const p=window.prompt('PIN de administración:'); if(p==null) return;
-  const h=await kjHash(p);
-  if(h.hash===auth.pin){ kjRoleSet('admin'); flash('Modo admin ✓'); applyRoles(); }
-  else flash('PIN incorrecto');
+  const s=kjSession();
+  if(!s){ flash('Sin sesión de servidor: el tablero está abierto sin control de acceso'); return; }
+  switchTab('resumen');
+  setTimeout(()=>{ const el=document.getElementById('kjAdminPanel')||document.getElementById('kjMePanel');
+    if(el){ try{ el.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){ el.scrollIntoView(); } } },150);
+  flash(s.name+' · '+(s.roleName||s.role)+(s.isAdmin?' — administrás el tablero':''));
 }
-function kjSetModuleRole(tab, role){ auth.modules[tab]=role; authPersist(); applyRoles(); renderResumen(); }
 function applyRoles(){
-  const admin=kjIsAdmin();
-  document.body.classList.toggle('staff', !admin);
-  let activeHidden=false, firstVisible=null, activeTab=null;
+  const s=kjSession();
+  document.body.classList.toggle('staff', !kjCanAdmin());
+  let activeHidden=false, firstVisible=null;
   document.querySelectorAll('.tab').forEach(b=>{
     const t=b.dataset.tab; if(!t) return;
-    const hide=(auth.modules[t]==='admin') && !admin;
+    const hide=!kjR(t);
     b.dataset.hidden=hide?'1':'0';
     if(!hide && !firstVisible) firstVisible=t;
-    if(b.classList.contains('active')){ activeTab=t; if(hide) activeHidden=true; }
+    if(b.classList.contains('active') && hide) activeHidden=true;
+  });
+  /* módulo que la sesión solo puede mirar → el panel pierde sus controles */
+  document.querySelectorAll('.tabpanel').forEach(p=>{
+    const t=(p.id||'').replace(/^tab-/,'');
+    p.classList.toggle('ro', !!t && !kjW(t));
   });
   const rb=document.getElementById('roleBtn');
-  if(rb) rb.textContent = window.KANJO_SERVER_ROLE
-    ? (window.KANJO_SERVER_ROLE==='admin' ? '⚙ admin' : 'staff')
-    : (!auth.pin ? '⚙ roles' : (admin?'admin ▾':'staff ▸'));
+  if(rb){
+    rb.textContent = s? ((s.isAdmin?'⚙ ':'')+(s.name||s.username)) : '⚙ roles';
+    rb.title = s? ((s.roleName||s.role)+' · '+s.username) : '';
+  }
   const lb=document.getElementById('logoutBtn');
-  if(lb) lb.style.display = window.KANJO_SERVER_ROLE ? '' : 'none';
+  if(lb) lb.style.display = s? '' : 'none';
   if(activeHidden && firstVisible) switchTab(firstVisible);
+}
+
+/* =====================================================================
+   RBAC · panel de cuenta, usuarios y matriz de permisos
+   ===================================================================== */
+const kjAdm={ users:null, roles:null, modules:null, legacyLogin:false, openRole:null };
+
+async function kjApi(method, url, body){
+  const r=await fetch(url,{ method, headers: body?{'Content-Type':'application/json'}:undefined,
+    body: body?JSON.stringify(body):undefined });
+  let j={}; try{ j=await r.json(); }catch(e){}
+  if(!r.ok){ const e=new Error(j.error||('http_'+r.status)); e.status=r.status; e.data=j; throw e; }
+  return j;
+}
+const KJ_ERR={ username_taken:'Ese usuario ya existe', bad_username:'Usuario inválido: 3 a 32 caracteres, letras, números, punto, guion o guion bajo',
+  bad_name:'Falta el nombre', bad_role:'Rol inexistente', last_admin:'Es el único admin activo: primero designá otro',
+  self_delete:'No podés borrarte a vos mismo', role_in_use:'Hay usuarios con ese rol', builtin_role:'Los roles de fábrica no se borran',
+  admin_role_locked:'El rol admin no se edita: es dueño de todo por definición', bad_current_password:'La contraseña actual no coincide',
+  password_too_short:'Mínimo 8 caracteres', exists:'Ya existe un rol con ese id', bad_id:'Id inválido' };
+const kjErr = e => KJ_ERR[e && e.message] || ('No se pudo completar ('+((e&&e.message)||'error')+')');
+
+async function kjMyPassword(){
+  const cur=window.prompt('Tu contraseña actual:'); if(cur==null) return;
+  const n1=window.prompt('Contraseña nueva (mínimo 8 caracteres):'); if(n1==null) return;
+  if(n1.length<8){ flash('Mínimo 8 caracteres'); return; }
+  const n2=window.prompt('Repetila para confirmar:'); if(n2!==n1){ flash('No coinciden'); return; }
+  try{ await kjApi('POST','/api/password',{ current:cur, next:n1 }); flash('Contraseña cambiada ✓ — las otras sesiones se cerraron'); }
+  catch(e){ flash(kjErr(e)); }
+}
+
+async function kjUsersLoad(){
+  const box=document.getElementById('kjUsersBox'); if(!box) return;
+  box.innerHTML='<div class="svempty">Cargando…</div>';
+  try{
+    const [u,r]=await Promise.all([ kjApi('GET','/api/users'), kjApi('GET','/api/roles') ]);
+    kjAdm.users=u.users; kjAdm.legacyLogin=!!u.legacyLogin;
+    kjAdm.roles=r.roles; kjAdm.modules=r.modules;
+    kjUsersRender();
+  }catch(e){ box.innerHTML='<div class="svempty">No se pudo leer la lista de usuarios ('+escapeHtml((e&&e.message)||'')+')</div>'; }
+}
+/* El plantel de Hito 人 es la fuente de los nombres: un usuario es una
+   persona del legajo con llave propia, no un alias suelto. */
+function kjPeopleOpts(sel){
+  const ps=(typeof HT==='object'&&HT&&Array.isArray(HT.people))? HT.people.filter(p=>p.active!==false) : [];
+  return '<option value="">— sin ligar al legajo —</option>'+
+    ps.map(p=>`<option value="${p.id}"${p.id===sel?' selected':''}>${escapeHtml(p.name||p.n||p.id)}</option>`).join('');
+}
+function kjUsersRender(){
+  const box=document.getElementById('kjUsersBox'); if(!box) return;
+  const roleOpts=(sel)=>kjAdm.roles.map(r=>`<option value="${r.id}"${r.id===sel?' selected':''}>${escapeHtml(r.name)}</option>`).join('');
+  const rows=kjAdm.users.map(u=>`
+    <div class="svrow"${u.active?'':' style="opacity:.55"'}>
+      <b>${escapeHtml(u.name)}</b>${u.active?'':' <span class="tag">de baja</span>'}
+      <span class="gcat">${escapeHtml(u.username)}${u.mustChange?' · contraseña sin estrenar':''}${u.lastLogin?' · último ingreso '+String(u.lastLogin).slice(0,10):' · nunca entró'}</span>
+      <div class="kjuctl">
+        <select class="sel" title="Rol" onchange="kjUserPatch('${u.id}',{roleId:this.value})">${roleOpts(u.roleId)}</select>
+        <select class="sel" title="Ligar al plantel de Hito 人" onchange="kjUserPatch('${u.id}',{personId:this.value||null})">${kjPeopleOpts(u.personId)}</select>
+        <button class="gkadd" title="Genera una contraseña de un solo uso" onclick="kjUserReset('${u.id}')">↻ clave</button>
+        <button class="gkadd" onclick="kjUserPatch('${u.id}',{active:${u.active?'false':'true'}})">${u.active?'Dar de baja':'Reactivar'}</button>
+        <button class="gkadd" title="Borrar del todo" onclick="kjUserDelete('${u.id}')">✕</button>
+      </div>
+    </div>`).join('');
+  const legacy = kjAdm.legacyLogin
+    ? `<div class="alert warn" style="margin:8px 0">Todavía se puede entrar <b>sin usuario</b>, solo con la contraseña heredada (cuentas <code>admin</code> y <code>staff</code>). Cuando cada uno tenga la suya, poné <code>LEGACY_LOGIN=off</code> en las variables de Railway y reiniciá.</div>` : '';
+  box.innerHTML=`${legacy}
+    <div class="svlist">${rows||'<div class="svempty">No hay usuarios.</div>'}</div>
+    <div class="hslab" style="margin-top:12px"><span>Nuevo usuario</span></div>
+    <div class="kjuctl" style="margin-top:6px">
+      <input class="sel" id="kjNewUser" placeholder="usuario" autocapitalize="off" spellcheck="false">
+      <input class="sel" id="kjNewName" placeholder="Nombre y apellido">
+      <select class="sel" id="kjNewRole" title="Rol">${roleOpts('sala')}</select>
+      <select class="sel" id="kjNewPerson" title="Ligar al plantel de Hito 人">${kjPeopleOpts('')}</select>
+      <button class="gkadd" onclick="kjUserCreate()">Crear</button>
+    </div>
+    <p class="desc" style="margin:8px 0 0">La contraseña la genera el servidor y se muestra <b>una sola vez</b>: pasásela a mano y la persona elige la suya al entrar. Ni vos ni nadie puede volver a verla.</p>`;
+}
+async function kjUserCreate(){
+  const g=id=>document.getElementById(id);
+  const username=(g('kjNewUser').value||'').trim().toLowerCase();
+  const name=(g('kjNewName').value||'').trim();
+  if(!username||!name){ flash('Faltan usuario y nombre'); return; }
+  try{
+    const j=await kjApi('POST','/api/users',{ username, name, roleId:g('kjNewRole').value, personId:g('kjNewPerson').value||null });
+    window.alert('Usuario «'+j.username+'» creado.\n\nContraseña de un solo uso:\n\n    '+j.password+'\n\nPasásela a mano. No se vuelve a mostrar: si se pierde, generá otra.');
+    await kjUsersLoad();
+  }catch(e){ flash(kjErr(e)); }
+}
+async function kjUserPatch(id, patch){
+  try{ await kjApi('PATCH','/api/users/'+encodeURIComponent(id), patch); flash('Actualizado ✓'); await kjUsersLoad(); }
+  catch(e){ flash(kjErr(e)); await kjUsersLoad(); }
+}
+async function kjUserReset(id){
+  const u=(kjAdm.users||[]).find(x=>x.id===id);
+  if(!window.confirm('Generar una contraseña nueva para «'+((u&&u.name)||id)+'»? Se le cierran todas las sesiones abiertas.')) return;
+  try{
+    const j=await kjApi('POST','/api/users/'+encodeURIComponent(id)+'/password');
+    window.alert('Contraseña de un solo uso para «'+j.username+'»:\n\n    '+j.password+'\n\nNo se vuelve a mostrar.');
+    await kjUsersLoad();
+  }catch(e){ flash(kjErr(e)); }
+}
+async function kjUserDelete(id){
+  const u=(kjAdm.users||[]).find(x=>x.id===id);
+  if(!window.confirm('Borrar a «'+((u&&u.name)||id)+'»? Si solo querés que no entre más, mejor dale de baja: el audit log conserva el nombre igual.')) return;
+  try{ await kjApi('DELETE','/api/users/'+encodeURIComponent(id)); flash('Usuario borrado'); await kjUsersLoad(); }
+  catch(e){ flash(kjErr(e)); }
+}
+
+async function kjRolesLoad(){
+  const box=document.getElementById('kjRolesBox'); if(!box) return;
+  box.innerHTML='<div class="svempty">Cargando…</div>';
+  try{
+    const r=await kjApi('GET','/api/roles');
+    kjAdm.roles=r.roles; kjAdm.modules=r.modules;
+    kjRolesRender();
+  }catch(e){ box.innerHTML='<div class="svempty">No se pudo leer la matriz ('+escapeHtml((e&&e.message)||'')+')</div>'; }
+}
+function kjRolesRender(){
+  const box=document.getElementById('kjRolesBox'); if(!box) return;
+  const editable=kjAdm.roles.filter(r=>!r.isAdmin);
+  if(!kjAdm.openRole && editable.length) kjAdm.openRole=editable[0].id;
+  const tabs=editable.map(r=>`<button class="doucat${r.id===kjAdm.openRole?' on':''}" onclick="kjAdm.openRole='${r.id}';kjRolesRender()">${escapeHtml(r.name)}</button>`).join('');
+  const role=kjAdm.roles.find(r=>r.id===kjAdm.openRole);
+  if(!role){ box.innerHTML='<div class="svempty">Solo existe el rol admin.</div>'; return; }
+  const cell=(m,v,label)=>`<option value="${v}"${(role.perms||{})[m.id]===v?' selected':''}>${label}</option>`;
+  const rows=(kjAdm.modules||[]).map(m=>`
+    <div class="ystat"><span>${escapeHtml(m.label)}${m.pseudo?'<span class="gcat">'+escapeHtml(m.hint||'')+'</span>':''}</span>
+      <b><select class="sel" onchange="kjRoleSetPerm('${m.id}',this.value)">
+        ${cell(m,'none','— no lo ve')}${cell(m,'read','lo ve')}${cell(m,'write','lo edita')}
+      </select></b></div>`).join('');
+  box.innerHTML=`
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">${tabs}</div>
+    <p class="desc" style="margin:0 0 8px">${escapeHtml(role.hint||'')}</p>
+    <div class="ystate">${rows}</div>
+    <div style="margin-top:8px"><button class="gkadd" style="margin:0" onclick="kjRoleSave()">Guardar «${escapeHtml(role.name)}»</button></div>
+    <p class="desc" style="margin:8px 0 0">Un cambio acá aplica sin que nadie vuelva a loguearse. El rol <b>admin</b> no aparece: es dueño de todo por definición, para que el tablero nunca quede sin quien lo administre.</p>`;
+}
+function kjRoleSetPerm(mod, v){
+  const role=kjAdm.roles.find(r=>r.id===kjAdm.openRole); if(!role) return;
+  role.perms=role.perms||{}; role.perms[mod]=v;
+}
+async function kjRoleSave(){
+  const role=kjAdm.roles.find(r=>r.id===kjAdm.openRole); if(!role) return;
+  try{
+    await kjApi('PUT','/api/roles/'+encodeURIComponent(role.id),{ name:role.name, hint:role.hint, perms:role.perms });
+    flash('Permisos de «'+role.name+'» guardados ✓');
+    /* si me tocó a mí mismo, refrescar la sesión y repintar */
+    try{ const j=await kjApi('GET','/api/me'); window.KANJO_SESSION=j.session; window.KANJO_MODULES=j.modules; applyRoles(); }catch(e){}
+  }catch(e){ flash(kjErr(e)); }
 }
 async function kjLogout(){
   const ok=window.confirm ? window.confirm('¿Cerrar sesión en este dispositivo?') : true;
@@ -5691,7 +5817,9 @@ async function kjLogout(){
 }
 
 /* ---- backup / restore total ---- */
-const KANJO_KEYS=['kanjo:baseline','kanjo:scenarios','kanjo:services','kanjo:fchealth','kanjo:genka','kanjo:compras','kanjo:mermas','kanjo:fxlog','kanjo:caja','kanjo:reservas','kanjo:stock','kanjo:crm','kanjo:auth','kanjo:cierres','kanjo:aisho','kanjo:kata','kanjo:kataruns','kanjo:dou','kanjo:shun','kanjo:zaiko'];
+/* el backup cubre TODAS las claves de la app; las que el rol no pueda leer
+   o escribir se saltean solas (el servidor devuelve 403 y se ignora) */
+const KANJO_KEYS=['kanjo:baseline','kanjo:scenarios','kanjo:services','kanjo:fchealth','kanjo:genka','kanjo:compras','kanjo:mermas','kanjo:fxlog','kanjo:caja','kanjo:reservas','kanjo:stock','kanjo:crm','kanjo:auth','kanjo:cierres','kanjo:aisho','kanjo:kata','kanjo:kataruns','kanjo:dou','kanjo:shun','kanjo:zaiko','kanjo:oroshi','kanjo:wa','kanjo:hito','kanjo:hitopay','kanjo:hitopunch','kanjo:kondate','kanjo:seki'];
 async function kjBackup(){
   const data={};
   for(const k of KANJO_KEYS){
@@ -5838,34 +5966,42 @@ function renderResumen(){
 
   /* navegación */
   const nav=`<div class="panel"><h3>Ir a</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">${
-    Object.entries(TAB_LABELS).filter(([t])=>t!=='resumen' && !(auth.modules[t]==='admin'&&!kjIsAdmin())).map(([t,l])=>
+    Object.entries(TAB_LABELS).filter(([t])=>t!=='resumen' && kjR(t)).map(([t,l])=>
       `<button class="gkadd" style="margin:0" onclick="switchTab('${t}')">${l}</button>`).join('')}</div></div>`;
 
-  /* administración (solo admin; sin PIN, todos son admin) */
+  /* tu cuenta — lo ve cualquiera que tenga sesión */
+  const S_=kjSession();
+  const meCard = S_ ? `<div class="panel" id="kjMePanel"><h3>Tu cuenta</h3>
+      <div class="ystate"><div class="ystat"><span>${escapeHtml(S_.name||S_.username)}</span><b>${escapeHtml(S_.roleName||S_.role)}</b></div></div>
+      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+        <button class="gkadd" style="margin:0" onclick="kjMyPassword()">Cambiar mi contraseña</button>
+        <button class="gkadd" style="margin:0" onclick="kjLogout()">⎋ Salir</button>
+      </div>
+      <p class="desc" style="margin:8px 0 0">Cada cambio que guardás queda firmado con tu nombre en el registro de actividad.</p></div>` : '';
+
+  /* administración: usuarios, permisos, backup y audit log */
   let adminCard='';
-  if(kjIsAdmin()){
-    const mrows=Object.entries(TAB_LABELS).map(([t,l])=>`<div class="ystat"><span>${l}</span><b><select class="sel" onchange="kjSetModuleRole('${t}',this.value)">
-      <option value="staff"${auth.modules[t]!=='admin'?' selected':''}>staff</option>
-      <option value="admin"${auth.modules[t]==='admin'?' selected':''}>solo admin</option></select></b></div>`).join('');
-    const srv=window.KANJO_SERVER_ROLE;
-    adminCard=`<div class="panel adminonly" id="kjAdminPanel"><h3>Administración</h3>
-      <p class="note">${srv? 'El rol lo define la <b>contraseña de acceso</b> (esta sesión: <b>'+srv+'</b>) — el servidor lo aplica en cada escritura. Abajo elegís qué tabs ve una sesión staff.' : (auth.pin? 'PIN activo. El botón <b>'+(kjIsAdmin()?'admin':'staff')+'</b> arriba a la derecha cambia de modo.' : '<b>Sin PIN configurado:</b> todos ven todo. Configurá un PIN y elegí qué tabs ve el staff.')}</p>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0">
-        ${srv?'':`<button class="gkadd" style="margin:0" onclick="kjSetPin()">${auth.pin?'Cambiar PIN':'Configurar PIN'}</button>`}
-        ${!srv&&auth.pin?'<button class="gkadd" style="margin:0" onclick="kjClearPin()">Desactivar</button>':''}
+  if(kjCanAdmin()){
+    adminCard=`<div class="panel" id="kjAdminPanel"><h3>Administración</h3>
+      <p class="note">Cada persona entra con su usuario y su contraseña. El <b>rol</b> decide qué módulos ve y cuáles edita, y el servidor lo aplica en cada lectura y escritura — aunque alguien manipule el navegador.</p>
+      <div class="hslab" style="margin-top:10px"><span>Usuarios</span></div>
+      <div style="margin:6px 0 8px"><button class="gkadd" style="margin:0" onclick="kjUsersLoad()">Ver y administrar usuarios</button></div>
+      <div id="kjUsersBox"></div>
+      <div class="hslab" style="margin-top:12px"><span>Permisos por rol</span></div>
+      <div style="margin:6px 0 8px"><button class="gkadd" style="margin:0" onclick="kjRolesLoad()">Abrir la matriz</button></div>
+      <div id="kjRolesBox"></div>
+      <div class="hslab" style="margin-top:12px"><span>Actividad (audit log del servidor)</span></div>
+      <div style="margin:6px 0 10px"><button class="gkadd" style="margin:0" onclick="kjAuditLoad()">Ver actividad reciente</button></div>
+      <div id="kjAuditBox"></div>
+      <div class="hslab" style="margin-top:12px"><span>Backup total</span></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0">
         <button class="gkadd" style="margin:0" onclick="kjBackup()">⬇ Backup total</button>
         <button class="gkadd" style="margin:0" onclick="kjRestorePick()">⬆ Restaurar</button>
         <input type="file" id="kjRestoreFile" accept="application/json" style="display:none" onchange="kjRestoreFile(this)">
-      </div>
-      <div class="hslab"><span>Actividad (audit log del servidor)</span></div>
-      <div style="margin:6px 0 10px"><button class="gkadd" style="margin:0" onclick="kjAuditLoad()">Ver actividad reciente</button></div>
-      <div id="kjAuditBox"></div>
-      <div class="hslab" style="margin-top:12px"><span>Visibilidad por módulo</span></div>
-      <div class="ystate" style="margin-top:6px">${mrows}</div>
-      <p class="desc" style="margin:8px 0 0">${srv? 'La visibilidad ordena qué ve cada uno; la seguridad real la aplica el servidor: staff no puede leer caja ni cierres, ni escribir el esquema, escenarios o permisos — aunque manipule el navegador.' : 'Control operativo del lado del navegador: ordena qué ve cada uno en el local, pero no es seguridad criptográfica — la aplicación real de permisos llega con el servidor.'}</p></div>`;
+      </div></div>`;
   }
 
-  side.innerHTML=insHtml+nav+adminCard;
+  side.innerHTML=insHtml+nav+meCard+adminCard;
 }
 
 
@@ -5930,9 +6066,9 @@ function kjReabrirMes(mk){
   delete cierres[mk]; ciPersist(); flash('Mes reabierto'); renderResumen();
 }
 function kjCierresHtml(){
-  if(kjLoad.fail['kanjo:cierres']) return '';   /* staff sin permiso de lectura: panel oculto */
+  if(kjLoad.fail['kanjo:cierres'] || !kjR('cierres')) return '';   /* sin permiso de lectura: panel oculto */
   const keys=Object.keys(cierres).sort().reverse();
-  const admin=kjIsAdmin();
+  const admin=kjW('cierres');
   const opts=kjCierreMonths();
   const action = admin? `<div class="adminonly" style="display:flex;gap:6px;align-items:center;margin-bottom:10px">
       <select id="ciMonth" class="sel">${opts.map(m=>`<option value="${m}">${monthLabel(m)}</option>`).join('')}</select>
@@ -5966,8 +6102,8 @@ async function kjAuditLoad(){
     if(!r.ok) throw new Error(String(r.status));
     const j=await r.json();
     if(!j.entries || !j.entries.length){ box.innerHTML='<div class="svempty">Sin actividad registrada todavía.</div>'; return; }
-    box.innerHTML='<div style="overflow-x:auto"><table class="gkins"><thead><tr><th style="text-align:left">Cuándo</th><th>Rol</th><th>Acción</th><th style="text-align:left">Clave</th><th>Versión</th></tr></thead><tbody>'+
-      j.entries.map(e=>`<tr><td style="text-align:left">${escapeHtml((e.ts||'').replace('T',' ').slice(0,16))}</td><td>${escapeHtml(e.role||'—')}</td><td>${escapeHtml(e.action||'')}</td><td style="text-align:left">${escapeHtml((e.key||'').replace('kanjo:',''))}</td><td>${e.to_version!=null? (e.from_version!=null? e.from_version+'→'+e.to_version : 'v'+e.to_version) : '—'}</td></tr>`).join('')+
+    box.innerHTML='<div style="overflow-x:auto"><table class="gkins"><thead><tr><th style="text-align:left">Cuándo</th><th>Quién</th><th>Rol</th><th>Acción</th><th style="text-align:left">Clave</th><th>Versión</th></tr></thead><tbody>'+
+      j.entries.map(e=>`<tr><td style="text-align:left">${escapeHtml((e.ts||'').replace('T',' ').slice(0,16))}</td><td>${escapeHtml(e.username||'—')}</td><td>${escapeHtml(e.role||'—')}</td><td>${escapeHtml(e.action||'')}</td><td style="text-align:left">${escapeHtml((e.key||'').replace('kanjo:',''))}</td><td>${e.to_version!=null? (e.from_version!=null? e.from_version+'→'+e.to_version : 'v'+e.to_version) : '—'}</td></tr>`).join('')+
       '</tbody></table></div>';
   }catch(e){
     box.innerHTML='<div class="svempty">El registro de actividad vive en el servidor — está disponible en la versión deployada (Railway), no en el archivo suelto.</div>';
@@ -6295,7 +6431,7 @@ function awPasoScoreable(p){
   return awRowUnscored(p.id);
 }
 async function awAutoAi(){
-  if(!AW.autoAi || awUI.aiBusy || !kjIsAdmin()) return;
+  if(!AW.autoAi || awUI.aiBusy || !kjW('wa')) return;
   const stale=awStalePasos();
   const nuevos=G.pasos.filter(p=>awPasoScoreable(p) && !awUI.aiTried[p.id]);
   const viejos=stale.filter(p=>awNorm(p.n)!=='nuevo paso' && !awUI.aiTried[p.id]);
@@ -6515,7 +6651,7 @@ function renderAisho(){
   document.getElementById('awOptScope').innerHTML=[['activo','Set activo'],['mixto','Mixto']].map(([v,l])=>`<button class="${awUI.optScope===v?'on':''}" onclick="awUI.optScope='${v}';renderAisho()">${l}</button>`).join('');
 
   const bebsAll=awActive(true), bebs=awActive();
-  const isAdm=kjIsAdmin();
+  const isAdm=kjW('wa');
 
   document.getElementById('awBebs').innerHTML=bebsAll.map(b=>`
     <div class="awbeb${b.avail?'':' off'}">
@@ -6625,7 +6761,8 @@ async function loadKata(){ kata=ktEnsure(null); await kjLoadKey('kanjo:kata', v=
 async function loadKataRuns(){ await kjLoadKey('kanjo:kataruns', v=>{ if(Array.isArray(v)) kataRuns=v; }); }
 function ktPersistTpl(){ persistSafe('kanjo:kata', kata); }
 function ktPersistRuns(){ persistSafe('kanjo:kataruns', kataRuns); }
-function ktRole(){ return window.KANJO_SERVER_ROLE || (kjIsAdmin()?'admin':'staff'); }
+/* el checklist ahora se firma con la persona, no con el rol */
+function ktRole(){ return kjWho() || window.KANJO_SERVER_ROLE || 'staff'; }
 
 /* ---- plantillas aplicables a un turno ---- */
 function ktTplsFor(turno){
@@ -6659,7 +6796,7 @@ function ktDelNota(id){
 }
 function ktRenderNotas(){
   const box=document.getElementById('ktNotas'); if(!box) return;
-  const admin=kjIsAdmin();
+  const admin=kjW('kata');
   const notas=kataRuns.filter(r=>r.tplId==='_nota').sort((a,b)=>(b.at||'').localeCompare(a.at||'')).slice(0,12);
   if(!notas.length){ box.innerHTML='<div class="svempty">Sin novedades registradas. Lo que se avisa acá no depende de que se crucen en el pase.</div>'; return; }
   box.innerHTML=notas.map(n=>`<div style="display:flex;gap:8px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--rule)">
@@ -6683,7 +6820,7 @@ function renderKataHoy(){
   const turno=document.getElementById('ktTurno').value;
   const tpls=ktTplsFor(turno);
   if(!tpls.length){
-    box.innerHTML='<div class="svempty">No hay plantillas con ítems para este turno. '+(kjIsAdmin()?'Creá una en el panel <b>Plantillas</b> o cargá las de ejemplo.':'Pedile al admin que configure las checklists.')+'</div>';
+    box.innerHTML='<div class="svempty">No hay plantillas con ítems para este turno. '+(kjW('kata')?'Creá una en el panel <b>Plantillas</b> o cargá las de ejemplo.':'Pedile a quien administre el Manual 型 que configure las checklists.')+'</div>';
     return;
   }
   const MOM_ORDER={apertura:0, servicio:1, cierre:2};
@@ -7361,7 +7498,7 @@ function waEnsure(v){
 }
 function waPersist(){ clearTimeout(waPersistT); waPersistT=setTimeout(()=>{ persistSafe('kanjo:wa', WAX); },400); }
 async function loadWa(){ WAX=waEnsure(null); await kjLoadKey('kanjo:wa', v=>{ WAX=waEnsure(v); }); }
-function waAdmin(){ if(kjIsAdmin()) return true; flash('La carta de Wa la edita el admin — el salón consulta'); return false; }
+function waAdmin(){ return kjNeed('wa','La carta de maridaje'); }
 
 /* ---- afinidad ---- */
 function waLevel(rn,ln){
@@ -8171,7 +8308,7 @@ function renderDou(){
   cats.innerHTML=DOU_PROCS.map(c=>`<button class="doucat${c.cat===douCat?' on':''}" onclick="douCat='${c.cat}';renderDou()">${escapeHtml(c.cat)}${c.critical?' ⛩':''} <span>${c.w}pts</span></button>`).join('');
   cats.innerHTML+=`<button class="doucat${douCat==='__flags'?' on':''}" onclick="douCat='__flags';renderDou()">Banderas rojas</button><button class="doucat${douCat==='__ritmo'?' on':''}" onclick="douCat='__ritmo';renderDou()">Ritmo 暦</button>`;
   const q=(document.getElementById('douSearch').value||'').toLowerCase();
-  const admin=kjIsAdmin();
+  const admin=kjW('dou');
   if(!q && douCat==='__flags'){
     document.getElementById('douList').innerHTML=
       '<p class="note">Los tres asesinos silenciosos: no aparecen en los puntajes hasta que es tarde. Cada uno tiene su contramedida estructural en los procedimientos.</p>'
@@ -8257,22 +8394,22 @@ function shunEnsure(s){
 function shunPersist(){ clearTimeout(shunPersistT); shunPersistT=setTimeout(()=>persistSafe('kanjo:shun', shun), 400); }
 async function loadShun(){ await kjLoadKey('kanjo:shun', v=>{ shun=shunEnsure(v); }); }
 function shunCycle(ix,mi){
-  if(!kjIsAdmin()){ flash('El mapa lo edita el itamae — staff en solo lectura'); return; }
+  if(!kjNeed('shun','El mapa de estacionalidad')) return;
   const order=[2,1,0,-1]; const it=shun.items[ix]; if(!it) return;
   it.m[mi]=order[(order.indexOf(it.m[mi])+1)%4];
   shunPersist(); renderShun();
 }
 function shunApprove(ix){ const it=shun.items[ix]; if(!it) return; it.pending=false; it.nota=(it.nota||'').replace(/^✦\s*/,''); shunPersist(); renderShun(); flash('Visto bueno ✓ — la sugerencia IA ahora es oficial'); }
-function shunDel(ix){ if(!kjIsAdmin()) return; shun.items.splice(ix,1); shunPersist(); renderShun(); }
+function shunDel(ix){ if(!kjNeed('shun','El mapa de estacionalidad')) return; shun.items.splice(ix,1); shunPersist(); renderShun(); }
 function shunEditNota(ix){
-  if(!kjIsAdmin()) return;
+  if(!kjNeed('shun','Las notas de estacionalidad')) return;
   const it=shun.items[ix]; if(!it) return;
   const v=window.prompt('Nota de '+it.n+' (vacío = sin nota):', it.nota||'');
   if(v===null) return;
   it.nota=v.trim(); shunPersist(); renderShun(); flash('Nota actualizada ✓');
 }
 function shunManual(){
-  if(!kjIsAdmin()) return;
+  if(!kjNeed('shun','El alta de ingredientes')) return;
   const nEl=document.getElementById('shunNewN'), cEl=document.getElementById('shunNewC');
   const n=(nEl.value||'').trim(); if(!n){ flash('Poné el nombre del ingrediente'); return; }
   if(shun.items.some(i=>i.n.toLowerCase()===n.toLowerCase())){ flash('Ya existe un ingrediente con ese nombre'); return; }
@@ -8313,7 +8450,7 @@ async function shunAI(){
 }
 function renderShun(){
   const tbl=document.getElementById('shunTable'); if(!tbl) return;
-  const admin=kjIsAdmin();
+  const admin=kjW('shun');
   const box=document.getElementById('shunAddBox');
   box.innerHTML = admin? `<input type="text" id="shunNewN" placeholder="Nuevo ingrediente…" style="width:160px" value="${box.querySelector('#shunNewN')?escapeHtml(box.querySelector('#shunNewN').value):''}">
     <select class="sel" id="shunNewC"><option>Pescado de mar</option><option>Marisco</option><option>Río</option><option>Huerta</option></select>
@@ -8354,7 +8491,7 @@ function zkFishEstado(it){
 }
 function zkAlert(it){ return it.cat==='Pescado'? zkFishEstado(it).alert : (it.par>0 && it.stock<it.par); }
 function zkAdd(){
-  if(!kjIsAdmin()){ flash('Alta de ítems: solo itamae'); return; }
+  if(!kjNeed('zaiko','El alta de ítems de inventario')) return;
   const g=id=>document.getElementById(id);
   const n=g('zkN').value.trim(); if(!n){ flash('Nombre requerido'); return; }
   const cat0=g('zkC').value, cat=cat0.replace(' 守','');
@@ -8369,7 +8506,7 @@ function zkAdd(){
   if(it.genkaRef && !it.costo){ const cu=mrCostUnit(it.genkaRef); if(cu) it.costo=Math.round(cu*100)/100; }
   zaiko.items.push(it); zkPersist(); flash('Ítem agregado ✓'); renderZaiko();
 }
-function zkDel(ix){ if(!kjIsAdmin()) return; zaiko.items.splice(ix,1); zkPersist(); renderZaiko(); }
+function zkDel(ix){ if(!kjNeed('zaiko','El inventario')) return; zaiko.items.splice(ix,1); zkPersist(); renderZaiko(); }
 function zkMov(){
   const g=id=>document.getElementById(id);
   const it=zaiko.items.find(x=>x.id===g('zkMi').value); if(!it){ flash('Elegí el ítem'); return; }
@@ -8391,7 +8528,7 @@ function zkMov(){
 }
 function renderZaiko(){
   const tbl=document.getElementById('zkTable'); if(!tbl) return;
-  const admin=kjIsAdmin();
+  const admin=kjW('zaiko');
   const forms=document.getElementById('zkForms');
   const gOpts='<option value="">— sin vínculo a Genka —</option>'+(typeof G==='object'&&Array.isArray(G.insumos)?G.insumos.map(i=>`<option value="${i.id}">${escapeHtml(i.n)}</option>`).join(''):'');
   const itOpts=zaiko.items.map(i=>`<option value="${i.id}">${escapeHtml(i.n)}</option>`).join('');
@@ -8994,7 +9131,7 @@ async function loadHito(){
   await kjLoadKey('kanjo:hitopunch', v=>{ HTK=htkEnsure(v); });
   /* hitopay: al staff le da 403 (esperado) → HTP queda null y no se calcula costo */
   const r=await kjLoadKey('kanjo:hitopay', v=>{ HTP=htpEnsure(v); });
-  if(r==='empty' && kjIsAdmin()) HTP=htpEnsure(null);
+  if(r==='empty' && kjR('hitopay')) HTP=htpEnsure(null);
 }
 function htById(id){ return HT.people.find(p=>p.id===id); }
 function htToday(){ return fmtDate(new Date()); }
@@ -9035,7 +9172,7 @@ function htLaborDetail(date,turno){
 /* ---- render ---- */
 function renderHito(){
   const el=document.getElementById('htRoot'); if(!el) return;
-  const admin=kjIsAdmin();
+  const admin=kjW('hito');
   const wd=htWeekDays(); const today=htToday();
   const active=HT.people.filter(p=>p.active);
   const wkHs=active.reduce((a,p)=>a+wd.reduce((b,d)=>{ const s=(HT.shifts[d]||{})[p.id]; return b+(s&&s.k!=='lic'?htHours(s.a,s.b):0); },0),0);
@@ -9259,7 +9396,7 @@ function kdApproveAll(){ const c=kdSel(); c.pasos.forEach(p=>{ p.ai={}; }); kdPe
 function kdPendingAi(c){ return c.pasos.filter(p=>!p.hidden&&p.ai&&Object.keys(p.ai).length).length; }
 async function kdDraftAI(){
   const c=kdSel(); if(!c||kdUI.busy) return;
-  if(!kjIsAdmin()){ flash('Solo admin'); return; }
+  if(!kjNeed('kondate','La redacción de la carta')) return;
   const pasos=c.pasos.filter(p=>!p.hidden).map(p=>({ id:p.gk, n:p.n, d:p.d, i:p.ing, o:p.o, m:p.m }));
   if(!pasos.length){ flash('No hay pasos visibles'); return; }
   kdUI.busy=true; renderKondate();
@@ -9276,7 +9413,7 @@ async function kdDraftAI(){
 }
 function kdPublish(){
   const c=kdSel(); if(!c) return;
-  if(!kjIsAdmin()){ flash('Solo un admin publica la carta'); return; }
+  if(!kjNeed('kondate','La publicación de la carta')) return;
   const pend=kdPendingAi(c); if(pend){ flash('Hay '+pend+' paso'+(pend>1?'s':'')+' con texto ✦ sin aprobar'); return; }
   if(!c.pasos.some(p=>!p.hidden)){ flash('La carta no tiene pasos visibles'); return; }
   const v=(c.pub?c.pub.v:0)+1;
@@ -9291,7 +9428,7 @@ function kdCopyUrl(){ const c=kdSel(); if(!c) return; const u=kdUrl(c); if(navig
 
 function renderKondate(){
   const el=document.getElementById('kdRoot'); if(!el) return;
-  const admin=kjIsAdmin(); const c=kdSel();
+  const admin=kjW('kondate'); const c=kdSel();
   const list=KD.cartas.map(x=>`<div class="kdrow ${x.id===kdUI.sel?'on':''}" onclick="kdUI.sel='${x.id}';renderKondate()"><span class="tag ${x.state==='publicada'?'ok':x.state==='archivada'?'mix':'warn'}">${x.state}</span><b>${escapeHtml(x.title)}</b><span class="muted">${x.date} · ${TURNO_SHORT[x.turno]||x.turno}${x.pub?' · v'+x.pub.v:''}</span></div>`).join('')||'<p class="note">Todavía no hay cartas.</p>';
   const newForm=admin?`<div class="kdnew"><label>Fecha<input type="date" id="kdNewDate" value="${htToday()}"></label><label>Turno<select id="kdNewTurno">${TURNOS.map(t=>`<option value="${t.id}" ${t.id==='N1'?'selected':''}>${t.label}</option>`).join('')}</select></label><button class="btn" onclick="kdNew()">+ Nueva carta desde Genka</button></div>`:'';
   let detail='';
@@ -9434,7 +9571,7 @@ function skClose(){
   /* visitas al CRM: por grupo, gasto prorrateado por persona */
   let nv=0; Object.values(skGroups(sv)).forEach(ss=>{ const b=skBill(sv,ss); ss.forEach(s=>{ if(!s.client) return; if(crm.visits.some(v=>v.client===s.client&&v.date===sv.date&&v.turno===sv.turno)) return; crm.visits.push({ id:rid(), client:s.client, date:sv.date, turno:sv.turno, party:ss.length, spend:Math.round(b.total/ss.length), notes:(s.mar?'con maridaje':'sin maridaje')+(s.extras.length?' · extras: '+s.extras.map(e=>e.n).join(', '):'')+(s.rest?' · '+s.rest:'') }); nv++; }); });
   if(nv) crmPersist();
-  const c=skCarta(sv); if(c&&c.state==='publicada'&&kjIsAdmin()){ c.state='archivada'; kdPersist(); }
+  const c=skCarta(sv); if(c&&c.state==='publicada'&&kjW('kondate')){ c.state='archivada'; kdPersist(); }
   sv.closed=true; sv.closedAt=skNow(); skPersist();
   flash('Servicio cerrado ✓ · '+(exists?'Analista intacto':'servicio creado en Analista')+' · '+nv+' visitas al CRM'); renderSeki();
 }
@@ -9507,22 +9644,26 @@ function renderSeki(){
   el.innerHTML=hdr+kpis+`<div class="skgrid"><div>${barCard}${split}</div><div>${det}</div></div>`;
 }
 
+/* La sesión tiene que estar antes que cualquier carga: define qué claves
+   se pueden leer y, por lo tanto, qué se renderiza. */
 async function loadMe(){
   try{
     const r=await fetch('/api/me');
-    if(r.ok){ const j=await r.json(); if(j&&j.role) window.KANJO_SERVER_ROLE=j.role; }
+    if(r.ok){ const j=await r.json();
+      if(j&&j.session){ window.KANJO_SESSION=j.session; window.KANJO_SERVER_ROLE=j.session.role; }
+      if(j&&j.modules) window.KANJO_MODULES=j.modules;
+    }
   }catch(e){}
 }
-Promise.all([
-  loadMe(),
+loadMe().then(()=>Promise.all([          /* la sesión primero: define qué claves se pueden leer */
   loadBaselineSilent(),                        /* el esquema guardado ES la app: sin esto todo calcula sobre defaults */
   loadServices(), loadFcHealth(),
   loadGenka().then(()=>{ meEnsureMix(); }),
   loadCompras(), loadMermas(), loadFxlog(),
   loadCaja(), loadReservas(),
-  loadStock(), loadCRM(), loadAuth(), loadCierres(), loadAisho(), loadKata(), loadKataRuns(), loadWa(), loadDou(), loadShun(), loadZaiko(), loadOroshi(),
+  loadStock(), loadCRM(), loadCierres(), loadAisho(), loadKata(), loadKataRuns(), loadWa(), loadDou(), loadShun(), loadZaiko(), loadOroshi(),
   loadKondate(), loadSeki()
-]).then(()=>loadHito()).then(()=>{          /* Hito después de auth+me: hitopay es admin-only y el rol decide */
+])).then(()=>loadHito()).then(()=>{        /* Hito al final: hitopay depende del permiso, y el rol lo decide */
   renderInputs(); renderOutputs();             /* re-render con la baseline real */
   loadScenarios();
   renderServiceList(); renderTurnos();         /* las métricas por servicio dependen de S */

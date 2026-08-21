@@ -1,15 +1,16 @@
 /* Kanjō 勘定 — servidor Express
    - Sirve el tablero (public/) con shim de storage
    - API /api/storage con versiones y control de concurrencia
-   - Sesiones firmadas (HMAC) con dos roles: admin y staff
-   - Staff no puede escribir claves sensibles (enforcement real, del lado del servidor) */
+   - RBAC: usuarios individuales, roles con matriz módulo × acción, y
+     enforcement real del lado del servidor sobre cada clave kanjo:*
+   La política vive entera en lib/rbac.js; acá solo se aplica. */
 const express = require('express');
 const crypto = require('crypto');
 const path = require('path');
 const db = require('./lib/db');
+const rbac = require('./lib/rbac');
+const auth = require('./lib/auth');
 
-const ADMIN_PW = process.env.APP_PASSWORD_ADMIN || process.env.APP_PASSWORD || '';
-const STAFF_PW = process.env.APP_PASSWORD_STAFF || '';
 /* El secreto NUNCA se deriva de las contraseñas (permitiría forjar cookies o
    brute-forcearlas offline). Sin SESSION_SECRET se genera uno aleatorio por
    proceso: las sesiones caen en cada restart — definilo en Railway. */
@@ -18,23 +19,11 @@ if(!process.env.SESSION_SECRET)
   console.warn('[auth] ⚠ SESSION_SECRET no definido — se generó uno efímero (las sesiones caen en cada deploy/restart).');
 const SESS_TTL_MS = 1000*60*60*24*14;   /* 14 días */
 const COOKIE = 'kanjo_sess';
-/* Modo dev: sin contraseña y sin Postgres, cualquier password entra como admin.
-   Con DATABASE_URL (producción) el server se niega a arrancar sin contraseña. */
-const DEV_OPEN = !ADMIN_PW && !process.env.DATABASE_URL;
-
-/* Claves que el staff puede LEER (la app las necesita para renderizar)
-   pero NO escribir: modelo financiero, escenarios, caja, permisos y sync. */
-const ADMIN_ONLY_WRITE = ['kanjo:baseline','kanjo:scenarios','kanjo:caja','kanjo:auth','kanjo:cierres','kanjo:kata','kanjo:wa','kanjo:dou','kanjo:shun',
-  'kanjo:hito','kanjo:hitopay','kanjo:kondate'];   /* plantel+grilla, tarifas, cartas QR: escribe admin. Fichaje (hitopunch) y servicio (seki) los escribe el staff */
-/* Claves que el staff tampoco puede LEER (saldos de caja, P&L congelado):
-   ocultar el tab no alcanza si la API igual entrega el dato. */
-const ADMIN_ONLY_READ = ['kanjo:caja','kanjo:cierres','kanjo:hitopay'];   /* hitopay: sueldos y tarifas por hora */
-
-if(!ADMIN_PW && process.env.DATABASE_URL){
-  console.error('[auth] ✖ APP_PASSWORD_ADMIN es obligatoria en producción (hay DATABASE_URL). Definila en Railway.');
-  process.exit(1);
-}
-if(DEV_OPEN) console.warn('[auth] ⚠ MODO DEV ABIERTO: sin APP_PASSWORD_ADMIN ni DATABASE_URL, cualquier contraseña entra como admin.');
+/* Transición: mientras esté prendido se puede entrar solo con la contraseña
+   (sin usuario) probando contra las cuentas sembradas admin y staff. Apagalo
+   con LEGACY_LOGIN=off cuando cada persona tenga su usuario. Deja de servir
+   por sí solo en cuanto esas cuentas cambian de contraseña. */
+const LEGACY_LOGIN = process.env.LEGACY_LOGIN !== 'off';
 
 const app = express();
 app.set('trust proxy', 1);            /* Railway: 1 proxy adelante → req.ip es la IP real del cliente */
@@ -58,11 +47,14 @@ app.use((req,res,next)=>{
 const b64u = b => Buffer.from(b).toString('base64url');
 const hmac = s => crypto.createHmac('sha256', SECRET).update(s).digest('base64url');
 function tsEq(a,b){ const A=Buffer.from(String(a)), B=Buffer.from(String(b)); return A.length===B.length && crypto.timingSafeEqual(A,B); }
-function signSession(role){
-  const body = b64u(JSON.stringify({ role, exp: Date.now()+SESS_TTL_MS }));
+/* La cookie lleva el id de usuario y su "versión de sesión" (sv). Subir sv al
+   cambiar la contraseña o dar de baja a alguien invalida al toque todas las
+   sesiones abiertas de esa persona, sin tabla de sesiones. */
+function signSession(user){
+  const body = b64u(JSON.stringify({ u:user.uid||user.id, sv:user.sv, exp: Date.now()+SESS_TTL_MS }));
   return body+'.'+hmac(body);
 }
-function readSession(req){
+function readCookie(req){
   const raw = (req.headers.cookie||'').split(/;\s*/).find(c=>c.startsWith(COOKIE+'='));
   if(!raw) return null;
   const tok = raw.slice(COOKIE.length+1);
@@ -72,9 +64,15 @@ function readSession(req){
   if(!tsEq(hmac(body), mac)) return null;
   try{
     const p = JSON.parse(Buffer.from(body,'base64url').toString());
-    if(!p.exp || p.exp < Date.now()) return null;
-    return p.role==='admin'||p.role==='staff' ? p : null;
+    if(!p.exp || p.exp < Date.now() || !p.u) return null;
+    return p;
   }catch(e){ return null; }
+}
+/* Devuelve la sesión resuelta (rol + matriz de permisos ya aplanada) o null. */
+async function readSession(req){
+  const p = readCookie(req);
+  if(!p) return null;
+  return auth.sessionFor(p.u, p.sv);
 }
 function setCookie(res, req, value, maxAge){
   const secure = (req.headers['x-forwarded-proto']||'').includes('https');
@@ -96,44 +94,231 @@ function limited(ip){
 function bump(ip){ const a=attempts.get(ip); if(a) a.n++; }
 
 /* ---------- auth API ---------- */
-app.post('/api/login', (req,res)=>{
+const sessionOut = s => ({
+  uid:s.uid, username:s.username, name:s.name, personId:s.personId,
+  role:s.role, roleName:s.roleName, perms:s.perms, isAdmin:s.isAdmin,
+  mustChange:s.mustChange, tabs: rbac.visibleTabs(s),
+});
+
+app.post('/api/login', async (req,res)=>{
   /* req.ip con trust proxy: la parte spoofeable de X-Forwarded-For no cuenta */
   const ip = req.ip || req.socket.remoteAddress || '?';
-  if(limited(ip)) return res.status(429).json({ error:'too_many_attempts' });
+  const username = String((req.body&&req.body.username)||'').trim().toLowerCase();
   const pw = String((req.body&&req.body.password)||'');
-  let role = null;
-  if(ADMIN_PW && tsEq(pw, ADMIN_PW)) role='admin';
-  else if(STAFF_PW && tsEq(pw, STAFF_PW)) role='staff';
-  else if(DEV_OPEN) role='admin';
-  if(!role){ bump(ip); return res.status(401).json({ error:'bad_password' }); }
-  setCookie(res, req, signSession(role), SESS_TTL_MS/1000);
-  db.audit(role,'login',null,null,null);
-  res.json({ ok:true, role });
+  /* dos cerrojos: por IP y por usuario, para que nadie martille una cuenta
+     concreta desde muchas IPs ni una IP pruebe muchas cuentas */
+  if(limited(ip) || (username && limited('u:'+username)))
+    return res.status(429).json({ error:'too_many_attempts' });
+  const fail = ()=>{ bump(ip); if(username) bump('u:'+username); return res.status(401).json({ error:'bad_credentials' }); };
+  try{
+    let user = null;
+    if(username){
+      user = await auth.findByUsername(username);
+    } else if(LEGACY_LOGIN){
+      /* entrar solo con la contraseña, como antes del RBAC: se prueba contra
+         las cuentas sembradas. Deja de andar en cuanto cambian su contraseña. */
+      for(const u of ['admin','staff']){
+        const cand = await auth.findByUsername(u);
+        if(cand && cand.active && auth.verifyPassword(pw, cand.pw)){ user = cand; break; }
+      }
+      if(!user) return fail();
+    }
+    if(!user || !user.active) return fail();
+    if(!auth.verifyPassword(pw, user.pw)) return fail();
+    const role = await auth.roleOf(user);
+    if(!role) return res.status(500).json({ error:'role_missing' });
+    const sess = auth.resolve(user, role);
+    setCookie(res, req, signSession(sess), SESS_TTL_MS/1000);
+    db.userTouchLogin(user.id).then(()=>auth.invalidate()).catch(()=>{});
+    db.audit(sess.role,'login',null,null,null,sess.username);
+    res.json({ ok:true, session: sessionOut(sess) });
+  }catch(e){ console.warn('[auth:login]', e.message); res.status(500).json({ error:'login_error' }); }
 });
 app.post('/api/logout', (req,res)=>{ setCookie(res, req, 'x', 0); res.json({ ok:true }); });
-app.get('/api/me', (req,res)=>{
-  const s = readSession(req);
-  if(!s) return res.status(401).json({ error:'unauthenticated' });
-  res.json({ role: s.role });
+
+/* ---------- middleware ---------- */
+function requireAuth(req,res,next){
+  readSession(req).then(s=>{
+    if(!s) return res.status(401).json({ error:'unauthenticated' });
+    req.sess = s; req.role = s.role;
+    /* con la contraseña marcada para cambiar, la sesión no hace nada más que eso */
+    if(s.mustChange && !['/api/me','/api/password','/api/logout'].includes(req.path))
+      return res.status(403).json({ error:'must_change_password' });
+    next();
+  }).catch(e=>{ console.warn('[auth]', e.message); res.status(500).json({ error:'auth_error' }); });
+}
+const requirePerm = (mod, need) => (req,res,next) =>
+  rbac.can(req.sess, mod, need) ? next() : res.status(403).json({ error:'forbidden', need:{ mod, level:need } });
+/* audit con nombre y apellido: el log ahora dice quién, no solo qué rol */
+const A = (req, action, key, fromV, toV) =>
+  db.audit(req.sess.role, action, key||null, fromV==null?null:fromV, toV==null?null:toV, req.sess.username);
+
+app.get('/api/me', requireAuth, (req,res)=>{
+  res.json({ session: sessionOut(req.sess), modules: rbac.MODULES,
+    role: req.sess.role });   /* `role` queda por compatibilidad con clientes viejos */
 });
 
-/* ---------- storage API ---------- */
-function requireAuth(req,res,next){
-  const s = readSession(req);
-  if(!s) return res.status(401).json({ error:'unauthenticated' });
-  req.role = s.role; next();
-}
+/* Cambio de la propia contraseña. Sube sv: se caen las demás sesiones. */
+app.post('/api/password', requireAuth, async (req,res)=>{
+  const { current, next } = req.body||{};
+  if(typeof next!=='string' || next.length<8) return res.status(400).json({ error:'password_too_short' });
+  try{
+    const u = await auth.findByUsername(req.sess.username);
+    if(!u) return res.status(404).json({ error:'not_found' });
+    if(!auth.verifyPassword(String(current||''), u.pw)) return res.status(401).json({ error:'bad_current_password' });
+    await db.userUpsert(Object.assign({}, u, { pw: auth.hashPassword(next), mustChange:false, sv: u.sv+1 }));
+    auth.invalidate();
+    const fresh = await auth.findByUsername(u.username);
+    setCookie(res, req, signSession({ uid:fresh.id, sv:fresh.sv }), SESS_TTL_MS/1000);
+    A(req,'password_change');
+    res.json({ ok:true });
+  }catch(e){ console.warn('[auth:password]', e.message); res.status(500).json({ error:'password_error' }); }
+});
+
+/* ---------- usuarios (módulo admin) ---------- */
+const USERNAME_RE = /^[a-z0-9._-]{3,32}$/;
+const pubUser = (u, roles) => ({ id:u.id, username:u.username, name:u.name,
+  roleId:u.roleId, roleName:(roles.find(r=>r.id===u.roleId)||{}).name || u.roleId,
+  personId:u.personId, active:u.active, mustChange:u.mustChange,
+  createdAt:u.createdAt, lastLogin:u.lastLogin });
+
+app.get('/api/users', requireAuth, requirePerm('admin','read'), async (req,res)=>{
+  const [users, roles] = [await auth.allUsers(), await auth.allRoles()];
+  res.json({ users: users.map(u=>pubUser(u,roles)), legacyLogin: LEGACY_LOGIN });
+});
+
+app.post('/api/users', requireAuth, requirePerm('admin','write'), async (req,res)=>{
+  const { username, name, roleId, personId } = req.body||{};
+  const un = String(username||'').trim().toLowerCase();
+  if(!USERNAME_RE.test(un)) return res.status(400).json({ error:'bad_username' });
+  if(!String(name||'').trim()) return res.status(400).json({ error:'bad_name' });
+  const roles = await auth.allRoles();
+  if(!roles.some(r=>r.id===roleId)) return res.status(400).json({ error:'bad_role' });
+  const pw = auth.randomPassword();
+  const r = await db.userUpsert({ id: auth.rid(), username:un, name:String(name).trim().slice(0,80),
+    roleId, personId: personId||null, pw: auth.hashPassword(pw), mustChange:true, active:true, sv:1 });
+  if(!r.ok) return res.status(409).json({ error:r.error });
+  auth.invalidate();
+  A(req,'user_create',null,null,null);
+  /* la contraseña de un solo uso se muestra una vez: el admin se la pasa a mano */
+  res.json({ ok:true, username:un, password:pw });
+});
+
+app.patch('/api/users/:id', requireAuth, requirePerm('admin','write'), async (req,res)=>{
+  try{
+    const u = await db.userGet(req.params.id);
+    if(!u) return res.status(404).json({ error:'not_found' });
+    const roles = await auth.allRoles();
+    const wasAdmin = (roles.find(r=>r.id===u.roleId)||{}).isAdmin;
+    const patch = {};
+    if(typeof req.body.name==='string' && req.body.name.trim()) patch.name = req.body.name.trim().slice(0,80);
+    if(typeof req.body.username==='string'){
+      const un = req.body.username.trim().toLowerCase();
+      if(!USERNAME_RE.test(un)) return res.status(400).json({ error:'bad_username' });
+      patch.username = un;
+    }
+    if('personId' in req.body) patch.personId = req.body.personId || null;
+    if(typeof req.body.roleId==='string'){
+      if(!roles.some(r=>r.id===req.body.roleId)) return res.status(400).json({ error:'bad_role' });
+      patch.roleId = req.body.roleId;
+    }
+    if(typeof req.body.active==='boolean') patch.active = req.body.active;
+    /* nunca dejar el tablero sin nadie que pueda administrarlo */
+    const stillAdmin = (patch.roleId ? (roles.find(r=>r.id===patch.roleId)||{}).isAdmin : wasAdmin)
+      && (patch.active===undefined ? u.active : patch.active);
+    if(wasAdmin && u.active && !stillAdmin && (await auth.adminCount()) <= 1)
+      return res.status(409).json({ error:'last_admin' });
+    /* dar de baja o cambiar de rol corta las sesiones abiertas de esa persona */
+    const bump = (patch.active===false) || (patch.roleId && patch.roleId!==u.roleId);
+    await db.userUpsert(Object.assign({}, u, patch, bump ? { sv:u.sv+1 } : {}));
+    auth.invalidate();
+    A(req,'user_update',null,null,null);
+    res.json({ ok:true });
+  }catch(e){ console.warn('[users:patch]', e.message); res.status(500).json({ error:'update_error' }); }
+});
+
+/* Reseteo: el admin no ve ni elige la contraseña de nadie, la genera el server. */
+app.post('/api/users/:id/password', requireAuth, requirePerm('admin','write'), async (req,res)=>{
+  const u = await db.userGet(req.params.id);
+  if(!u) return res.status(404).json({ error:'not_found' });
+  const pw = auth.randomPassword();
+  await db.userUpsert(Object.assign({}, u, { pw: auth.hashPassword(pw), mustChange:true, sv:u.sv+1 }));
+  auth.invalidate();
+  A(req,'user_password_reset',null,null,null);
+  res.json({ ok:true, username:u.username, password:pw });
+});
+
+app.delete('/api/users/:id', requireAuth, requirePerm('admin','write'), async (req,res)=>{
+  const u = await db.userGet(req.params.id);
+  if(!u) return res.status(404).json({ error:'not_found' });
+  if(u.id === req.sess.uid) return res.status(409).json({ error:'self_delete' });
+  const roles = await auth.allRoles();
+  if((roles.find(r=>r.id===u.roleId)||{}).isAdmin && u.active && (await auth.adminCount()) <= 1)
+    return res.status(409).json({ error:'last_admin' });
+  await db.userDelete(u.id);
+  auth.invalidate();
+  A(req,'user_delete',null,null,null);
+  res.json({ ok:true });
+});
+
+/* ---------- roles y matriz de permisos ---------- */
+app.get('/api/roles', requireAuth, async (req,res)=>{
+  const roles = await auth.allRoles();
+  /* cualquiera puede leer la lista de nombres; la matriz, solo quien administra */
+  const full = rbac.can(req.sess,'admin','read');
+  res.json({ modules: rbac.MODULES,
+    roles: roles.map(r => full ? r : { id:r.id, name:r.name, isAdmin:r.isAdmin }) });
+});
+
+app.put('/api/roles/:id', requireAuth, requirePerm('admin','write'), async (req,res)=>{
+  const roles = await auth.allRoles();
+  const cur = roles.find(r=>r.id===req.params.id);
+  if(!cur) return res.status(404).json({ error:'not_found' });
+  /* el rol admin no se edita ni por id ni por bandera: es la salida de emergencia */
+  if(cur.isAdmin || cur.id==='admin') return res.status(409).json({ error:'admin_role_locked' });
+  await db.roleUpsert({ id:cur.id, name:String(req.body.name||cur.name).slice(0,40),
+    hint:String(req.body.hint!=null?req.body.hint:cur.hint).slice(0,160),
+    perms: rbac.sanitizePerms(req.body.perms), isAdmin:false, builtin:cur.builtin });
+  auth.invalidate();
+  A(req,'role_update',null,null,null);
+  res.json({ ok:true });
+});
+
+app.post('/api/roles', requireAuth, requirePerm('admin','write'), async (req,res)=>{
+  const id = String(req.body.id||'').trim().toLowerCase();
+  if(!/^[a-z][a-z0-9_-]{1,23}$/.test(id)) return res.status(400).json({ error:'bad_id' });
+  if((await auth.allRoles()).some(r=>r.id===id)) return res.status(409).json({ error:'exists' });
+  await db.roleUpsert({ id, name:String(req.body.name||id).slice(0,40), hint:String(req.body.hint||'').slice(0,160),
+    perms: rbac.sanitizePerms(req.body.perms), isAdmin:false, builtin:false });
+  auth.invalidate();
+  A(req,'role_create',null,null,null);
+  res.json({ ok:true, id });
+});
+
+app.delete('/api/roles/:id', requireAuth, requirePerm('admin','write'), async (req,res)=>{
+  const roles = await auth.allRoles();
+  const r = roles.find(x=>x.id===req.params.id);
+  if(!r) return res.status(404).json({ error:'not_found' });
+  if(r.builtin) return res.status(409).json({ error:'builtin_role' });
+  if((await auth.allUsers()).some(u=>u.roleId===r.id)) return res.status(409).json({ error:'role_in_use' });
+  await db.roleDelete(r.id);
+  auth.invalidate();
+  A(req,'role_delete',null,null,null);
+  res.json({ ok:true });
+});
+
+/* ---------- storage API ----------
+   Cada clave pertenece a un módulo (lib/rbac.js). Leer casi todo hace falta
+   para que la app renderice; escribir siempre pide el módulo dueño. */
 const validKey = k => /^kanjo:[a-z0-9_-]{1,64}$/i.test(k);
 
-app.get('/api/storage', requireAuth, async (req,res)=>{
-  if(req.role!=='admin') return res.status(403).json({ error:'admin_only' });
+app.get('/api/storage', requireAuth, requirePerm('admin','read'), async (req,res)=>{
   res.json({ keys: await db.list(req.query.prefix||'') });
 });
 app.get('/api/storage/:key', requireAuth, async (req,res)=>{
   const k=req.params.key;
   if(!validKey(k)) return res.status(400).json({ error:'bad_key' });
-  if(req.role!=='admin' && ADMIN_ONLY_READ.includes(k))
-    return res.status(403).json({ error:'admin_only', key:k });
+  if(!rbac.canReadKey(req.sess, k)) return res.status(403).json({ error:'forbidden', key:k });
   const r = await db.get(k);
   if(!r) return res.status(404).json({ error:'not_found' });
   res.json(r);
@@ -141,29 +326,26 @@ app.get('/api/storage/:key', requireAuth, async (req,res)=>{
 app.put('/api/storage/:key', requireAuth, async (req,res)=>{
   const k=req.params.key;
   if(!validKey(k)) return res.status(400).json({ error:'bad_key' });
-  if(req.role!=='admin' && ADMIN_ONLY_WRITE.includes(k))
-    return res.status(403).json({ error:'admin_only', key:k });
+  if(!rbac.canWriteKey(req.sess, k)) return res.status(403).json({ error:'forbidden', key:k });
   const { value, version, force } = req.body||{};
   if(typeof value!=='string') return res.status(400).json({ error:'value_must_be_string' });
   if(value.length > 4*1024*1024) return res.status(413).json({ error:'too_large' });
   const r = await db.set(k, value, version==null?null:+version, !!force);
   if(!r.ok && r.conflict) return res.status(409).json({ error:'version_conflict', current:r.current });
-  db.audit(req.role, force?'write_force':'write', k, r.version>1? r.version-1:null, r.version);
+  A(req, force?'write_force':'write', k, r.version>1? r.version-1:null, r.version);
   res.json({ ok:true, version:r.version });
 });
-app.delete('/api/storage/:key', requireAuth, async (req,res)=>{
-  if(req.role!=='admin') return res.status(403).json({ error:'admin_only' });
+app.delete('/api/storage/:key', requireAuth, requirePerm('admin','write'), async (req,res)=>{
   const k=req.params.key;
   if(!validKey(k)) return res.status(400).json({ error:'bad_key' });
   await db.del(k);
-  db.audit(req.role,'delete',k,null,null);
+  A(req,'delete',k);
   res.json({ ok:true });
 });
 
 /* ---------- IA: puntuar maridaje (proxy — la key nunca sale del servidor) ---------- */
 const aiLimit=new Map();
-app.post('/api/ai/pair', requireAuth, async (req,res)=>{
-  if(req.role!=='admin') return res.status(403).json({ error:'admin_only' });
+app.post('/api/ai/pair', requireAuth, requirePerm('aisho','write'), async (req,res)=>{
   const KEY=process.env.OPENAI_API_KEY||'';
   if(!KEY) return res.status(501).json({ error:'no_api_key' });
   const ip=req.ip||req.socket.remoteAddress||'?';
@@ -214,7 +396,7 @@ app.post('/api/ai/pair', requireAuth, async (req,res)=>{
     const raw=(j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content)||'';
     const obj=JSON.parse(String(raw).replace(/```json|```/g,'').trim());
     if(!obj.scores) return res.status(502).json({ error:'no_scores' });
-    db.audit(req.role,'ai_pair',null,null,null);
+    A(req,'ai_pair');
     const out={ scores:obj.scores, notas:obj.notas||{} };
     if(modeP && typeof obj.arch==='string') out.arch=String(obj.arch).slice(0,20);
     res.json(out);
@@ -226,8 +408,7 @@ app.post('/api/ai/pair', requireAuth, async (req,res)=>{
    notas elaboradas, y para bebidas propone una alternativa conseguible en
    Argentina. Mismo régimen que /api/ai/pair: solo admin, auditado, límite
    compartido de 30 llamadas cada 10 minutos por IP. */
-app.post('/api/ai/wa', requireAuth, async (req,res)=>{
-  if(req.role!=='admin') return res.status(403).json({ error:'admin_only' });
+app.post('/api/ai/wa', requireAuth, requirePerm('wa','write'), async (req,res)=>{
   const KEY=process.env.OPENAI_API_KEY||'';
   if(!KEY) return res.status(501).json({ error:'no_api_key' });
   const ip=req.ip||req.socket.remoteAddress||'?';
@@ -274,7 +455,7 @@ app.post('/api/ai/wa', requireAuth, async (req,res)=>{
     const raw=(j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content)||'';
     const obj=JSON.parse(String(raw).replace(/```json|```/g,'').trim());
     if(!obj.scores) return res.status(502).json({ error:'no_scores' });
-    db.audit(req.role,'ai_wa',null,null,null);
+    A(req,'ai_wa');
     const out={ scores:obj.scores, notas:obj.notas||{}, perfil:typeof obj.perfil==='string'?obj.perfil.slice(0,600):'' };
     if(esBebida && obj.alt && obj.alt.n) out.alt={ n:String(obj.alt.n).slice(0,120), w:String(obj.alt.w||'').slice(0,400) };
     res.json(out);
@@ -286,8 +467,7 @@ app.post('/api/ai/wa', requireAuth, async (req,res)=>{
    devuelve una REFERENCIA en ARS y USD neto estimado. Es techo retail, no costo
    de factura: el cliente lo muestra como sugerencia editable, nunca lo guarda solo.
    Admin-only, auditado, comparte el límite de 30/10min. */
-app.post('/api/ai/wa/precios', requireAuth, async (req,res)=>{
-  if(req.role!=='admin') return res.status(403).json({ error:'admin_only' });
+app.post('/api/ai/wa/precios', requireAuth, requirePerm('wa','write'), async (req,res)=>{
   const KEY=process.env.OPENAI_API_KEY||'';
   if(!KEY) return res.status(501).json({ error:'no_api_key' });
   const ip=req.ip||req.socket.remoteAddress||'?';
@@ -343,13 +523,12 @@ app.post('/api/ai/wa/precios', requireAuth, async (req,res)=>{
         match: ['exacto','equivalente','no encontrado'].includes(v.match)?v.match:'equivalente'
       };
     }
-    db.audit(req.role,'ai_wa_precios',null,null,null);
+    A(req,'ai_wa_precios');
     res.json({ precios:out, busqueda:conBusqueda });
   }catch(e){ console.warn('[ai:wa:precios]', e.message); res.status(502).json({ error:'upstream_error' }); }
 });
 
-app.get('/api/audit', requireAuth, async (req,res)=>{
-  if(req.role!=='admin') return res.status(403).json({ error:'admin_only' });
+app.get('/api/audit', requireAuth, requirePerm('admin','read'), async (req,res)=>{
   res.json({ entries: await db.auditList(req.query.limit) });
 });
 
@@ -360,8 +539,7 @@ app.get('/api/audit', requireAuth, async (req,res)=>{
    Busca online zafras y vedas argentinas vigentes. La respuesta entra al cliente
    como sugerencia ✦ pendiente: la IA propone, el itamae decide.
    Admin-only, auditado, comparte el límite de 30/10min. */
-app.post('/api/ai/shun', requireAuth, async (req,res)=>{
-  if(req.role!=='admin') return res.status(403).json({ error:'admin_only' });
+app.post('/api/ai/shun', requireAuth, requirePerm('shun','write'), async (req,res)=>{
   const KEY=process.env.OPENAI_API_KEY||'';
   if(!KEY) return res.status(501).json({ error:'no_api_key' });
   const ip=req.ip||req.socket.remoteAddress||'?';
@@ -422,7 +600,7 @@ app.post('/api/ai/shun', requireAuth, async (req,res)=>{
       };
     }
     if(!Object.keys(out).length) return res.status(502).json({ error:'empty' });
-    db.audit(req.role,'ai_shun',null,null,null);
+    A(req,'ai_shun');
     res.json({ temporadas: out, busqueda: conBusqueda });
   }catch(e){ console.warn('[ai:shun]', e.message); res.status(502).json({ error:'upstream_error' }); }
 });
@@ -509,8 +687,7 @@ app.get('/c/:token/qr', async (req,res)=>{
    castellano rioplatense, versión en inglés y una línea de maridaje. NO
    propone alérgenos (se marcan a mano). Todo vuelve ✦ sin aprobar.
    Mismo régimen que el resto: admin, auditado, límite compartido 30/10min. */
-app.post('/api/ai/kondate', requireAuth, async (req,res)=>{
-  if(req.role!=='admin') return res.status(403).json({ error:'admin_only' });
+app.post('/api/ai/kondate', requireAuth, requirePerm('kondate','write'), async (req,res)=>{
   const KEY=process.env.OPENAI_API_KEY||'';
   if(!KEY) return res.status(501).json({ error:'no_api_key' });
   const ip=req.ip||req.socket.remoteAddress||'?';
@@ -544,7 +721,7 @@ app.post('/api/ai/kondate', requireAuth, async (req,res)=>{
     const out={};
     for(const [k,v] of Object.entries(obj.pasos)){ if(!v||typeof v!=='object') continue; out[String(k).slice(0,24)]={ d:String(v.d||'').slice(0,160), den:String(v.den||'').slice(0,160), m:String(v.m||'').slice(0,120) }; }
     if(!Object.keys(out).length) return res.status(502).json({ error:'empty' });
-    db.audit(req.role,'ai_kondate',null,null,null);
+    A(req,'ai_kondate');
     res.json({ pasos:out });
   }catch(e){ console.warn('[ai:kondate]', e.message); res.status(502).json({ error:'upstream_error' }); }
 });
@@ -554,14 +731,15 @@ app.get('/healthz', (req,res)=>res.json({ ok:true, db: db.backend() }));
 /* El tablero embebe el modelo del negocio: solo se sirve con sesión válida.
    Sin sesión se entrega la página de login (el shim sigue como red de
    seguridad para sesiones que expiran en medio del uso). */
-app.get(['/','/index.html'], (req,res)=>{
+app.get(['/','/index.html'], async (req,res)=>{
   res.setHeader('Cache-Control','no-store');
-  if(readSession(req)) return res.sendFile(path.join(__dirname,'public','index.html'));
+  let s=null; try{ s=await readSession(req); }catch(e){ console.warn('[auth]', e.message); }
+  if(s) return res.sendFile(path.join(__dirname,'public','index.html'));
   res.sendFile(path.join(__dirname,'public','login.html'));
 });
 app.use(express.static(path.join(__dirname,'public'), { index:false }));
 
 const PORT = process.env.PORT || 3000;
-db.init().then(()=>{
+db.init().then(()=>auth.bootstrap()).then(()=>{
   app.listen(PORT, ()=>console.log('[kanjo] escuchando en :'+PORT+' · db='+db.backend()));
 }).catch(e=>{ console.error('[db] error de inicio:', e); process.exit(1); });
