@@ -127,6 +127,41 @@ APP_PASSWORD_ADMIN=admin123 APP_PASSWORD_STAFF=staff123 node server.js
 # Para empezar de cero: borrá data.json (ahí viven también usuarios y roles).
 ```
 
+## Novedades v5 — delivery 配 y menús múltiples
+
+- **Delivery como canal en el esquema 勘定**: tarjeta ⑧ *Delivery · canal* con su propia
+  dinámica (días × pedidos × ticket, no sillas × ocupación) y sus propios costos: envase por
+  pedido, comisión de apps sobre el bruto c/IVA, envío propio para el canal directo, dotación
+  extra y pauta. Aparece como centro propio en la anatomía del peso, el desglose, la cascada,
+  el tornado (pedidos y comisión como drivers), el P&L CSV y los escenarios. El equilibrio sigue
+  midiéndose en ocupación de salón: el delivery entra como ingreso constante y su contribución
+  reduce los fijos a cubrir. Con el canal apagado el modelo es exactamente el anterior; una
+  baseline guardada sin delivery se migra **apagada** (no se inventa facturación).
+- **Registro diario de delivery** (`kanjo:delivery`, mismo permiso que los servicios) en el
+  analista 番付: un registro por día con pedidos, comida, bebida, cuánto entró por apps y por
+  canal propio, efectivo y cancelados. Cada día se costea con los parámetros del canal y carga la
+  parte de fijos comunes que el delivery absorbe (*Fijos comunes que absorbe*, por defecto
+  proporcional a su facturación). Panel propio: contribución por pedido, resultado por día,
+  mix apps, a dónde va cada peso de un pedido, perfil por día de semana. Botón en ⚡ carga rápida.
+- **Pronóstico 予想**: pronóstico del delivery por día de semana (últimas 8 semanas, con
+  tendencia amortiguada; sin historial usa el plan). El resultado proyectado del mes ahora es
+  salón + delivery.
+- **Precios dinámicos 平価**: modo *Delivery · promo y canal*: promo sobre el ticket con
+  elasticidad en pedidos (no en ocupación), pedidos necesarios para empatar, y la palanca
+  apps vs canal propio (comisión contra cadete) a pedidos constantes.
+- **Caja 現金**: liquidación de apps neta de comisión y con rezago propio (*Liquidación de apps*,
+  días), canal propio en la semana, CMV del delivery, envases + cadete semanales, pauta el día 1
+  y dotación extra con los sueldos. IIBB e IVA incluyen la facturación del canal.
+- **Costeo de menú 原価 · varios menús**: `kanjo:genka` pasa de un menú a `menus[]` (migración
+  automática al abrir). Cada menú tiene tipo *salón* (precio del turno del esquema, o propio) o
+  *delivery* (precio del box, envase, food cost también sobre el neto después de la comisión de
+  la app). Todos comparten insumos y TC. El ★ **principal** es el que siguen leyendo Carta QR,
+  Maridaje, Servicio y el food cost teórico del Resumen. Duplicar, renombrar, borrar; *Enviar al
+  esquema* actualiza el food cost del salón o los parámetros del canal delivery según el menú.
+- **Resumen y cierre de mes**: fila *Delivery (4 sem)* con semáforo contra el plan, lecturas
+  cuando el pedido no deja contribución o el volumen no cubre los fijos, y el cierre congela
+  pedidos, neto, contribución y resultado del canal.
+
 ## Novedades v4
 
 - **Wa 輪 (Rueda)**: dos ruedas de maridaje de carta **propia e independiente**
