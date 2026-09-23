@@ -127,6 +127,23 @@ APP_PASSWORD_ADMIN=admin123 APP_PASSWORD_STAFF=staff123 node server.js
 # Para empezar de cero: borrá data.json (ahí viven también usuarios y roles).
 ```
 
+## Novedades v5.1 — conciliación de apps, precio por canal y capacidad
+
+- **Liquidaciones de apps** (Caja 現金, clave `kanjo:liquidaciones`, escriben *caja* y *turnos*):
+  cada liquidación de Rappi/PedidosYa con ventas según la app, comisión, promos financiadas,
+  cancelaciones, retenciones y neto acreditado. Se cruza con los días registrados en 番付:
+  comisión efectiva real vs la del esquema, diferencia entre lo que la app dice y lo
+  registrado, retenciones a cuenta para el contador, rezago real de pago (con un botón para
+  usarlo en la proyección de caja) y neto que no cierra con los descuentos declarados.
+- **Precio por canal** en Precios dinámicos 平価 · delivery: recargo del precio en la app para
+  absorber la comisión, con la misma sensibilidad de demanda aplicada solo a los pedidos de app.
+- **Tope de pedidos por día** (esquema ⑧): capacidad de cocina. Frena el simulador de promos,
+  marca en el pronóstico los días cuya banda alta lo supera y avisa en el analista cuando hubo
+  días por encima.
+- **Fijos comunes**: por defecto el delivery se evalúa por **contribución** (0 % de fijos
+  comunes; el salón los carga todos, como antes de v5). Dejando el campo vacío se prorratea en
+  proporción a la facturación.
+
 ## Novedades v5 — delivery 配 y menús múltiples
 
 - **Delivery como canal en el esquema 勘定**: tarjeta ⑧ *Delivery · canal* con su propia
