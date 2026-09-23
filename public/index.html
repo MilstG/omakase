@@ -3825,6 +3825,14 @@ function exportMonthly(){
       Math.round(sum(r=>r.m.pagos)), Math.round(sum(r=>r.m.imp)), Math.round(sum(r=>r.m.allocLabor)),
       Math.round(a.totalProfit), a.margin.toFixed(1), Math.round(sum(r=>r.m.undeclared))]);
   });
+  /* delivery por mes, para el contador: pedidos, neto, comisiones, resultado del canal */
+  if(delivery.length){
+    const byD={}; delivery.forEach(d=>{ const k=monthKey(d.date); (byD[k]=byD[k]||[]).push({d, m:deliveryMetrics(d)}); });
+    rows.push([],['DELIVERY'],['Mes','Días','Pedidos','Facturación neta','CMV','Envases','Comisión apps','Envíos','Impuestos','Contribución','Fijos absorbidos','Resultado']);
+    Object.keys(byD).sort().forEach(k=>{ const a=dlvAgg(byD[k]), sum=f=>byD[k].reduce((x,r)=>x+f(r),0);
+      rows.push([monthLabel(k), a.n, a.orders, Math.round(a.net), Math.round(sum(r=>r.m.cmv)), Math.round(a.packaging), Math.round(a.commission), Math.round(a.courier),
+        Math.round(sum(r=>r.m.imp+r.m.pagos)), Math.round(a.contrib), Math.round(sum(r=>r.m.fixedDay)), Math.round(a.profit)]); });
+  }
   downloadFile('kanjo-resumen-mensual.csv', toCSV(rows)) ? tFlash('Resumen mensual exportado ✓') : tFlash('No se pudo exportar');
 }
 
