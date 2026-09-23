@@ -1643,6 +1643,11 @@
       </div>
       <div class="tright" id="cjOut"></div>
     </div>
+
+    <div class="card" data-key="cjliq" style="margin-top:14px">
+      <div class="head" style="cursor:default"><span class="num">配</span><span class="ttl">Liquidaciones de apps de delivery · conciliación</span><span class="tag mix" id="lqCount">0</span></div>
+      <div class="body" id="cjLiq"></div>
+    </div>
   </div><!-- /tab-caja -->
 
   <div id="tab-reservas" class="tabpanel">
@@ -2117,7 +2122,7 @@ function defaultState(){
     /* canal delivery: otra dinámica (pedidos, no sillas) y otros costos
        (envase, comisión de apps, envío). Precios de carta c/IVA, como los turnos. */
     delivery:{ on:true, days:26, orders:8, ticket:42, bev:4, foodPct:38, packaging:2.5,
-               appShare:70, appPct:28, courier:3.5, laborExtra:0, ads:150, fixedShare:null },
+               appShare:70, appPct:28, courier:3.5, laborExtra:0, ads:150, fixedShare:0, maxPerDay:0 },
   };
 }
 function ensureShape(st){
@@ -2190,6 +2195,12 @@ function deliveryFixedShare(st){
   if(!d.on) return 0;
   const dv = st.delivery||{};
   if(dv.fixedShare!=null && dv.fixedShare!=='' && !isNaN(+dv.fixedShare)) return Math.max(0,Math.min(1,(+dv.fixedShare)/100));
+  return deliveryFixedShareAuto(st);
+}
+/* share proporcional a la facturación neta (la opción "vacío" del campo) */
+function deliveryFixedShareAuto(st){
+  st = st || S;
+  const d = deliveryCalc(st); if(!d.on) return 0;
   const ivaDiv = d.ivaDiv, r=st.revenue, occ=r.occupancy/100;
   let sal=0; st.turnos.forEach(t=>{ sal += t.days*((t.price+t.bev)/ivaDiv); });
   const salonRev = r.seats*occ*sal;
@@ -2350,7 +2361,8 @@ function renderInputs(){
     ${numRow('Envío propio por pedido','delivery.courier',dv.courier,'$',1,'cadete · solo pedidos del canal propio')}
     ${numRow('Dotación extra','delivery.laborExtra',dv.laborExtra,'$',0,'USD/mes · empaque y despacho, si suma gente')}
     ${numRow('Pauta / promos en apps','delivery.ads',dv.ads,'$',0,'USD/mes · fijo del canal')}
-    <div class="row"><label>Fijos comunes que absorbe<span class="sub">vacío = proporcional a su facturación (hoy ${Math.round(deliveryFixedShare()*100)}%) · para prorratear en 番付</span></label><div class="ifield"><input type="number" class="small" value="${dv.fixedShare==null?'':dv.fixedShare}" placeholder="auto" oninput="setDeliveryFixedShare(this.value)"><span class="post">%</span></div></div>
+    ${numRow('Tope de pedidos por día','delivery.maxPerDay',dv.maxPerDay||0,'',0,'capacidad de cocina en servicio · 0 = sin tope · frena promos y pronósticos irreales')}
+    <div class="row"><label>Fijos comunes que absorbe<span class="sub">0 = se evalúa por contribución y el salón carga todos los fijos · vacío = proporcional a su facturación (${Math.round(deliveryFixedShareAuto()*100)}%)</span></label><div class="ifield"><input type="number" class="small" value="${dv.fixedShare==null?'':dv.fixedShare}" placeholder="auto" oninput="setDeliveryFixedShare(this.value)"><span class="post">%</span></div></div>
     <div class="subtotal"><span class="l">Costos propios del canal · ${Math.round(dl.orders)} pedidos/mes</span><span class="v">${fmt(c.delivery)}</span></div>
     <div class="subtotal" style="border-top-style:dotted"><span class="l">Contribución del delivery a los fijos</span><span class="v" id="dlvCmV" style="color:${dl.cm>=0?'var(--good)':'var(--vermilion)'}">${fmt(dl.cm)}</span></div>
   `));
@@ -3501,6 +3513,10 @@ function deliveryPanelHtml(){
   else if(a28.profitDay<0) tips.push({sev:'warn', txt:`El pedido deja contribución (${fmt(a28.cmPerOrder)}), pero el volumen no cubre los ${fmt(deliveryFixedPerDay())} de fijos por día. Necesitás ~<b>${Math.ceil(deliveryFixedPerDay()/a28.cmPerOrder)}</b> pedidos/día para que el canal se pague solo.`});
   if(a28.appShare>=85 && (dv.appPct||0)>=20) tips.push({sev:'warn', txt:`El ${Math.round(a28.appShare)}% entra por apps: cada 10 puntos que muevas a pedido directo te ahorran ~${fmt(a28.gross*0.10*((dv.appPct||0)/100)-a28.orders*0.10*(dv.courier||0))} en el período (comisión menos cadete).`});
   if(all.cancel && all.orders && all.cancel/all.orders>0.05) tips.push({sev:'warn', txt:`${all.cancel} cancelados sobre ${all.orders} pedidos (${(all.cancel/all.orders*100).toFixed(0)}%): comida y envase tirados. Vale revisar tiempos de preparación y disponibilidad en la app.`});
+  const cap=dv.maxPerDay||0;
+  if(cap>0){ const over=last28.filter(r=>r.m.orders>cap).length; const peak=Math.max(...last28.map(r=>r.m.orders),0);
+    if(over) tips.push({sev:'warn', txt:`${over} día${over>1?'s':''} en 28 con más pedidos que la capacidad cargada (${cap}/día; pico ${peak}). Si el salón sufrió esas noches, subí el tope real en 勘定 o cerrá la app en hora pico.`});
+    else if(peak>=cap*0.9) tips.push({sev:'warn', txt:`El pico reciente (${peak} pedidos) roza la capacidad de ${cap}/día: las promos de 平価 ya se topan ahí.`}); }
   const tipsHtml = tips.length ? `<div class="alerts">${tips.map(t=>`<div class="alert ${t.sev}">${t.txt}</div>`).join('')}</div>` : `<div class="okstate">✓ El canal rinde: cada pedido deja ${fmt(a28.cmPerOrder)} y el día cubre sus fijos.</div>`;
   return `<div class="panel"><h3>Delivery 配 · canal</h3>${kp}${tipsHtml}
     <div class="gkhdr" style="margin-top:12px">A dónde va cada peso neto de un pedido</div>${spine}
@@ -3985,7 +4001,7 @@ function renderTurnos(){
 }
 
 /* ----------------------------- Heika · precios dinámicos ----------------------------- */
-let heika = { combo:'', disc:15, pts:6, mode:'salon', dDisc:15, dPts:20, dApp:null, dPrice:0 };
+let heika = { combo:'', disc:15, pts:6, mode:'salon', dDisc:15, dPts:20, dApp:null, dMk:0 };
 const HEIKA_PRESETS = { conservador:3, moderado:6, optimista:10 };
 const HEIKA_DPRESETS = { conservador:8, moderado:20, optimista:35 };   // % más pedidos por cada −10%
 const WEEKS_PER_MONTH = 52/12;   // un día×turno ocurre ~1 vez por semana
@@ -4144,12 +4160,18 @@ function heikaDeliveryBase(){
   }
   return { src:'plan', n:recs.length, orders0:plan.on?(dv.orders||0):0, ticket:dv.ticket||0, bevPer:dv.bev||0, appShare:(dv.appShare||0)/100, cashShare:0 };
 }
-function heikaDeliverySim(base, disc, orders, appShare){
-  const food=orders*base.ticket*(1-disc/100), bev=orders*base.bevPer, gross=food+bev;
-  const app=gross*appShare, own=gross-app;
-  const d={ date:'2026-01-01', orders, food, bev, app, own, ownCash:own*base.cashShare, cancel:0 };
+/* simula un día: promo (disc) sobre el ticket, recargo (mk) solo en el precio de app,
+   mix de canal y tope de capacidad (S.delivery.maxPerDay, 0 = sin tope) */
+function heikaDeliverySim(base, disc, orders, appShare, mk){
+  const cap=(S.delivery&&S.delivery.maxPerDay)||0; if(cap>0) orders=Math.min(orders,cap);
+  mk=mk||0;
+  const oApp=orders*appShare, oOwn=orders-oApp;
+  const tOwn=base.ticket*(1-disc/100), tApp=base.ticket*(1+mk/100)*(1-disc/100);
+  const food=oOwn*tOwn+oApp*tApp, bev=orders*base.bevPer, gross=food+bev;
+  const app=oApp*(tApp+base.bevPer), own=oOwn*(tOwn+base.bevPer);
+  const d={ date:'', orders, food, bev, app, own, ownCash:own*base.cashShare, cancel:0 };
   const m=deliveryMetrics(d);
-  return { orders, gross, contrib:m.contrib, profit:m.profit, commission:m.commission, courier:m.courier, cmPerOrder:m.cmPerOrder };
+  return { orders, gross, contrib:m.contrib, profit:m.profit, commission:m.commission, courier:m.courier, cmPerOrder:m.cmPerOrder, capped:cap>0&&orders>=cap };
 }
 function renderHeikaDelivery(out, ctrl, kp){
   const dv=S.delivery||{}; const base=heikaDeliveryBase();
@@ -4157,21 +4179,29 @@ function renderHeikaDelivery(out, ctrl, kp){
     ctrl.innerHTML=heikaModeBar()+'<div class="svempty">Sin pedidos en el plan ni en el registro 配. Prendé el canal en el esquema 勘定 o cargá días de delivery en el analista para simular.</div>';
     out.innerHTML=''; return;
   }
-  const disc=heika.dDisc, pts=heika.dPts;
-  const appShare0=base.appShare, appShare = heika.dApp==null ? appShare0 : Math.max(0,Math.min(1,heika.dApp/100));
-  const today=heikaDeliverySim(base, 0, base.orders0, appShare0);
-  const ordersScen=base.orders0*(1+(disc/10)*pts/100);
-  const scen=heikaDeliverySim(base, disc, ordersScen, appShare);
-  /* pedidos necesarios (a este descuento y mix) para igualar el resultado de hoy */
+  const disc=heika.dDisc, pts=heika.dPts, mk=heika.dMk||0, cap=dv.maxPerDay||0;
+  const appShareSel = heika.dApp==null ? base.appShare : Math.max(0,Math.min(1,heika.dApp/100));
+  const appShare0=base.appShare;
+  const today=heikaDeliverySim(base, 0, base.orders0, appShare0, 0);
+  /* demanda del escenario: la promo suma pedidos en los dos canales; el recargo en
+     app resta pedidos solo en la app, con la misma sensibilidad */
+  const scenOrders=(px)=>{ const up=1+(disc/10)*px/100, down=Math.max(0,1-(mk/10)*px/100);
+    const oApp=base.orders0*appShareSel*up*down, oOwn=base.orders0*(1-appShareSel)*up; const o=oApp+oOwn;
+    return { orders:o, share: o>0? oApp/o : appShareSel, capped: cap>0 && o>cap }; };
+  const so=scenOrders(pts);
+  const ordersScen=so.orders, appShare=so.share;
+  const scen=heikaDeliverySim(base, disc, ordersScen, appShare, mk);
+  /* pedidos necesarios (a este descuento, recargo y mix) para igualar el resultado de hoy */
   let beOrders=null, prevB=null;
-  for(let o=0;o<=base.orders0*4;o+=0.25){ const p=heikaDeliverySim(base,disc,o,appShare).profit;
+  for(let o=0;o<=base.orders0*4;o+=0.25){ const p=heikaDeliverySim(base,disc,o,appShare,mk).profit;
     if(p>=today.profit){ beOrders = (prevB==null||prevB.p===p) ? o : prevB.o + (today.profit-prevB.p)/(p-prevB.p)*(o-prevB.o); break; }
     prevB={o,p}; }
+  if(beOrders!=null && cap>0 && beOrders>cap) beOrders=null;   /* por encima de la capacidad: inalcanzable */
   const days=dv.days||26;
   const deltaDay=scen.profit-today.profit, deltaMonth=deltaDay*days;
-  const wins=beOrders!=null && ordersScen>=beOrders;
-  /* palanca de canal, a pedidos constantes */
-  const chan=heikaDeliverySim(base, 0, base.orders0, appShare);
+  const wins=beOrders!=null && Math.min(ordersScen, cap>0?cap:Infinity)>=beOrders;
+  /* palanca de canal, a pedidos constantes y sin promo */
+  const chan=heikaDeliverySim(base, 0, base.orders0, appShareSel, mk);
   const chanDelta=chan.profit-today.profit;
 
   const presetBtn=(name,lbl)=>`<button class="${Math.abs(pts-HEIKA_DPRESETS[name])<0.001?'on':''}" onclick="setHeikaDPreset('${name}')">${lbl}</button>`;
@@ -4187,23 +4217,29 @@ function renderHeikaDelivery(out, ctrl, kp){
       <div class="hslab"><span>% más pedidos por cada −10%</span><b>+${pts}%</b></div>
       <input type="range" min="0" max="60" step="1" value="${pts}" oninput="setHeikaD('dPts',this.value)">
     </div>
+    <div class="hslab" style="margin-top:16px"><span>Precio por canal</span></div>
+    <div class="hslider">
+      <div class="hslab"><span>Recargo del precio en la app<span class="sub" style="display:block;font-size:10.5px">para absorber la comisión · resta pedidos de app con la misma sensibilidad</span></span><b>+${mk}%</b></div>
+      <input type="range" min="0" max="40" step="1" value="${mk}" oninput="setHeikaD('dMk',this.value)">
+    </div>
     <div class="hslab" style="margin-top:16px"><span>Mix de canal en el escenario</span></div>
     <div class="hslider">
-      <div class="hslab"><span>Pedidos por apps</span><b>${Math.round(appShare*100)}%</b></div>
-      <input type="range" min="0" max="100" step="5" value="${Math.round(appShare*100)}" oninput="setHeikaD('dApp',this.value)">
+      <div class="hslab"><span>Pedidos por apps (antes del recargo)</span><b>${Math.round(appShareSel*100)}%</b></div>
+      <input type="range" min="0" max="100" step="5" value="${Math.round(appShareSel*100)}" oninput="setHeikaD('dApp',this.value)">
     </div>
-    <p class="note" style="margin-top:12px">Supuesto: con <b>−${disc}%</b> los pedidos pasan de <b>${base.orders0.toFixed(1)}</b> a <b>${ordersScen.toFixed(1)}</b> por día. La comisión de apps (${dv.appPct||0}%) se cobra sobre el precio ya rebajado; el cadete (${fmt(dv.courier||0)}/pedido) solo en canal propio.</p>`;
+    <p class="note" style="margin-top:12px">Supuesto: con <b>−${disc}%</b>${mk?' y <b>+'+mk+'%</b> en la app':''} los pedidos pasan de <b>${base.orders0.toFixed(1)}</b> a <b>${Math.min(ordersScen, cap>0?cap:Infinity).toFixed(1)}</b> por día${so.capped?' <b style="color:var(--vermilion)">(topado por la capacidad de '+cap+')</b>':''}${mk?', con '+Math.round(appShare*100)+'% por apps':''}. La comisión de apps (${dv.appPct||0}%) se cobra sobre el precio ya rebajado; el cadete (${fmt(dv.courier||0)}/pedido) solo en canal propio.${cap?'':' Sin tope de capacidad cargado en 勘定: cualquier volumen se da por posible.'}</p>`;
 
   kp.innerHTML =
     kpiH('Resultado / día delivery', fmt(scen.profit), deltaDay>=0?'var(--good)':'var(--bad)', (deltaDay>=0?'+':'')+fmt(deltaDay)+' vs hoy') +
     kpiH('Impacto mensual', (deltaMonth>=0?'+':'')+fmt(deltaMonth), deltaMonth>=0?'var(--good)':'var(--bad)', days+' días de delivery') +
-    kpiH('Pedidos para empatar', beOrders==null?'inalcanzable':beOrders.toFixed(1)+'/día', wins?'var(--good)':'var(--bad)', beOrders==null?'ni al cuádruple':'a −'+disc+'% y '+Math.round(appShare*100)+'% apps');
+    kpiH('Pedidos para empatar', beOrders==null?'inalcanzable':beOrders.toFixed(1)+'/día', wins?'var(--good)':'var(--bad)', beOrders==null?(cap?'por encima de la capacidad':'ni al cuádruple'):'a −'+disc+'%'+(mk?' · +'+mk+'% app':'')+' · '+Math.round(appShare*100)+'% apps');
 
   const cmp=(l,a,b,f,better)=>{ const dv2=b-a, good=better==null?null:(better==='up'?dv2>=0:dv2<=0);
     return `<tr><td>${l}</td><td>${f(a)}</td><td>${f(b)}</td><td style="color:${dv2===0?'var(--ink-soft)':good?'var(--good)':'var(--bad)'};font-weight:600">${dv2>0?'+':''}${f(dv2)}</td></tr>`; };
   const table=`<table class="rank"><thead><tr><th>Métrica</th><th>Hoy</th><th>Escenario</th><th>Δ</th></tr></thead><tbody>
     ${cmp('Pedidos / día', today.orders, scen.orders, v=>v.toFixed(1), 'up')}
-    ${cmp('Ticket comida', base.ticket, base.ticket*(1-disc/100), fmt, null)}
+    ${cmp('Ticket comida · local', base.ticket, base.ticket*(1-disc/100), fmt, null)}
+    ${cmp('Ticket comida · app', base.ticket, base.ticket*(1+mk/100)*(1-disc/100), fmt, null)}
     ${cmp('Facturación bruta / día', today.gross, scen.gross, fmt, 'up')}
     ${cmp('Comisión apps / día', today.commission, scen.commission, fmt, 'down')}
     ${cmp('Envíos propios / día', today.courier, scen.courier, fmt, 'down')}
@@ -4216,14 +4252,14 @@ function renderHeikaDelivery(out, ctrl, kp){
     : wins
       ? `<div class="hverdict good">Tu supuesto (${ordersScen.toFixed(1)} pedidos/día) <b>supera</b> el umbral (${beOrders.toFixed(1)}). Si la demanda reacciona así, la jugada deja <b>${fmt(deltaDay)}</b> más por día.</div>`
       : `<div class="hverdict bad">Tu supuesto (${ordersScen.toFixed(1)} pedidos/día) queda <b>por debajo</b> del umbral (${beOrders.toFixed(1)}). Para que convenga, la promo tiene que traer al menos ${(beOrders/base.orders0*100-100).toFixed(0)}% más pedidos.</div>`;
-  const chanTxt = Math.abs(appShare-appShare0)<0.001
-    ? `Mové el slider de apps para ver cuánto vale sacar pedidos de la app y llevarlos a WhatsApp/web: la comisión (${dv.appPct||0}% del bruto) contra el cadete (${fmt(dv.courier||0)} fijos por pedido) y el procesamiento propio (${S.pagos.procPct}%).`
-    : `A pedidos constantes, pasar de ${Math.round(appShare0*100)}% a ${Math.round(appShare*100)}% por apps ${chanDelta>=0?'<b>suma</b>':'<b>resta</b>'} <b>${fmt(Math.abs(chanDelta))}/día</b> (${fmt(Math.abs(chanDelta*days))}/mes). ${chanDelta>=0?'Cada pedido que sacás de la app vale más que lo que cuesta el envío propio: conviene invertir en canal directo (cupón de segunda compra, WhatsApp, QR en la caja).':'Con estos números el cadete propio sale más caro que la comisión: el canal propio solo conviene con pedidos grandes o retiro en local.'}`;
+  const chanTxt = (Math.abs(appShareSel-appShare0)<0.001 && !mk)
+    ? `Mové el slider de apps para ver cuánto vale sacar pedidos de la app y llevarlos a WhatsApp/web: la comisión (${dv.appPct||0}% del bruto) contra el cadete (${fmt(dv.courier||0)} fijos por pedido) y el procesamiento propio (${S.pagos.procPct}%). O probá un recargo en la app: es la forma habitual de que el cliente de app pague la comisión.`
+    : `A pedidos constantes y sin promo, ${mk?'un recargo de +'+mk+'% en la app'+(Math.abs(appShareSel-appShare0)>=0.001?' y ':''):''}${Math.abs(appShareSel-appShare0)>=0.001?'pasar de '+Math.round(appShare0*100)+'% a '+Math.round(appShareSel*100)+'% por apps':''} ${chanDelta>=0?'<b>suma</b>':'<b>resta</b>'} <b>${fmt(Math.abs(chanDelta))}/día</b> (${fmt(Math.abs(chanDelta*days))}/mes). ${mk?'El recargo mejora el pedido de app, pero la demanda de app suele reaccionar: el escenario de arriba ya descuenta '+((mk/10)*pts).toFixed(0)+'% de pedidos de app por ese recargo.':(chanDelta>=0?'Cada pedido que sacás de la app vale más que lo que cuesta el envío propio: conviene invertir en canal directo (cupón de segunda compra, WhatsApp, QR en la caja).':'Con estos números el cadete propio sale más caro que la comisión: el canal propio solo conviene con pedidos grandes o retiro en local.')}`;
   /* curva: resultado/día según pedidos, con y sin promo */
   const W=560,H=280,pl=52,pr=14,pt=18,pb=34,pw=W-pl-pr,ph=H-pt-pb,yb=pt+ph;
   const maxO=Math.max(base.orders0*2.5, ordersScen*1.2, 4);
   const xs=[]; for(let i=0;i<=40;i++) xs.push(maxO*i/40);
-  const cur0=xs.map(o=>({o,p:heikaDeliverySim(base,0,o,appShare0).profit})), curD=xs.map(o=>({o,p:heikaDeliverySim(base,disc,o,appShare).profit}));
+  const cur0=xs.map(o=>({o,p:heikaDeliverySim(base,0,o,appShare0,0).profit})), curD=xs.map(o=>({o,p:heikaDeliverySim(base,disc,o,appShare,mk).profit}));
   let mn=Infinity,mx=-Infinity; cur0.concat(curD).forEach(d=>{mn=Math.min(mn,d.p);mx=Math.max(mx,d.p);}); mn=Math.min(mn,0); const pad=(mx-mn)*0.1||1; mx+=pad; mn-=pad;
   const X=o=>pl+o/maxO*pw, Y=p=>yb-(p-mn)/(mx-mn)*ph;
   const path=arr=>arr.map((d,i)=>(i?'L':'M')+X(d.o).toFixed(1)+' '+Y(d.p).toFixed(1)).join(' ');
@@ -4233,6 +4269,7 @@ function renderHeikaDelivery(out, ctrl, kp){
   g+=`<text class="axlab" x="${pl+pw/2}" y="${H-2}" text-anchor="middle" fill="var(--ink-soft)">pedidos por día</text>`;
   g+=`<line x1="${pl}" y1="${Y(today.profit)}" x2="${pl+pw}" y2="${Y(today.profit)}" stroke="var(--brass)" stroke-dasharray="4 3" opacity="0.7"/>`;
   if(beOrders!=null){ g+=`<line x1="${X(beOrders)}" y1="${pt}" x2="${X(beOrders)}" y2="${yb}" stroke="var(--vermilion)" stroke-dasharray="4 3" opacity="0.7"/><text class="glab" x="${X(beOrders)+4}" y="${pt+10}" fill="var(--vermilion)">empate ${beOrders.toFixed(1)}</text>`; }
+  if(cap>0 && cap<=maxO){ g+=`<line x1="${X(cap)}" y1="${pt}" x2="${X(cap)}" y2="${yb}" stroke="var(--ink)" stroke-width="1.5" opacity="0.6"/><text class="glab" x="${X(cap)-4}" y="${yb-6}" text-anchor="end" fill="var(--ink)">capacidad ${cap}</text>`; }
   g+=`<path d="${path(cur0)}" fill="none" stroke="var(--ink-soft)" stroke-width="1.4" stroke-dasharray="5 4" opacity="0.7"/>`;
   g+=`<path d="${path(curD)}" fill="none" stroke="${COLORS.delivery}" stroke-width="2.4"/>`;
   g+=`<circle cx="${X(base.orders0)}" cy="${Y(today.profit)}" r="5" fill="var(--ink)"/><text class="glab" x="${X(base.orders0)}" y="${Y(today.profit)-9}" text-anchor="middle" fill="var(--ink)">Hoy</text>`;
@@ -4241,7 +4278,8 @@ function renderHeikaDelivery(out, ctrl, kp){
   g+=`<text class="glab" x="${X(ordersScen)}" y="${Y(scen.profit)+(scen.profit>=today.profit?-11:20)}" text-anchor="middle" fill="${sc}">Escenario</text>`;
   const chart=`<svg viewBox="0 0 ${W} ${H}">${g}</svg>`;
 
-  const half=heikaDeliverySim(base,disc,base.orders0*(1+(disc/10)*(pts/2)/100),appShare).profit, dbl=heikaDeliverySim(base,disc,base.orders0*(1+(disc/10)*(pts*2)/100),appShare).profit;
+  const sH=scenOrders(pts/2), sD=scenOrders(pts*2);
+  const half=heikaDeliverySim(base,disc,sH.orders,sH.share,mk).profit, dbl=heikaDeliverySim(base,disc,sD.orders,sD.share,mk).profit;
   const ms=(l,v,n,col)=>`<div class="ms"><div class="ml">${l}</div><div class="mv"${col?` style="color:${col}"`:''}>${v}</div><div class="mn">${n}</div></div>`;
   const sens=`<div class="mstat">${ms('Reacción a la mitad', fmt(half), 'pedidos +'+((disc/10)*(pts/2)).toFixed(0)+'%', half>=today.profit?'var(--good)':'var(--bad)')}${ms('Reacción supuesta', fmt(scen.profit), 'pedidos +'+((disc/10)*pts).toFixed(0)+'%', scen.profit>=today.profit?'var(--good)':'var(--bad)')}${ms('Reacción al doble', fmt(dbl), 'pedidos +'+((disc/10)*(pts*2)).toFixed(0)+'%', dbl>=today.profit?'var(--good)':'var(--bad)')}</div>`;
 
@@ -4528,7 +4566,8 @@ function deliveryForecastPanel(dfc, horizon){
   t+=`</tbody></table>`;
   let dowHtml='';
   if(dfc.hasData){ const ds=DOW_ORDER.filter(d=>dfc.byDow[d]);
-    dowHtml=`<div class="mstat" style="grid-template-columns:repeat(${Math.max(1,ds.length)},1fr);margin-top:10px">`+ds.map(d=>{ const p=dfc.byDow[d]; return `<div class="ms"><div class="ml">${DOW_SHORT[d]}</div><div class="mv" style="font-size:15px">${p.orders.mean.toFixed(1)}</div><div class="mn">±${p.orders.sd.toFixed(1)} · ${fmt(p.contrib.mean)}</div></div>`; }).join('')+`</div>`; }
+    const cap=dv.maxPerDay||0;
+    dowHtml=`<div class="mstat" style="grid-template-columns:repeat(${Math.max(1,ds.length)},1fr);margin-top:10px">`+ds.map(d=>{ const p=dfc.byDow[d]; const hot=cap>0&&p.orders.mean+p.orders.sd>cap; return `<div class="ms"><div class="ml">${DOW_SHORT[d]}${hot?' <span style="color:var(--vermilion)">▲</span>':''}</div><div class="mv" style="font-size:15px${hot?';color:var(--vermilion)':''}">${p.orders.mean.toFixed(1)}</div><div class="mn">±${p.orders.sd.toFixed(1)} · ${fmt(p.contrib.mean)}</div></div>`; }).join('')+`</div>`+(cap>0&&ds.some(d=>dfc.byDow[d].orders.mean+dfc.byDow[d].orders.sd>cap)?`<p class="desc" style="margin:6px 0 0">▲ días cuya banda alta supera la capacidad de ${cap} pedidos: el pronóstico no los topa, pero la cocina sí.</p>`:''); }
   const note = dfc.hasData
     ? `Promedio y desvío por día de semana de las últimas 8 semanas de registro 配, con tendencia amortiguada. Compará contra el plan: si los pedidos reales quedan lejos de los ${Math.round(plan.orders)}/semana del esquema, el aporte del canal a los fijos también.`
     : `Sin historial suficiente (${dfc.n} días): proyecta el plan del esquema 勘定 (${dv.orders||0} pedidos/día × ${dv.days||0} días). Cargá los días de delivery en el analista 番付 y el pronóstico pasa a usar lo real.`;
@@ -5701,6 +5740,99 @@ function cjAddExtra(){
 }
 function cjDelExtra(id){ caja.extras=caja.extras.filter(e=>e.id!==id); cjPersist(); renderCaja(); }
 
+/* =====================================================================
+   LIQUIDACIONES DE APPS (kanjo:liquidaciones) — lo que la app dice que
+   vendiste vs lo que registraste, y lo que efectivamente acreditó.
+   ===================================================================== */
+let liqs=[]; const lqUI={ editing:null };
+const LQ_APPS=['Rappi','PedidosYa','Otra'];
+function lqEnsure(x){ return { id:x.id||rid(), app:LQ_APPS.includes(x.app)?x.app:'Otra', from:x.from||'', to:x.to||'', gross:+x.gross||0, comm:+x.comm||0, promo:+x.promo||0,
+  cancel:+x.cancel||0, ret:+x.ret||0, net:+x.net||0, paid:x.paid||'', note:x.note||'' }; }
+function lqPersist(){ persistSafe('kanjo:liquidaciones', liqs); }
+async function loadLiqs(){ await kjLoadKey('kanjo:liquidaciones', v=>{ liqs=(Array.isArray(v)?v:[]).map(lqEnsure); }); }
+/* bruto registrado por apps en 配 en el período (prorratea si app+propio no cierra con el bruto) */
+function lqRegistered(from,to){
+  let g=0,n=0; delivery.forEach(d=>{ if(d.date>=from && d.date<=to){ const m=deliveryMetrics(d); g+=m.app; n+=d.orders||0; } });
+  return {gross:g, orders:n};
+}
+function lqMetrics(l){
+  const reg=lqRegistered(l.from,l.to);
+  const take=l.gross>0 ? (l.gross-l.net)/l.gross*100 : 0;              /* lo que se queda la app, todo incluido */
+  const commPct=l.gross>0 ? l.comm/l.gross*100 : 0;
+  const gap=l.gross-reg.gross;                                          /* ventas según app − registradas */
+  const lag=(l.paid&&l.to)? Math.round((parseDate(l.paid)-parseDate(l.to))/86400000) : null;
+  const check=l.gross-l.comm-l.promo-l.cancel-l.ret;                    /* lo que debería haber acreditado */
+  return { reg, take, commPct, gap, gapPct: l.gross>0? gap/l.gross*100 : 0, lag, check, diff:l.net-check };
+}
+function lqClear(){ lqUI.editing=null; ['lqGross','lqComm','lqPromo','lqCancel','lqRet','lqNet','lqNote'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; }); }
+function lqSave(){
+  const v=id=>document.getElementById(id).value, n=id=>parseFloat(v(id))||0;
+  const l=lqEnsure({ id:lqUI.editing||rid(), app:v('lqApp'), from:v('lqFrom'), to:v('lqTo'), gross:n('lqGross'), comm:n('lqComm'), promo:n('lqPromo'), cancel:n('lqCancel'), ret:n('lqRet'), net:n('lqNet'), paid:v('lqPaid'), note:v('lqNote').trim() });
+  if(!l.from||!l.to||l.gross<=0){ flash('Completá período y ventas según la app'); return; }
+  if(l.to<l.from){ flash('El período termina antes de empezar'); return; }
+  if(!l.net) l.net=Math.max(0,l.gross-l.comm-l.promo-l.cancel-l.ret);
+  const ix=liqs.findIndex(x=>x.id===l.id); if(ix>=0) liqs[ix]=l; else liqs.push(l);
+  lqClear(); lqPersist(); flash('Liquidación guardada ✓'); renderCaja();
+}
+function lqEdit(id){ const l=liqs.find(x=>x.id===id); if(!l) return; lqUI.editing=id; renderCaja();
+  const set=(i,val)=>{ const e=document.getElementById(i); if(e) e.value=(val||val===0)?val:''; };
+  set('lqApp',l.app); set('lqFrom',l.from); set('lqTo',l.to); set('lqGross',l.gross); set('lqComm',l.comm); set('lqPromo',l.promo); set('lqCancel',l.cancel); set('lqRet',l.ret); set('lqNet',l.net); set('lqPaid',l.paid); set('lqNote',l.note);
+  try{ document.getElementById('cjLiq').scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){} }
+function lqDel(id){ if(!confirm('¿Borrar esta liquidación?')) return; liqs=liqs.filter(x=>x.id!==id); if(lqUI.editing===id) lqClear(); lqPersist(); renderCaja(); }
+function lqApplyLag(days){ caja.appLag=Math.max(0,Math.round(days)); cjPersist(); flash('Rezago de apps en caja: '+caja.appLag+' días ✓'); renderCaja(); }
+function renderLiq(){
+  const box=document.getElementById('cjLiq'); if(!box) return;
+  const cnt=document.getElementById('lqCount'); if(cnt) cnt.textContent=liqs.length;
+  const dv=S.delivery||{};
+  const today=fmtDate(new Date());
+  const form=`<p class="note">Cargá cada liquidación como la manda la app (semanal o quincenal): ventas brutas según la app, comisión, promos que financiaste vos, cancelaciones descontadas, retenciones (IIBB, IVA, Ganancias — son pago a cuenta, no costo) y el neto acreditado. Se cruza con los días de delivery registrados en 番付.</p>
+    <div class="row"><label>App</label><div class="ifield"><select id="lqApp" class="sel">${LQ_APPS.map(a=>`<option value="${a}">${a}</option>`).join('')}</select></div></div>
+    <div class="row"><label>Período<span class="sub">desde · hasta</span></label><div class="ifield" style="gap:4px"><input type="date" id="lqFrom" value="${fmtDate(new Date(Date.now()-7*86400000))}"><input type="date" id="lqTo" value="${today}"></div></div>
+    <div class="row"><label>Ventas según la app<span class="sub">bruto c/IVA que pagó el cliente</span></label><div class="ifield"><span class="pre">$</span><input type="number" id="lqGross" placeholder="0"></div></div>
+    <div class="row"><label>Comisión</label><div class="ifield"><span class="pre">$</span><input type="number" id="lqComm" placeholder="0"></div></div>
+    <div class="row"><label>Promos financiadas por vos</label><div class="ifield"><span class="pre">$</span><input type="number" id="lqPromo" placeholder="0"></div></div>
+    <div class="row"><label>Cancelaciones descontadas</label><div class="ifield"><span class="pre">$</span><input type="number" id="lqCancel" placeholder="0"></div></div>
+    <div class="row"><label>Retenciones<span class="sub">IIBB · IVA · Ganancias</span></label><div class="ifield"><span class="pre">$</span><input type="number" id="lqRet" placeholder="0"></div></div>
+    <div class="row"><label>Neto acreditado<span class="sub">vacío = bruto − descuentos</span></label><div class="ifield"><span class="pre">$</span><input type="number" id="lqNet" placeholder="auto"></div></div>
+    <div class="row"><label>Fecha de cobro</label><div class="ifield"><input type="date" id="lqPaid" value="${today}"></div></div>
+    <div class="row"><label>Nota</label><div class="ifield"><input type="text" id="lqNote" placeholder="nº de liquidación, reclamo…"></div></div>
+    <div class="toolbar"><button class="btn" onclick="lqSave()">${lqUI.editing?'Guardar cambios':'Registrar liquidación'}</button>${lqUI.editing?'<button class="btn ghost" onclick="lqClear();renderCaja()">Cancelar</button>':''}</div>`;
+  if(!liqs.length){ box.innerHTML=`<div class="tgrid"><div class="tleft">${form}</div><div class="tright"><div class="svempty">Sin liquidaciones cargadas. Con dos o tres ya ves la comisión efectiva real (suele ser más que el ${dv.appPct||0}% nominal), cuánto te retienen a cuenta y con qué rezago pagan.</div></div></div>`; return; }
+  const rows=[...liqs].sort((a,b)=>a.to<b.to?1:-1).map(l=>{ const m=lqMetrics(l);
+    return `<tr${lqUI.editing===l.id?' style="background:var(--panel-2)"':''}>
+      <td style="text-align:left">${escapeHtml(l.app)}<span class="gcat">${l.from.slice(5)} → ${l.to.slice(5)}</span></td>
+      <td>${fmt(l.gross)}<span class="gcat">${m.reg.gross?'registrado '+fmt(m.reg.gross):'sin registro 配'}</span></td>
+      <td style="color:${Math.abs(m.gapPct)<=3?'var(--ink)':'var(--vermilion)'}">${m.reg.gross?(m.gap>=0?'+':'')+fmt(m.gap):'—'}</td>
+      <td>${m.take.toFixed(1)}%<span class="gcat">comisión ${m.commPct.toFixed(1)}%</span></td>
+      <td>${fmt(l.ret)}</td>
+      <td style="font-weight:700">${fmt(l.net)}${Math.abs(m.diff)>1?`<span class="gcat" style="color:var(--vermilion)">${m.diff>0?'+':''}${fmt(m.diff)} vs cálculo</span>`:''}</td>
+      <td>${m.lag==null?'—':m.lag+' d'}</td>
+      <td><button class="editrow" onclick="lqEdit('${l.id}')">✎</button><button class="editrow" onclick="lqDel('${l.id}')">×</button></td></tr>`; }).join('');
+  /* resumen últimos 90 días */
+  const cut=fmtDate(new Date(Date.now()-90*86400000));
+  const rec=liqs.filter(l=>l.to>=cut); const sum=f=>rec.reduce((a,l)=>a+f(l),0);
+  const gross=sum(l=>l.gross), net=sum(l=>l.net), comm=sum(l=>l.comm), promo=sum(l=>l.promo), canc=sum(l=>l.cancel), ret=sum(l=>l.ret);
+  const take=gross>0?(gross-net)/gross*100:0, takeCost=gross>0?(comm+promo+canc)/gross*100:0;
+  const lags=rec.map(l=>lqMetrics(l).lag).filter(x=>x!=null); const avgLag=lags.length? lags.reduce((a,b)=>a+b,0)/lags.length : null;
+  const regAll=rec.reduce((a,l)=>{ const r=lqRegistered(l.from,l.to); return a+r.gross; },0);
+  const ms=(l,v,n,col)=>`<div class="ms"><div class="ml">${l}</div><div class="mv"${col?` style="color:${col}"`:''}>${v}</div><div class="mn">${n}</div></div>`;
+  const summary=rec.length?`<div class="mstat">
+    ${ms('Comisión efectiva', takeCost.toFixed(1)+'%', 'comisión + promos + cancelaciones · plan '+(dv.appPct||0)+'%', takeCost>(dv.appPct||0)+2?'var(--vermilion)':'var(--good)')}
+    ${ms('Te queda del bruto', (100-take).toFixed(0)+'%', fmt(net)+' de '+fmt(gross)+' en 90 días')}
+    ${ms('Retenciones a cuenta', fmt(ret), gross?(ret/gross*100).toFixed(1)+'% del bruto · para el contador':'', 'var(--brass-deep)')}
+    ${ms('Ventas app vs registro', regAll? ((gross-regAll)/regAll*100>=0?'+':'')+((gross-regAll)/regAll*100).toFixed(1)+'%' : '—', regAll?'la app dice '+fmt(gross)+' · 配 dice '+fmt(regAll):'sin días registrados en el período', regAll&&Math.abs(gross-regAll)/regAll>0.05?'var(--vermilion)':null)}
+    ${ms('Rezago de pago', avgLag==null?'—':Math.round(avgLag)+' días', avgLag==null?'cargá la fecha de cobro':'promedio · caja usa '+caja.appLag, avgLag!=null&&Math.abs(avgLag-caja.appLag)>=3?'var(--vermilion)':null)}
+  </div>`:'';
+  const tips=[];
+  if(rec.length && takeCost>(dv.appPct||0)+2) tips.push(`La app se queda con <b>${takeCost.toFixed(1)}%</b> real contra ${dv.appPct||0}% en el esquema: las promos y cancelaciones son costo del canal. Actualizá la comisión en 勘定 ⑧ para que el costeo y la caja dejen de ser optimistas.`);
+  if(regAll && Math.abs(gross-regAll)/regAll>0.05) tips.push(`Lo que la app liquida (${fmt(gross)}) y lo que registraste (${fmt(regAll)}) difieren ${(Math.abs(gross-regAll)/regAll*100).toFixed(0)}%: o faltan días en 番付, o la app te está contando pedidos que no viste. Vale revisar liquidación por liquidación.`);
+  if(avgLag!=null && Math.abs(avgLag-caja.appLag)>=3) tips.push(`Las apps te pagan en promedio a <b>${Math.round(avgLag)} días</b> y la caja proyecta ${caja.appLag}. <button class="minib" onclick="lqApplyLag(${Math.round(avgLag)})">Usar ${Math.round(avgLag)} días en caja</button>`);
+  if(ret>0) tips.push(`Las retenciones (${fmt(ret)} en 90 días) no son costo: son pago a cuenta de IIBB/IVA/Ganancias. Pasáselas al contador; si no las computa, las pagás dos veces.`);
+  box.innerHTML=`<div class="tgrid"><div class="tleft">${form}</div><div class="tright">${summary}${tips.length?`<div class="alerts">${tips.map(t=>`<div class="alert warn">${t}</div>`).join('')}</div>`:''}
+    <div style="overflow-x:auto;margin-top:10px"><table class="gkins"><thead><tr><th style="text-align:left">App · período</th><th>Ventas app</th><th>vs 配</th><th>Se queda</th><th>Retenc.</th><th>Neto</th><th>Rezago</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="desc" style="margin:8px 0 0">«Se queda» es todo lo que no llegó: comisión, promos financiadas, cancelaciones y retenciones. «vs cálculo» avisa cuando el neto acreditado no cierra con los descuentos declarados: es el reclamo a hacer.</p></div></div>`;
+}
+
 /* ---- motor semanal ---- */
 function cjMonday(d){ const x=new Date(d.getTime()); const day=(x.getDay()+6)%7; x.setDate(x.getDate()-day); x.setHours(0,0,0,0); return x; }
 function cjBuild(){
@@ -5864,6 +5996,7 @@ function renderCaja(){
     ${alertsHtml}
     <div class="panel"><h3>Detalle semana a semana</h3><div style="overflow-x:auto"><table class="gkins"><thead><tr><th style="text-align:left">Semana</th><th>Cobros</th><th>Egresos</th><th>Saldo</th><th style="text-align:left">Eventos</th></tr></thead><tbody>${rows}</tbody></table></div>
       <p class="desc" style="margin:10px 0 0">Modelo <b>aproximado</b> y transparente: alquiler+operación e IIBB el día 1, sueldos el 4, IVA trimestral el 1 de abr/jul/oct/ene. Las compras de CMV se asumen semanales y proporcionales a la venta. No reemplaza al contador — te avisa antes que él.</p></div>`;
+  renderLiq();
 }
 
 /* =====================================================================
@@ -6617,7 +6750,7 @@ async function kjLogout(){
 /* ---- backup / restore total ---- */
 /* el backup cubre TODAS las claves de la app; las que el rol no pueda leer
    o escribir se saltean solas (el servidor devuelve 403 y se ignora) */
-const KANJO_KEYS=['kanjo:baseline','kanjo:scenarios','kanjo:services','kanjo:delivery','kanjo:fchealth','kanjo:genka','kanjo:compras','kanjo:mermas','kanjo:fxlog','kanjo:caja','kanjo:reservas','kanjo:stock','kanjo:crm','kanjo:auth','kanjo:cierres','kanjo:aisho','kanjo:kata','kanjo:kataruns','kanjo:dou','kanjo:shun','kanjo:zaiko','kanjo:oroshi','kanjo:wa','kanjo:hito','kanjo:hitopay','kanjo:hitopunch','kanjo:kondate','kanjo:seki'];
+const KANJO_KEYS=['kanjo:baseline','kanjo:scenarios','kanjo:services','kanjo:delivery','kanjo:liquidaciones','kanjo:fchealth','kanjo:genka','kanjo:compras','kanjo:mermas','kanjo:fxlog','kanjo:caja','kanjo:reservas','kanjo:stock','kanjo:crm','kanjo:auth','kanjo:cierres','kanjo:aisho','kanjo:kata','kanjo:kataruns','kanjo:dou','kanjo:shun','kanjo:zaiko','kanjo:oroshi','kanjo:wa','kanjo:hito','kanjo:hitopay','kanjo:hitopunch','kanjo:kondate','kanjo:seki'];
 async function kjBackup(){
   const data={};
   for(const k of KANJO_KEYS){
@@ -10480,7 +10613,7 @@ loadMe().then(()=>Promise.all([          /* la sesión primero: define qué clav
   loadServices(), loadDelivery(), loadFcHealth(),
   loadGenka().then(()=>{ meEnsureMix(); }),
   loadCompras(), loadMermas(), loadFxlog(),
-  loadCaja(), loadReservas(),
+  loadCaja(), loadLiqs(), loadReservas(),
   loadStock(), loadCRM(), loadCierres(), loadAisho(), loadKata(), loadKataRuns(), loadWa(), loadDou(), loadShun(), loadZaiko(), loadOroshi(),
   loadKondate(), loadSeki()
 ])).then(()=>loadHito()).then(()=>{        /* Hito al final: hitopay depende del permiso, y el rol lo decide */
