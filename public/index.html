@@ -589,6 +589,12 @@
   .complegend .lp{font-family:'JetBrains Mono',monospace;color:var(--ink-soft);margin-left:2px}
 
 
+  /* ---------- tab genka · menús guardados ---------- */
+  .gkmenus{display:flex;flex-wrap:wrap;gap:8px}
+  .gkmenu{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:150px;padding:8px 12px;border:1px solid var(--rule);border-radius:3px;background:var(--panel);cursor:pointer;text-align:left;font-family:'Inter',sans-serif;color:var(--ink)}
+  .gkmenu.on{border-color:var(--ink);background:var(--panel-2);box-shadow:inset 3px 0 0 var(--brass)}
+  .gkmenu b{font-size:13px;font-weight:600}.gkmenu .star{color:var(--brass);font-size:12px;margin-right:4px}
+  .gkmenu .k{font-size:10.5px;color:var(--ink-soft)}.gkmenu .fc{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700}
   /* ---------- tab genka · costeo de menú ---------- */
   .gkgrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:22px;margin-top:24px;align-items:start}
   @media(max-width:940px){.gkgrid{grid-template-columns:1fr}}
@@ -1284,6 +1290,30 @@
             </div>
           </div>
         </div>
+
+        <div class="card" id="dvCard">
+          <div class="head" style="cursor:default"><span class="num">配</span><span class="ttl" id="dvFormTtl">Registrar delivery del día</span></div>
+          <div class="body">
+            <p class="note">Un registro por día: todos los pedidos que salieron, con y sin app. Se costea con los parámetros del canal en el esquema 勘定 (envase, comisión, envío) y carga <b id="dvProrate">—</b> de fijos por día de delivery. Precios <b>c/IVA incluido</b>, como en el servicio.</p>
+            <div class="row"><label>Fecha</label><div class="ifield"><input type="date" id="dvDate"></div></div>
+            <div class="row"><label>Pedidos</label><div class="ifield"><input type="number" id="dvOrders" placeholder="0"></div></div>
+            <div class="row"><label>Facturación comida<span class="sub">todos los pedidos · c/IVA</span></label><div class="ifield"><span class="pre">$</span><input type="number" id="dvFood" placeholder="0"></div></div>
+            <div class="row"><label>Bebidas<span class="sub">c/IVA</span></label><div class="ifield"><span class="pre">$</span><input type="number" id="dvBev" placeholder="0"></div></div>
+            <div class="subhead">Por dónde entró</div>
+            <div class="row"><label>Apps<span class="sub">Rappi / PedidosYa · bruto que vio el cliente</span></label><div class="ifield"><span class="pre">$</span><input type="number" id="dvApp" placeholder="0"></div></div>
+            <div class="row"><label>Canal propio<span class="sub">WhatsApp / web · tarjeta o link</span></label><div class="ifield"><span class="pre">$</span><input type="number" id="dvOwn" placeholder="0"></div></div>
+            <div class="row"><label>… de eso, en efectivo<span class="sub">sin comisión</span></label><div class="ifield"><span class="pre">$</span><input type="number" id="dvOwnCash" placeholder="0"></div></div>
+            <div class="row"><label>Cancelados / reembolsos<span class="sub">pedidos perdidos con costo</span></label><div class="ifield"><input type="number" id="dvCancel" placeholder="0" class="small"></div></div>
+            <div class="row"><label>Nota</label><div class="ifield"><input type="text" id="dvNote" placeholder="lluvia, promo 2x1, app caída…"></div></div>
+            <div class="toolbar">
+              <button class="btn" id="dvSubmitBtn" onclick="submitDelivery()">Registrar delivery</button>
+              <button class="btn ghost" id="dvCancelBtn" onclick="cancelDeliveryEdit()" style="display:none">Cancelar edición</button>
+              <button class="btn ghost" onclick="seedDelivery()">Cargar ejemplo</button>
+            </div>
+            <div class="svlist" id="dvList" style="margin-top:10px"></div>
+            <div class="exptools"><button class="minib" onclick="exportDelivery()">Exportar delivery (CSV)</button></div>
+          </div>
+        </div>
       </div>
 
       <div class="tright" id="tAnalysis">
@@ -1363,8 +1393,13 @@
 
     <p class="assume">
       <span>※</span>
-      <span>Acá construís el <b>food cost teórico</b> de abajo hacia arriba: insumos → escandallo por paso → costo por cubierto. Los insumos se cargan en <b>ARS con IVA</b> (como llegan las facturas); el modelo netea por alícuota y convierte a USD con el TC. El precio del menú estándar se toma <b>del turno del esquema</b> (neto de IVA), así los dos tabs nunca divergen. El triángulo completo: <b>teórico</b> (este tab) vs <b>plan</b> (el % del esquema 勘定) vs <b>real</b> (el CMV del analista 番付) — si el real supera al teórico por mucho, el problema es merma operativa o porciones, no receta.</span>
+      <span>Acá construís el <b>food cost teórico</b> de abajo hacia arriba: insumos → escandallo por paso → costo por cubierto. Los insumos se cargan en <b>ARS con IVA</b> (como llegan las facturas); el modelo netea por alícuota y convierte a USD con el TC. Podés tener <b>varios menús</b> guardados (omakase de temporada, degustación corta, box de delivery) sobre la misma lista de insumos; el marcado ★ es el <b>principal</b>, el que leen Carta QR, Maridaje, Servicio y el food cost teórico del Resumen. El precio de un menú de salón se toma <b>del turno del esquema</b> (neto de IVA); el de un menú de delivery es propio y se costea con envase y comisión de apps.</span>
     </p>
+
+    <div class="card" data-key="gkmenus" style="margin-bottom:14px">
+      <div class="head" style="cursor:default"><span class="num">献</span><span class="ttl">Menús guardados</span><span class="tag mix" id="gkMenuCount">0</span></div>
+      <div class="body" id="gkMenus"></div>
+    </div>
 
     <div class="gkgrid">
       <div>
@@ -1391,7 +1426,7 @@
           <div class="body">
             <p class="note">Cada paso es una mini-receta: ingredientes × cantidad por porción. La barra muestra el peso de cada paso en el costo del cubierto. Tocá un paso para abrir su escandallo, editar el nombre, la descripción o marcarlo <span class="gktagprem" style="margin-left:0">premium</span> (solo entra en la variante premium). Las flechas reordenan la secuencia.</p>
             <div class="gkvtog">
-              <button id="gkVStd" onclick="gkSetVariant('std')">Omakase estándar</button>
+              <button id="gkVStd" onclick="gkSetVariant('std')">Estándar</button>
               <button id="gkVPrem" onclick="gkSetVariant('prem')">Premium</button>
             </div>
             <div id="gkPasosBox" style="margin-top:10px"></div>
@@ -2041,7 +2076,7 @@
 /* ----------------------------- color map ----------------------------- */
 const COLORS = {
   cmv:'#A8392B', labor:'#1E3A4C', ocup:'#2F5468', oper:'#6A6052',
-  pagos:'#A87338', imp:'#8A5E2C', capex:'#8a8377', margen:'#3E6B4E', loss:'#A8392B'
+  pagos:'#A87338', imp:'#8A5E2C', capex:'#8a8377', delivery:'#5C7A3E', margen:'#3E6B4E', loss:'#A8392B'
 };
 
 /* ----------------------------- default state ----------------------------- */
@@ -2079,6 +2114,10 @@ function defaultState(){
     impuestos:{ iibbPct:3.0, debCredPct:0.5, gananciasPct:25 },
     capex:{ inversion:120000, anios:5 },
     iva:{ rateVentas:21, rateCMV:10.5, shareOcup:60, shareOper:70, deferDays:90, yieldAnual:4 },
+    /* canal delivery: otra dinámica (pedidos, no sillas) y otros costos
+       (envase, comisión de apps, envío). Precios de carta c/IVA, como los turnos. */
+    delivery:{ on:true, days:26, orders:8, ticket:42, bev:4, foodPct:38, packaging:2.5,
+               appShare:70, appPct:28, courier:3.5, laborExtra:0, ads:150, fixedShare:null },
   };
 }
 function ensureShape(st){
@@ -2086,6 +2125,10 @@ function ensureShape(st){
   st.iva = Object.assign({}, d.iva, st.iva||{});
   st.impuestos = Object.assign({}, d.impuestos, st.impuestos||{});
   st.pagos = Object.assign({}, d.pagos, st.pagos||{});
+  /* baseline guardada sin delivery: se agrega el bloque APAGADO para no
+     inventarle facturación a un modelo real; el usuario lo prende y carga */
+  if(!st.delivery || typeof st.delivery!=='object') st.delivery = Object.assign({}, d.delivery, {on:false});
+  else st.delivery = Object.assign({}, d.delivery, st.delivery);
   if(!Array.isArray(st.turnos)){
     const price = st.revenue && st.revenue.omakasePrice!=null ? st.revenue.omakasePrice : 60;
     const bev   = st.revenue && st.revenue.bevPerCover!=null ? st.revenue.bevPerCover : 18;
@@ -2103,6 +2146,56 @@ function ensureShape(st){
 let scenarios = [];
 let S = defaultState();
 
+/* ----------------------------- delivery (canal) -----------------------------
+   El delivery no vende sillas: vende pedidos. Su facturación no depende de la
+   ocupación, y tiene costos propios que el salón no tiene: envase por pedido,
+   comisión de las apps (sobre el bruto c/IVA, como la cobran), envío propio
+   (cadete) para lo que no va por app, dotación extra y pauta en las apps.
+   Devuelve todo en USD neto de IVA salvo `gross`/`appGross`/`ownGross`.   */
+function deliveryCalc(st){
+  st = st || S;
+  const dv = st.delivery || {};
+  const on = dv.on!==false && (dv.days||0)>0 && (dv.orders||0)>0;
+  const ivaDiv = 1 + (st.iva ? st.iva.rateVentas : 21)/100;
+  const orders = on ? (dv.days||0)*(dv.orders||0) : 0;
+  const ticketGross = (dv.ticket||0)+(dv.bev||0);
+  const gross = orders*ticketGross;
+  const foodRev = orders*(dv.ticket||0)/ivaDiv, bevRev = orders*(dv.bev||0)/ivaDiv;
+  const rev = foodRev+bevRev;
+  const foodPct = (dv.foodPct!=null && dv.foodPct!=='') ? +dv.foodPct : st.cmv.foodPct;
+  const cmv = foodRev*foodPct/100 + bevRev*(st.cmv.bevPct||0)/100;
+  const packaging = orders*(dv.packaging||0);
+  const appShare = Math.max(0,Math.min(100,dv.appShare||0))/100;
+  const appGross = gross*appShare, ownGross = gross-appGross;
+  const app = appGross*(dv.appPct||0)/100;                       // la app se queda con su % del bruto
+  const courier = orders*(1-appShare)*(dv.courier||0);          // envío propio, solo pedidos directos
+  const pagos = ownGross*(st.pagos.procPct||0)/100;              // el canal propio cobra con tarjeta/link
+  const imp = rev*((st.impuestos.iibbPct||0)+(st.impuestos.debCredPct||0))/100;
+  const laborExtra = on ? (dv.laborExtra||0) : 0;
+  const ads = on ? (dv.ads||0) : 0;
+  const canal = packaging+app+courier;                           // costos variables propios del canal
+  const variable = cmv+canal+pagos+imp;
+  const direct = variable+laborExtra+ads;
+  const cm = rev-direct;                                         // lo que el delivery aporta a los fijos comunes
+  const perOrder = orders ? { rev:rev/orders, variable:variable/orders, cm:(rev-variable)/orders, gross:ticketGross } : { rev:0, variable:0, cm:0, gross:ticketGross };
+  return { on, orders, days:on?(dv.days||0):0, gross, appGross, ownGross, rev, foodRev, bevRev, foodPct, cmv,
+           packaging, app, courier, pagos, imp, laborExtra, ads, canal, variable, direct, cm, perOrder, ivaDiv };
+}
+/* fracción de los fijos comunes que absorbe el delivery: manual (fixedShare %)
+   o proporcional a su peso en la facturación neta. Se usa para prorratear
+   fijos entre servicios de salón y días de delivery en el analista. */
+function deliveryFixedShare(st){
+  st = st || S;
+  const d = deliveryCalc(st);
+  if(!d.on) return 0;
+  const dv = st.delivery||{};
+  if(dv.fixedShare!=null && dv.fixedShare!=='' && !isNaN(+dv.fixedShare)) return Math.max(0,Math.min(1,(+dv.fixedShare)/100));
+  const ivaDiv = d.ivaDiv, r=st.revenue, occ=r.occupancy/100;
+  let sal=0; st.turnos.forEach(t=>{ sal += t.days*((t.price+t.bev)/ivaDiv); });
+  const salonRev = r.seats*occ*sal;
+  return (salonRev+d.rev)>0 ? d.rev/(salonRev+d.rev) : 0;
+}
+
 /* ----------------------------- compute ----------------------------- */
 function compute(){
   const r = S.revenue;
@@ -2119,23 +2212,27 @@ function compute(){
   const covers = maxCovers * occ;
   const omakaseRev = r.seats * occ * omFull;
   const bevRev = r.seats * occ * bvFull;
-  const revenue = omakaseRev + bevRev;
+  const salonRev = omakaseRev + bevRev;
+  const dlv = deliveryCalc(S);
+  const revenue = salonRev + dlv.rev;
 
-  const foodCost = omakaseRev * S.cmv.foodPct/100;
-  const bevCost  = bevRev * S.cmv.bevPct/100;
+  const foodCost = omakaseRev * S.cmv.foodPct/100 + dlv.foodRev * dlv.foodPct/100;
+  const bevCost  = bevRev * S.cmv.bevPct/100 + dlv.bevRev * (S.cmv.bevPct||0)/100;
   const cmv = foodCost + bevCost;
 
-  const labor = S.labor.reduce((a,x)=>a + (x.gross||0)*(x.mult||0), 0);
+  const labor = S.labor.reduce((a,x)=>a + (x.gross||0)*(x.mult||0), 0) + dlv.laborExtra;
   const ocup  = S.ocupacion.reduce((a,x)=>a + (x.amount||0), 0);
   const oper  = S.operacion.reduce((a,x)=>a + (x.amount||0), 0);
-  const pagos = revenue * ivaDiv * S.pagos.procPct/100;   // comisión sobre caja bruta (c/IVA), como cobra el procesador
+  const salonPagos = salonRev * ivaDiv * S.pagos.procPct/100;   // comisión sobre caja bruta (c/IVA), como cobra el procesador
+  const pagos = salonPagos + dlv.pagos;
   const iibb  = revenue * S.impuestos.iibbPct/100;
   const debCred = revenue * S.impuestos.debCredPct/100;
   const imp = iibb + debCred;
   const capex = S.capex.inversion / Math.max(1,(S.capex.anios*12));
+  const delivery = dlv.canal + dlv.ads;                           // centro ⑧: envase + apps + envíos + pauta
 
-  const variable = cmv + pagos + imp;
-  const fixed = labor + ocup + oper + capex;
+  const variable = cmv + pagos + imp + dlv.canal;
+  const fixed = labor + ocup + oper + capex + dlv.ads;
   const totalCost = variable + fixed;
   const resultado = revenue - totalCost;
   const margenPct = revenue ? resultado/revenue*100 : 0;
@@ -2143,16 +2240,20 @@ function compute(){
   const resultadoFinal = resultado - ganancias;
   const margenFinalPct = revenue ? resultadoFinal/revenue*100 : 0;
 
+  /* unit economics del salón: por cubierto. El delivery se descuenta de los
+     fijos a cubrir (su contribución), así el equilibrio sigue en ocupación. */
+  const salonVariable = (omakaseRev*S.cmv.foodPct/100 + bevRev*S.cmv.bevPct/100) + salonPagos + salonRev*(S.impuestos.iibbPct+S.impuestos.debCredPct)/100;
   const revPerCover = totalDays ? (omFull + bvFull)/totalDays : 0;              // neto ponderado
   const revPerCoverGross = totalDays ? grossTicketSum/totalDays : 0;           // carta ponderado
-  const variableRate = revenue ? variable/revenue : 0;
+  const variableRate = salonRev ? salonVariable/salonRev : 0;
   const cmPerCover = revPerCover * (1 - variableRate);
   const varPerCover = revPerCover * variableRate;
-  const breakevenCovers = cmPerCover>0 ? fixed/cmPerCover : Infinity;
+  const fixedNet = fixed - dlv.ads - dlv.laborExtra - dlv.cm;                  // fijos comunes menos lo que aporta el delivery
+  const breakevenCovers = cmPerCover>0 ? Math.max(0,fixedNet)/cmPerCover : Infinity;
   const breakevenOcc = maxCovers ? breakevenCovers/maxCovers*100 : Infinity;
 
-  return {maxCovers,covers,omakaseRev,bevRev,revenue,foodCost,bevCost,cmv,labor,ocup,oper,
-    pagos,iibb,debCred,imp,capex,variable,fixed,totalCost,resultado,margenPct,totalDays,
+  return {maxCovers,covers,omakaseRev,bevRev,salonRev,revenue,foodCost,bevCost,cmv,labor,ocup,oper,
+    pagos,salonPagos,iibb,debCred,imp,capex,delivery,dlv,variable,fixed,fixedNet,totalCost,resultado,margenPct,totalDays,
     ganancias,resultadoFinal,margenFinalPct,
     revPerCover,revPerCoverGross,variableRate,cmPerCover,varPerCover,breakevenCovers,breakevenOcc};
 }
@@ -2233,6 +2334,27 @@ function renderInputs(){
     <div class="subtotal"><span class="l">Amortización / mes</span><span class="v">${fmt(c.capex)}</span></div>
   `));
 
+  const dv=S.delivery, dl=c.dlv;
+  box.appendChild(card('delivery','八','⑧ Delivery · canal','mix','Otra dinámica: vende <b>pedidos</b>, no sillas, así que no depende de la ocupación. Y otros costos: envase por pedido, comisión de las apps (sobre el bruto c/IVA, como la cobran), envío propio para lo que va directo, dotación y pauta. Ticket y bebida en precio de carta <b>c/IVA incluido</b>, igual que los turnos.', `
+    <label class="chkrow"><input type="checkbox" ${dv.on!==false?'checked':''} onchange="setDeliveryOn(this.checked)"><span>Canal activo <span class="sub2">(apagado: el modelo es solo salón)</span></span></label>
+    <div class="subhead">Demanda y ticket</div>
+    ${numRow('Días con delivery / mes','delivery.days',dv.days,'',0,'')}
+    ${numRow('Pedidos por día','delivery.orders',dv.orders,'',1,'promedio · el pronóstico 予想 lo compara con lo real')}
+    ${numRow('Ticket comida por pedido','delivery.ticket',dv.ticket,'$',0,'carta c/IVA · sin bebida')}
+    ${numRow('Bebida por pedido','delivery.bev',dv.bev,'$',0,'carta c/IVA')}
+    <div class="subhead">Costos del canal</div>
+    ${numRow('Food cost delivery','delivery.foodPct',dv.foodPct,'%',0,'suele diferir del salón: otro menú (box), sin merma de servicio · 原価 lo calcula')}
+    ${numRow('Envase por pedido','delivery.packaging',dv.packaging,'$',1,'caja, bolsa, palillos, salsas')}
+    ${numRow('Pedidos por apps','delivery.appShare',dv.appShare,'%',0,'Rappi / PedidosYa · el resto es canal propio (WhatsApp, web)')}
+    ${numRow('Comisión de las apps','delivery.appPct',dv.appPct,'%',0,'sobre el bruto c/IVA · incluye su procesamiento y envío')}
+    ${numRow('Envío propio por pedido','delivery.courier',dv.courier,'$',1,'cadete · solo pedidos del canal propio')}
+    ${numRow('Dotación extra','delivery.laborExtra',dv.laborExtra,'$',0,'USD/mes · empaque y despacho, si suma gente')}
+    ${numRow('Pauta / promos en apps','delivery.ads',dv.ads,'$',0,'USD/mes · fijo del canal')}
+    <div class="row"><label>Fijos comunes que absorbe<span class="sub">vacío = proporcional a su facturación (hoy ${Math.round(deliveryFixedShare()*100)}%) · para prorratear en 番付</span></label><div class="ifield"><input type="number" class="small" value="${dv.fixedShare==null?'':dv.fixedShare}" placeholder="auto" oninput="setDeliveryFixedShare(this.value)"><span class="post">%</span></div></div>
+    <div class="subtotal"><span class="l">Costos propios del canal · ${Math.round(dl.orders)} pedidos/mes</span><span class="v">${fmt(c.delivery)}</span></div>
+    <div class="subtotal" style="border-top-style:dotted"><span class="l">Contribución del delivery a los fijos</span><span class="v" id="dlvCmV" style="color:${dl.cm>=0?'var(--good)':'var(--vermilion)'}">${fmt(dl.cm)}</span></div>
+  `));
+
   // re-bind collapse state
   document.querySelectorAll('.card').forEach(cd=>{
     if(collapsed[cd.dataset.key]) cd.classList.add('collapsed');
@@ -2305,6 +2427,11 @@ function setVal(path,v){
   S[a][b] = parseFloat(v)||0;
   renderOutputs(); refreshSubtotals();
 }
+function setDeliveryOn(on){ S.delivery.on=!!on; renderInputs(); renderOutputs(); }
+function setDeliveryFixedShare(v){
+  S.delivery.fixedShare = (v===''||v==null) ? null : Math.max(0,Math.min(100,parseFloat(v)||0));
+  renderOutputs(); refreshSubtotals();
+}
 function setList(cat,i,field,v){
   S[cat][i][field] = field==='name' ? v : (parseFloat(v)||0);
   renderOutputs(); refreshSubtotals();
@@ -2321,7 +2448,7 @@ function refreshSubtotals(){
   const c = compute();
   const subs = {
     ingresos:c.revenue, cmv:c.cmv, labor:c.labor, ocup:c.ocup,
-    oper:c.oper, pagos:c.pagos, imp:c.imp, capex:c.capex
+    oper:c.oper, pagos:c.pagos, imp:c.imp, capex:c.capex, delivery:c.delivery
   };
   document.querySelectorAll('.card').forEach(cd=>{
     const k = cd.dataset.key, sub = cd.querySelector('.subtotal .v');
@@ -2330,10 +2457,15 @@ function refreshSubtotals(){
   const cv = cd2('ingresos');
   if(cv){
     const lab = cv.querySelector('.subtotal .l');
-    if(lab) lab.textContent = `Facturación neta · ${Math.round(c.covers)} cub. · ${c.totalDays} servicios/mes`;
+    if(lab) lab.textContent = `Facturación neta · ${Math.round(c.covers)} cub. · ${c.totalDays} servicios/mes` + (c.dlv.on?` · + ${Math.round(c.dlv.orders)} pedidos delivery`:'');
   }
   if(document.querySelector('.card[data-key="capex"] .subtotal .v'))
     document.querySelector('.card[data-key="capex"] .subtotal .v').textContent = fmt(c.capex);
+  const dcd=cd2('delivery');
+  if(dcd){
+    const lab=dcd.querySelector('.subtotal .l'); if(lab) lab.textContent=`Costos propios del canal · ${Math.round(c.dlv.orders)} pedidos/mes`;
+    const cmv=document.getElementById('dlvCmV'); if(cmv){ cmv.textContent=fmt(c.dlv.cm); cmv.style.color=c.dlv.cm>=0?'var(--good)':'var(--vermilion)'; }
+  }
   const gs=document.getElementById('ganSubV'); if(gs) gs.textContent=fmt(c.ganancias);
 }
 const cd2 = k => document.querySelector(`.card[data-key="${k}"]`);
@@ -2357,6 +2489,7 @@ function renderOutputs(){
     ['oper','Operación',c.oper], ['pagos','Pagos',c.pagos], ['imp','Impuestos',c.imp],
     ['capex','CapEx',c.capex],
   ];
+  if(c.dlv.on) segs.push(['delivery','Delivery',c.delivery]);
   if(c.resultado>=0) segs.push(['margen','Margen',c.resultado]);
   else segs.push(['loss','Pérdida',Math.abs(c.resultado)]);
   const base = c.resultado>=0 ? c.revenue : c.totalCost; // keep bar full
@@ -2374,7 +2507,11 @@ function renderOutputs(){
   document.getElementById('ueco').innerHTML = `
     <div class="cell"><div class="cl">Ticket / cubierto</div><div class="cv">${fmt(c.revPerCover)}</div><div class="cn">neto · carta ${fmt(c.revPerCoverGross)} c/IVA</div></div>
     <div class="cell"><div class="cl">Costo variable / cubierto</div><div class="cv" style="color:var(--vermilion)">${fmt(c.varPerCover)}</div><div class="cn">${pct(c.variableRate*100)} del ticket</div></div>
-    <div class="cell full" style="border-color:var(--ink)"><div class="cl">Margen de contribución / cubierto</div><div class="cv" style="color:var(--good)">${fmt(c.cmPerCover)}</div><div class="cn">lo que cada reserva aporta a pagar los fijos · fijos mensuales: ${fmt(c.fixed)}</div></div>
+    <div class="cell full" style="border-color:var(--ink)"><div class="cl">Margen de contribución / cubierto</div><div class="cv" style="color:var(--good)">${fmt(c.cmPerCover)}</div><div class="cn">lo que cada reserva aporta a pagar los fijos · fijos mensuales: ${fmt(c.fixed)}${c.dlv.on?` · el delivery ya cubre ${fmt(c.dlv.cm)}`:''}</div></div>
+    ${c.dlv.on?`
+    <div class="cell"><div class="cl">Ticket / pedido delivery</div><div class="cv">${fmt(c.dlv.perOrder.rev)}</div><div class="cn">neto · carta ${fmt(c.dlv.perOrder.gross)} c/IVA</div></div>
+    <div class="cell"><div class="cl">Costo variable / pedido</div><div class="cv" style="color:var(--vermilion)">${fmt(c.dlv.perOrder.variable)}</div><div class="cn">comida + envase + app/envío + impuestos · ${pct(c.dlv.perOrder.rev?c.dlv.perOrder.variable/c.dlv.perOrder.rev*100:0)} del ticket</div></div>
+    <div class="cell full" style="border-color:${COLORS.delivery}"><div class="cl">Contribución / pedido delivery</div><div class="cv" style="color:${c.dlv.perOrder.cm>=0?'var(--good)':'var(--bad)'}">${fmt(c.dlv.perOrder.cm)}</div><div class="cn">${Math.round(c.dlv.orders)} pedidos/mes · aporte mensual ${fmt(c.dlv.cm)} después de dotación y pauta · ${pct(c.revenue?c.dlv.rev/c.revenue*100:0)} de la facturación</div></div>`:''}
   `;
 
   // breakeven gauge
@@ -2398,6 +2535,8 @@ function renderOutputs(){
       ? `Estás operando <b>${pct(cushion)}</b> por encima del equilibrio — colchón sano.`
       : `Estás <b>${pct(Math.abs(cushion))}</b> por debajo del equilibrio: a esta ocupación el negocio pierde.`;
     beText = `Necesitás <b>${Math.round(c.breakevenCovers)}</b> cubiertos/mes (<b>${pct(be)}</b> de ocupación) para no perder. ${cd}`;
+    if(c.dlv.on && c.dlv.cm>0) beText += ` El delivery ya aporta <b>${fmt(c.dlv.cm)}</b>/mes a los fijos: sin él el equilibrio subiría a <b>${pct(Math.min(999,c.maxCovers&&c.cmPerCover>0?(c.fixed-c.dlv.ads-c.dlv.laborExtra)/c.cmPerCover/c.maxCovers*100:0))}</b>.`;
+    else if(c.dlv.on && c.dlv.cm<0) beText += ` Ojo: el delivery <b>pierde ${fmt(Math.abs(c.dlv.cm))}</b>/mes después de sus costos propios — hoy le suma presión al salón en vez de aliviarlo.`;
   }
   document.getElementById('belabel').innerHTML = beText;
 
@@ -2411,14 +2550,16 @@ function renderOutputs(){
     ['imp','⑥ Impuestos', c.imp, 'var', 'n'],
     ['capex','⑦ CapEx amort.', c.capex, 'fij', 'n'],
   ];
+  if(c.dlv.on) rows.push(['delivery','⑧ Delivery · canal', c.delivery, 'mix', 'n']);
   let body = `<tr><th>Centro</th><th class="r">$/mes</th><th class="r">% fact.</th><th class="r">tipo</th></tr>`;
+  if(c.dlv.on) body += `<tr><td class="cat" style="color:var(--ink-soft)">Facturación neta · salón ${fmt(c.salonRev)} + delivery ${fmt(c.dlv.rev)}</td><td class="num r">${fmt(c.revenue)}</td><td class="r"><span class="pct n">100.0%</span></td><td></td></tr>`;
   body += rows.map(([k,lab,v,t,bc])=>{
     const p = c.revenue? v/c.revenue*100 : 0;
     return `<tr>
       <td class="cat"><span class="dot" style="background:${COLORS[k]}"></span>${lab}</td>
       <td class="num r">${fmt(v)}</td>
       <td class="r"><span class="pct ${bc}">${pct(p)}</span></td>
-      <td class="r" style="color:var(--ink-soft);font-size:10.5px">${t==='var'?'variable':'fijo'}</td>
+      <td class="r" style="color:var(--ink-soft);font-size:10.5px">${t==='var'?'variable':t==='mix'?'mixto':'fijo'}</td>
     </tr>`;
   }).join('');
   body += `<tr class="tot"><td>Costo total operativo</td><td class="num r">${fmt(c.totalCost)}</td><td class="r"><span class="pct n">${pct(c.totalCost/c.revenue*100)}</span></td><td></td></tr>`;
@@ -2467,22 +2608,31 @@ function renderCascade(c){
 /* ----------------------------- charts ----------------------------- */
 const fmtK = n => { const a=Math.abs(n), s=n<0?'-':''; return a>=1000 ? s+'$'+(a/1000).toFixed(a<10000?1:0)+'k' : s+'$'+Math.round(a); };
 
+/* fijos comunes (salón + estructura). Los fijos propios del delivery (dotación
+   extra y pauta) van aparte en `dlv`, para que el prorrateo por servicio y la
+   caja los traten como lo que son: costos del canal, no del salón. */
 function fixedCosts(){
   const labor = S.labor.reduce((a,x)=>a+(x.gross||0)*(x.mult||0),0);
   const ocup  = S.ocupacion.reduce((a,x)=>a+(x.amount||0),0);
   const oper  = S.operacion.reduce((a,x)=>a+(x.amount||0),0);
   const capex = S.capex.inversion/Math.max(1,S.capex.anios*12);
-  return {labor,ocup,oper,capex,total:labor+ocup+oper+capex};
+  const d = deliveryCalc(S);
+  const dlv = d.laborExtra + d.ads;
+  return {labor,ocup,oper,capex,dlv,total:labor+ocup+oper+capex+dlv};
 }
+/* resultado a una ocupación dada: el salón escala con la ocupación, el
+   delivery entra constante (no depende de las sillas) */
 function atOcc(occPct){
   const r=S.revenue, ivaDiv=1+(S.iva?S.iva.rateVentas:21)/100, occ=occPct/100;
   let omF=0, bvF=0;
   S.turnos.forEach(t=>{ omF+=t.days*(t.price/ivaDiv); bvF+=t.days*(t.bev/ivaDiv); });
-  const omR=r.seats*occ*omF, bvR=r.seats*occ*bvF, rev=omR+bvR;
+  const omR=r.seats*occ*omF, bvR=r.seats*occ*bvF, salon=omR+bvR;
   const cmv=omR*S.cmv.foodPct/100 + bvR*S.cmv.bevPct/100;
-  const variable = cmv + rev*ivaDiv*S.pagos.procPct/100 + rev*(S.impuestos.iibbPct+S.impuestos.debCredPct)/100;
+  const d=deliveryCalc(S);
+  const rev=salon+d.rev;
+  const variable = cmv + salon*ivaDiv*S.pagos.procPct/100 + salon*(S.impuestos.iibbPct+S.impuestos.debCredPct)/100 + d.variable;
   const fx=fixedCosts().total;
-  return {rev,variable,fixed:fx,total:variable+fx,res:rev-variable-fx};
+  return {rev,salon,delivery:d.rev,variable,fixed:fx,total:variable+fx,res:rev-variable-fx};
 }
 
 function renderCharts(){ renderBreakeven(); renderProfit(); renderTornado(); renderPayback(); }
@@ -2490,12 +2640,15 @@ function renderCharts(){ renderBreakeven(); renderProfit(); renderTornado(); ren
 function renderBreakeven(){
   const W=720,H=300,pl=58,pr=18,pt=16,pb=34;
   const pw=W-pl-pr, ph=H-pt-pb, yb=pt+ph;
-  const rev100=atOcc(100).rev, var100=atOcc(100).variable, fixed=fixedCosts().total;
-  const cost0=fixed, cost100=fixed+var100;
+  /* a ocupación 0 el salón no vende, pero el delivery sí: las rectas arrancan en atOcc(0) */
+  const a0=atOcc(0), a100=atOcc(100);
+  const rev0=a0.rev, rev100=a100.rev, var0=a0.variable, var100=a100.variable, fixed=fixedCosts().total;
+  const cost0=fixed+var0, cost100=fixed+var100;
   const yMax=Math.max(rev100,cost100)*1.06||1;
   const X=o=>pl+o/100*pw, Y=v=>yb - v/yMax*ph;
-  const ra=rev100/100, va=var100/100;
-  const be = ra>va ? fixed/(ra-va) : Infinity;
+  const ra=(rev100-rev0)/100, va=(var100-var0)/100;
+  const be = ra>va ? Math.max(0,(cost0-rev0)/(ra-va)) : Infinity;
+  const revAt=o=>rev0+ra*o;
   const occ=S.revenue.occupancy;
   let g='';
   for(let i=0;i<=4;i++){const v=yMax*i/4,y=Y(v);
@@ -2506,19 +2659,19 @@ function renderBreakeven(){
   xa+=`<text class="axttl" x="${pl+pw/2}" y="${yb+30}" text-anchor="middle">ocupación</text>`;
   let fills='';
   if(isFinite(be)){
-    const xbe=X(be), ybe=Y(ra*be);
+    const xbe=X(be), ybe=Y(revAt(be));
     fills+=`<polygon points="${xbe},${ybe} ${X(100)},${Y(rev100)} ${X(100)},${Y(cost100)}" fill="var(--good)" opacity="0.15"/>`;
-    fills+=`<polygon points="${X(0)},${Y(cost0)} ${xbe},${ybe} ${X(0)},${Y(0)}" fill="var(--vermilion)" opacity="0.13"/>`;
+    fills+=`<polygon points="${X(0)},${Y(cost0)} ${xbe},${ybe} ${X(0)},${Y(rev0)}" fill="var(--vermilion)" opacity="0.13"/>`;
   } else {
-    fills+=`<polygon points="${X(0)},${Y(cost0)} ${X(100)},${Y(cost100)} ${X(100)},${Y(rev100)} ${X(0)},${Y(0)}" fill="var(--vermilion)" opacity="0.10"/>`;
+    fills+=`<polygon points="${X(0)},${Y(cost0)} ${X(100)},${Y(cost100)} ${X(100)},${Y(rev100)} ${X(0)},${Y(rev0)}" fill="var(--vermilion)" opacity="0.10"/>`;
   }
-  const revLine=`<line x1="${X(0)}" y1="${Y(0)}" x2="${X(100)}" y2="${Y(rev100)}" stroke="var(--indigo)" stroke-width="2.5"/>`;
+  const revLine=`<line x1="${X(0)}" y1="${Y(rev0)}" x2="${X(100)}" y2="${Y(rev100)}" stroke="var(--indigo)" stroke-width="2.5"/>`;
   const costLine=`<line x1="${X(0)}" y1="${Y(cost0)}" x2="${X(100)}" y2="${Y(cost100)}" stroke="var(--vermilion)" stroke-width="2.5"/>`;
   let mk='';
   if(isFinite(be)){
     const xbe=X(be);
     mk+=`<line x1="${xbe}" y1="${pt}" x2="${xbe}" y2="${yb}" stroke="var(--ink)" stroke-dasharray="3 3"/>`;
-    mk+=`<circle cx="${xbe}" cy="${Y(ra*be)}" r="3.5" fill="var(--ink)"/>`;
+    mk+=`<circle cx="${xbe}" cy="${Y(revAt(be))}" r="3.5" fill="var(--ink)"/>`;
     mk+=`<text class="glab" x="${xbe}" y="${pt-4}" text-anchor="middle" fill="var(--ink)">equilibrio ${Math.round(be)}%</text>`;
   }
   const xo=X(Math.min(100,occ));
@@ -2577,7 +2730,10 @@ function renderTornado(){
     {n:'Food cost',      m:(s,f)=>s.cmv.foodPct*=f},
     {n:'Costo laboral',  m:(s,f)=>s.labor.forEach(x=>x.gross*=f)},
     {n:'Alquiler/ocup.', m:(s,f)=>s.ocupacion.forEach(x=>x.amount*=f)},
-  ].map(d=>{
+  ].concat(deliveryCalc(S).on ? [
+    {n:'Pedidos delivery', m:(s,f)=>{ s.delivery.orders*=f; }},
+    {n:'Comisión apps',    m:(s,f)=>{ s.delivery.appPct*=f; }},
+  ] : []).map(d=>{
     const lo=resWith(s=>d.m(s,0.9)), hi=resWith(s=>d.m(s,1.1));
     return {...d, lo, hi, swing:Math.abs(hi-lo)};
   }).sort((a,b)=>b.swing-a.swing);
@@ -2648,13 +2804,15 @@ function ivaCompute(){
   const credOcup = c.ocup * (v.shareOcup/100) * (v.rateVentas/100);
   const credOper = c.oper * (v.shareOper/100) * (v.rateVentas/100);
   const credPagos= c.pagos * (v.rateVentas/100);
-  const credito  = credCMV + credOcup + credOper + credPagos;
+  /* delivery: envases y comisiones de apps facturan con IVA 21%; el cadete suele ser monotributista (sin crédito) */
+  const credDlv  = (c.dlv.packaging + c.dlv.app + c.dlv.ads) * (v.rateVentas/100);
+  const credito  = credCMV + credOcup + credOper + credPagos + credDlv;
   const neto     = debito - credito;
   const float    = Math.max(0,neto) * (v.deferDays/30);
   const benefAnual = float * v.yieldAnual/100;
   const burden   = c.revenue ? neto/c.revenue*100 : 0;
   const grossCash= c.revenue * (1 + v.rateVentas/100);
-  return {debito,credCMV,credOcup,credOper,credPagos,credito,neto,float,benefAnual,burden,grossCash};
+  return {debito,credCMV,credOcup,credOper,credPagos,credDlv,credito,neto,float,benefAnual,burden,grossCash};
 }
 function renderIvaInputs(){
   document.getElementById('ivaInputs').innerHTML = `
@@ -2698,9 +2856,9 @@ function metricsOf(st){
   const prev=S; S=st;
   try{
     const c=compute();
-    const rev100=atOcc(100).rev, var100=atOcc(100).variable, fixed=fixedCosts().total;
-    const ra=rev100/100, va=var100/100;
-    const be = ra>va ? fixed/(ra-va) : Infinity;
+    const a0=atOcc(0), a100=atOcc(100), fixed=fixedCosts().total;
+    const ra=(a100.rev-a0.rev)/100, va=(a100.variable-a0.variable)/100;
+    const be = ra>va ? Math.max(0,(fixed+a0.variable-a0.rev)/(ra-va)) : Infinity;
     const capexM=fixedCosts().capex, target=st.revenue.occupancy, inv=st.capex.inversion;
     const rampFr=m=>{const f=[0,.70,.78,.85,.90,.93,.96,.98];return m>=8?1:f[m];};
     let cum=0, pb=null;
@@ -2709,7 +2867,8 @@ function metricsOf(st){
     const iva = ivaCompute().neto;
     return {revenue:c.revenue, resultado:c.resultado, margen:c.margenPct,
             resultadoFinal:c.resultadoFinal, margenFinal:c.margenFinalPct, be, pb, roi, iva,
-            precio:c.revPerCoverGross, ocup:st.revenue.occupancy};
+            precio:c.revPerCoverGross, ocup:st.revenue.occupancy,
+            dlvOrders:c.dlv.orders, dlvCm:c.dlv.cm, dlvOn:c.dlv.on};
   } finally { S=prev; }
 }
 function renderScenarios(){
@@ -2720,6 +2879,8 @@ function renderScenarios(){
   const rows=[
     ['Ticket carta (prom.)', c=>fmt(c.precio), null],
     ['Ocupación', c=>Math.round(c.ocup)+'%', null],
+    ['Delivery · pedidos/mes', c=>c.dlvOn?Math.round(c.dlvOrders):'—', null],
+    ['Delivery · aporte a fijos', c=>c.dlvOn?fmt(c.dlvCm):'—', 'max', c=>c.dlvOn?c.dlvCm:-Infinity],
     ['Facturación / mes', c=>fmt(c.revenue), null],
     ['Resultado operativo', c=>fmt(c.resultado), 'max', c=>c.resultado, true],
     ['Margen operativo', c=>pct(c.margen), 'max', c=>c.margen],
@@ -2812,6 +2973,8 @@ function exportPL(){
     ['Kanjō · P&L mensual (USD, neto de IVA)'],
     ['Concepto','$/mes','% facturación'],
     ['Facturación neta', Math.round(c.revenue), '100.0'],
+    ['  · salón', Math.round(c.salonRev), pf(c.salonRev)],
+    ['  · delivery ('+Math.round(c.dlv.orders)+' pedidos)', Math.round(c.dlv.rev), pf(c.dlv.rev)],
     ['CMV', -Math.round(c.cmv), '-'+pf(c.cmv)],
     ['Costo laboral', -Math.round(c.labor), '-'+pf(c.labor)],
     ['Ocupación', -Math.round(c.ocup), '-'+pf(c.ocup)],
@@ -2819,6 +2982,7 @@ function exportPL(){
     ['Procesamiento de pagos', -Math.round(c.pagos), '-'+pf(c.pagos)],
     ['Impuestos operativos (IIBB+déb/créd)', -Math.round(c.imp), '-'+pf(c.imp)],
     ['CapEx amortizado', -Math.round(c.capex), '-'+pf(c.capex)],
+    ['Delivery · canal (envase + apps + envíos + pauta)', -Math.round(c.delivery), '-'+pf(c.delivery)],
     ['RESULTADO OPERATIVO', Math.round(c.resultado), c.margenPct.toFixed(1)],
     ['Impuesto a Ganancias ('+(S.impuestos.gananciasPct||0)+'%)', -Math.round(c.ganancias), '-'+pf(c.ganancias)],
     ['RESULTADO FINAL', Math.round(c.resultadoFinal), c.margenFinalPct.toFixed(1)],
@@ -2947,8 +3111,10 @@ const TURNO_SHORT=Object.fromEntries(TURNOS.map(t=>[t.id,t.short]));
 const TURNO_COLOR={M:'#A87338', N1:'#1E3A4C', N2:'#3E6B4E'};
 
 function servicesPerMonth(){ return Math.max(1, S.turnos.reduce((a,t)=>a+(t.days||0),0)); }
+/* los fijos comunes se reparten entre salón y delivery según deliveryFixedShare():
+   cada servicio de salón carga su parte del (1 − share); cada día de delivery, del share */
 function laborAlloc(turnoId){
-  const labor = S.labor.reduce((a,x)=>a+(x.gross||0)*(x.mult||0),0);
+  const labor = S.labor.reduce((a,x)=>a+(x.gross||0)*(x.mult||0),0) * (1-deliveryFixedShare());
   let totalW=0; S.turnos.forEach(t=>{ totalW += (t.days||0)*(t.laborW!=null?t.laborW:1); });
   const t=S.turnos.find(t=>t.id===turnoId);
   const w = t ? (t.laborW!=null?t.laborW:1) : 1;
@@ -2956,7 +3122,14 @@ function laborAlloc(turnoId){
 }
 function otherFixedAlloc(){
   const fx=fixedCosts();
-  return (fx.ocup + fx.oper + fx.capex) / servicesPerMonth();
+  return (fx.ocup + fx.oper + fx.capex) * (1-deliveryFixedShare()) / servicesPerMonth();
+}
+/* fijos que carga cada día de delivery: su parte de los comunes + sus propios (dotación, pauta) */
+function deliveryFixedPerDay(){
+  const d=deliveryCalc(S); if(!d.on) return 0;
+  const fx=fixedCosts();
+  const common=(fx.labor+fx.ocup+fx.oper+fx.capex)*deliveryFixedShare();
+  return (common + d.laborExtra + d.ads) / Math.max(1,d.days);
 }
 
 function serviceMetrics(sv){
@@ -3128,8 +3301,9 @@ function seedServices(){
         const cardSh=(we?0.52:0.42)+(Math.random()*0.1-0.05);
         const qrSh=0.30+(Math.random()*0.08-0.04);
         const cashSh=Math.max(0.05,1-cardSh-qrSh);
-        const payCard=Math.round(total*cardSh), payQR=Math.round(total*qrSh), payCash=Math.max(0,total-payCard-payQR);
+        const payCard=Math.round(total*cardSh), payQR=Math.round(total*qrSh); let payCash=Math.max(0,total-payCard-payQR);
         const cashDiscPct = (Math.random()<0.25 && payCash>0) ? 8 : 0;          // a veces descuento por efectivo
+        if(cashDiscPct) payCash=Math.round(payCash*(1-cashDiscPct/100));          // payCash es lo COBRADO (post-descuento)
         const cashUndeclared = (Math.random()<0.30 && payCash>0);               // parte del efectivo sin declarar
         services.push({ id:rid(), date:fmtDate(d), turno:tk.id, covers, omakase, premium, bebidas, extras,
           payCard, payCash, payQR, cashDiscPct, cashUndeclared });
@@ -3145,6 +3319,193 @@ async function loadServices(){
   await kjLoadKey('kanjo:services', v=>{ services=v; });
   services.forEach(s=>{ if(typeof s.turno==='number') s.turno = (s.turno===1?'N1':'N2'); });
   renderServiceList(); renderTurnos();
+}
+
+/* =====================================================================
+   DELIVERY 配 — registro diario de pedidos (kanjo:delivery)
+   Un registro por día. Se costea con S.delivery: envase, comisión de apps,
+   envío propio, food cost del canal; y carga su parte de los fijos.
+   ===================================================================== */
+let delivery=[];
+let dlvEditing=null;
+function dlvEnsure(d){
+  return { id:d.id||rid(), date:d.date, orders:+d.orders||0, food:+d.food||0, bev:+d.bev||0,
+           app:+d.app||0, own:+d.own||0, ownCash:+d.ownCash||0, cancel:+d.cancel||0, note:d.note||'' };
+}
+async function persistDelivery(){ await persistSafe('kanjo:delivery', delivery); }
+async function loadDelivery(){
+  await kjLoadKey('kanjo:delivery', v=>{ delivery=(Array.isArray(v)?v:[]).map(dlvEnsure); });
+}
+/* métricas de un día de delivery (todo neto de IVA salvo gross/app/own) */
+function deliveryMetrics(d){
+  const dv=S.delivery||{}, div=1+S.iva.rateVentas/100;
+  const orders=d.orders||0, gross=(d.food||0)+(d.bev||0);
+  let app=d.app||0, own=d.own||0;
+  if(app+own<=0){ app=gross*(dv.appShare||0)/100; own=gross-app; }   /* sin desglose: mix del plan */
+  else if(app+own!==gross && gross>0){ const k=gross/(app+own); app*=k; own*=k; }  /* normaliza al bruto */
+  const ownCash=Math.min(own, d.ownCash||0);
+  const appShare = gross>0 ? app/gross : (dv.appShare||0)/100;
+  const net=gross/div;
+  const foodPct=(dv.foodPct!=null&&dv.foodPct!=='')?+dv.foodPct:S.cmv.foodPct;
+  const cmv=(d.food||0)/div*foodPct/100 + (d.bev||0)/div*(S.cmv.bevPct||0)/100;
+  const packaging=(orders+(d.cancel||0))*(dv.packaging||0);        /* lo cancelado también se envasó */
+  const commission=app*(dv.appPct||0)/100;
+  const courier=Math.round(orders*(1-appShare))*(dv.courier||0);
+  const pagos=(own-ownCash)*(S.pagos.procPct||0)/100;
+  const imp=net*((S.impuestos.iibbPct||0)+(S.impuestos.debCredPct||0))/100;
+  const cancelCost=(d.cancel||0)*((d.food||0)/Math.max(1,orders))/div*foodPct/100;   /* comida tirada */
+  const variable=cmv+packaging+commission+courier+pagos+imp+cancelCost;
+  const contrib=net-variable;
+  const fixedDay=deliveryFixedPerDay();
+  const profit=contrib-fixedDay;
+  return { orders, gross, net, app, own, ownCash, appShare, cmv, packaging, commission, courier, pagos, imp, cancelCost,
+           variable, contrib, fixedDay, profit, ticket: orders? gross/orders : 0, cmPerOrder: orders? contrib/orders : 0,
+           appTake: app>0 ? commission/app*100 : 0 };
+}
+function dlvAgg(list){
+  const n=list.length; if(!n) return null;
+  const sum=f=>list.reduce((a,r)=>a+f(r),0);
+  const orders=sum(r=>r.m.orders), gross=sum(r=>r.m.gross), net=sum(r=>r.m.net);
+  return { n, orders, ordersDay:orders/n, gross, net, ticket:orders?gross/orders:0,
+           contrib:sum(r=>r.m.contrib), contribDay:sum(r=>r.m.contrib)/n, cmPerOrder:orders?sum(r=>r.m.contrib)/orders:0,
+           profit:sum(r=>r.m.profit), profitDay:sum(r=>r.m.profit)/n,
+           appShare:gross?sum(r=>r.m.app)/gross*100:0, commission:sum(r=>r.m.commission), packaging:sum(r=>r.m.packaging),
+           courier:sum(r=>r.m.courier), cancel:sum(r=>r.d.cancel||0),
+           margin: net? sum(r=>r.m.contrib)/net*100 : 0 };
+}
+function dlvReadForm(){
+  const num=id=>parseFloat(document.getElementById(id).value)||0;
+  return { orders:num('dvOrders'), food:num('dvFood'), bev:num('dvBev'), app:num('dvApp'), own:num('dvOwn'),
+           ownCash:num('dvOwnCash'), cancel:num('dvCancel'), note:(document.getElementById('dvNote').value||'').trim() };
+}
+function dlvClearForm(){
+  ['dvOrders','dvFood','dvBev','dvApp','dvOwn','dvOwnCash','dvCancel','dvNote'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
+  const d=document.getElementById('dvDate'); if(d) d.value=fmtDate(new Date());
+}
+function dlvFormMode(){
+  const b=document.getElementById('dvSubmitBtn'), c=document.getElementById('dvCancelBtn'), t=document.getElementById('dvFormTtl');
+  if(dlvEditing){ if(b)b.textContent='Guardar cambios'; if(c)c.style.display=''; if(t)t.textContent='Editar delivery'; }
+  else { if(b)b.textContent='Registrar delivery'; if(c)c.style.display='none'; if(t)t.textContent='Registrar delivery del día'; }
+}
+function submitDelivery(){
+  const date=document.getElementById('dvDate').value;
+  if(!date){ tFlash('Falta la fecha'); return; }
+  const f=dlvReadForm();
+  if(f.orders<=0 && f.food<=0){ tFlash('Cargá al menos pedidos y facturación'); return; }
+  if(dlvEditing){
+    const i=delivery.findIndex(x=>x.id===dlvEditing);
+    if(i>=0) delivery[i]=dlvEnsure({...delivery[i], date, ...f});
+    tFlash('Cambios guardados ✓');
+  } else {
+    const dup=delivery.find(x=>x.date===date);
+    if(dup && !confirm('Ya hay un registro de delivery para '+date+'. ¿Agregar otro igual?')) return;
+    delivery.push(dlvEnsure({id:rid(), date, ...f}));
+    tFlash('Delivery registrado ✓');
+  }
+  dlvEditing=null; dlvClearForm(); dlvFormMode();
+  persistDelivery(); renderDeliveryList(); renderTurnos();
+}
+function editDelivery(id){
+  const d=delivery.find(x=>x.id===id); if(!d) return;
+  dlvEditing=id;
+  document.getElementById('dvDate').value=d.date;
+  const setv=(i,v)=>{ document.getElementById(i).value=(v||v===0)?v:''; };
+  setv('dvOrders',d.orders); setv('dvFood',d.food); setv('dvBev',d.bev); setv('dvApp',d.app); setv('dvOwn',d.own);
+  setv('dvOwnCash',d.ownCash); setv('dvCancel',d.cancel); document.getElementById('dvNote').value=d.note||'';
+  dlvFormMode(); renderDeliveryList();
+  try{ document.getElementById('dvFormTtl').scrollIntoView({behavior:'smooth',block:'center'}); }catch(e){}
+}
+function cancelDeliveryEdit(){ dlvEditing=null; dlvClearForm(); dlvFormMode(); renderDeliveryList(); }
+function delDelivery(id){
+  delivery=delivery.filter(x=>x.id!==id);
+  if(dlvEditing===id) cancelDeliveryEdit();
+  persistDelivery(); renderDeliveryList(); renderTurnos(); tFlash('Registro eliminado');
+}
+function seedDelivery(){
+  const dv=S.delivery||{};
+  if(delivery.length && !confirm('Esto agrega 28 días de ejemplo a lo que ya cargaste. ¿Seguir?')) return;
+  const today=new Date(); const dowF={0:1.35,1:0.55,2:0.7,3:0.8,4:0.95,5:1.25,6:1.4};
+  for(let k=28;k>=1;k--){
+    const d=new Date(today.getTime()-k*86400000); const ds=fmtDate(d);
+    if(delivery.some(x=>x.date===ds)) continue;
+    const base=(dv.orders||8)*dowF[d.getDay()]*(0.85+Math.random()*0.3);
+    const orders=Math.max(0,Math.round(base)); if(!orders) continue;
+    const food=Math.round(orders*(dv.ticket||42)*(0.9+Math.random()*0.2));
+    const bev=Math.round(orders*(dv.bev||4)*(0.6+Math.random()*0.8));
+    const gross=food+bev; const app=Math.round(gross*Math.min(1,Math.max(0,((dv.appShare||70)+ (Math.random()*20-10))/100)));
+    const own=gross-app; const ownCash=Math.round(own*0.2);
+    delivery.push(dlvEnsure({id:rid(), date:ds, orders, food, bev, app, own, ownCash, cancel: Math.random()<0.15?1:0, note:''}));
+  }
+  persistDelivery(); renderDeliveryList(); renderTurnos(); tFlash('Delivery de ejemplo cargado ✓');
+}
+function renderDeliveryList(){
+  const el=document.getElementById('dvList'); if(!el) return;
+  const pe=document.getElementById('dvProrate'); if(pe) pe.textContent=fmt(deliveryFixedPerDay());
+  if(!delivery.length){ el.innerHTML='<div class="svempty">Sin días de delivery cargados. Un registro por día con pedidos y facturación, y el canal se lee solo.</div>'; return; }
+  const sorted=[...delivery].sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:0).slice(0,60);
+  el.innerHTML=sorted.map(d=>{ const m=deliveryMetrics(d);
+    return `<div class="svrow${dlvEditing===d.id?' editing':''}">
+      <span class="d">${d.date.slice(5)}</span>
+      <span class="dow">${DOW_SHORT[dowOf(d.date)]} · ${Math.round(m.appShare*100)}% app${d.cancel?' · <span style="color:var(--vermilion)">'+d.cancel+' canc.</span>':''}</span>
+      <span class="meta">${d.orders} ped · ${fmt(m.gross)}</span>
+      <span class="pf" style="color:${m.profit>=0?'var(--good)':'var(--bad)'}">${fmt(m.profit)}</span>
+      <button class="editrow" onclick="editDelivery('${d.id}')" title="editar">✎</button>
+      <button class="delrow" onclick="delDelivery('${d.id}')" title="quitar">×</button>
+    </div>`; }).join('') + (delivery.length>60?`<div class="svempty">… y ${delivery.length-60} más (exportá el CSV para verlos todos)</div>`:'');
+}
+function exportDelivery(){
+  if(!delivery.length){ tFlash('No hay delivery para exportar'); return; }
+  const head=['Fecha','Día','Pedidos','Comida','Bebidas','Total carta','Apps','Canal propio','Efectivo','Cancelados','% apps','Neto','CMV','Envases','Comisión apps','Envíos','Procesamiento','Impuestos','Cancelados $','Contribución','Fijos del día','Resultado','Nota'];
+  const rows=[head];
+  [...delivery].sort((a,b)=>a.date<b.date?-1:1).forEach(d=>{ const m=deliveryMetrics(d);
+    rows.push([d.date, DOW_FULL[dowOf(d.date)], d.orders, d.food, d.bev, Math.round(m.gross), Math.round(m.app), Math.round(m.own), Math.round(m.ownCash), d.cancel||0,
+      Math.round(m.appShare*100), Math.round(m.net), Math.round(m.cmv), Math.round(m.packaging), Math.round(m.commission), Math.round(m.courier), Math.round(m.pagos), Math.round(m.imp), Math.round(m.cancelCost), Math.round(m.contrib), Math.round(m.fixedDay), Math.round(m.profit), d.note||'']); });
+  downloadFile('kanjo-delivery.csv', toCSV(rows)) ? tFlash('Delivery exportado ✓') : tFlash('No se pudo exportar');
+}
+/* panel de análisis del canal (en el analista de turnos, debajo del salón) */
+function deliveryPanelHtml(){
+  const dv=S.delivery||{}, plan=deliveryCalc(S);
+  if(!delivery.length){
+    return `<div class="panel"><h3>Delivery 配 · canal</h3><div class="svempty">${plan.on?`El esquema 勘定 planea <b>${Math.round(plan.orders)}</b> pedidos/mes con un aporte de <b>${fmt(plan.cm)}</b> a los fijos. Cargá los días reales (o «Cargar ejemplo» en la tarjeta de delivery) para compararlo.`:'El canal está apagado en el esquema 勘定. Prendelo ahí y cargá los días reales acá para ver cómo rinde.'}</div></div>`;
+  }
+  const recs=delivery.map(d=>({d, m:deliveryMetrics(d), dow:dowOf(d.date)}));
+  const all=dlvAgg(recs);
+  const last28=recs.filter(r=>(new Date()-parseDate(r.d.date))/86400000<=28);
+  const a28=dlvAgg(last28)||all;
+  const ms=(l,v,n,col)=>`<div class="ms"><div class="ml">${l}</div><div class="mv"${col?` style="color:${col}"`:''}>${v}</div>${n?`<div class="mn">${n}</div>`:''}</div>`;
+  const planDay=plan.on?(dv.orders||0):0, planCm=plan.on&&plan.orders?plan.cm/plan.days:0;
+  const kp=`<div class="mstat">
+    ${ms('Pedidos / día', a28.ordersDay.toFixed(1), (planDay?'plan '+planDay+' · ':'')+a28.n+' días (28d)', planDay?(a28.ordersDay>=planDay*0.9?'var(--good)':'var(--bad)'):null)}
+    ${ms('Ticket por pedido', fmt(a28.ticket), 'carta c/IVA · plan '+fmt((dv.ticket||0)+(dv.bev||0)))}
+    ${ms('Contribución / pedido', fmt(a28.cmPerOrder), 'después de comida, envase, app/envío e impuestos', a28.cmPerOrder>0?'var(--good)':'var(--bad)')}
+    ${ms('Resultado / día', fmt(a28.profitDay), 'con '+fmt(deliveryFixedPerDay())+' de fijos por día', a28.profitDay>=0?'var(--good)':'var(--bad)')}
+    ${ms('Mix apps', Math.round(a28.appShare)+'%', 'plan '+(dv.appShare||0)+'% · las apps se llevan '+fmt(a28.commission)+' en el período', a28.appShare>(dv.appShare||0)+10?'var(--warn)':null)}
+    ${ms('Margen de contribución', pct(a28.margin), 'sobre neto', a28.margin>=25?'var(--good)':a28.margin>=15?'var(--warn)':'var(--bad)')}
+  </div>`;
+  /* por día de semana */
+  const byDow=DOW_ORDER.map(d=>({d, a:dlvAgg(recs.filter(r=>r.dow===d))})).filter(x=>x.a);
+  const maxO=Math.max(...byDow.map(x=>x.a.ordersDay),0.1);
+  const bars=`<div class="mstat" style="grid-template-columns:repeat(${Math.max(1,byDow.length)},1fr)">`+byDow.map(x=>`<div class="ms"><div class="ml">${DOW_SHORT[x.d]}</div><div class="mv" style="font-size:15px">${x.a.ordersDay.toFixed(1)}</div><div class="mn"><span style="display:inline-block;height:5px;width:${Math.round(x.a.ordersDay/maxO*90)}%;background:${COLORS.delivery};border-radius:2px"></span><br>${fmt(x.a.contribDay)}/día</div></div>`).join('')+`</div>`;
+  /* estructura del ticket: a dónde va cada $ de un pedido */
+  const perOrder = all.orders ? {
+    comida: recs.reduce((a,r)=>a+r.m.cmv,0)/all.orders, envase: all.packaging/all.orders, apps: all.commission/all.orders,
+    envio: all.courier/all.orders, imp: recs.reduce((a,r)=>a+r.m.imp+r.m.pagos,0)/all.orders, cm: all.cmPerOrder } : null;
+  const netTicket = all.orders? all.net/all.orders : 0;
+  const seg=(lab,v,col)=>{ const w=netTicket?Math.max(0,v/netTicket*100):0; return `<div class="seg" style="width:${w}%;background:${col}" title="${lab}: ${fmt(v)} · ${pct(w)}">${w>9?`<span>${Math.round(w)}%</span>`:''}</div>`; };
+  const spine = perOrder ? `<div class="spine" style="margin-top:8px">${seg('Comida',perOrder.comida,COLORS.cmv)}${seg('Envase',perOrder.envase,COLORS.oper)}${seg('Comisión apps',perOrder.apps,COLORS.pagos)}${seg('Envío propio',perOrder.envio,COLORS.imp)}${seg('Impuestos y proc.',perOrder.imp,COLORS.capex)}${perOrder.cm>=0?seg('Contribución',perOrder.cm,COLORS.margen):seg('Pérdida',-perOrder.cm,COLORS.loss)}</div>
+    <div class="legend">${[['Comida',COLORS.cmv],['Envase',COLORS.oper],['Comisión apps',COLORS.pagos],['Envío propio',COLORS.imp],['Impuestos y proc.',COLORS.capex],['Contribución',COLORS.margen]].map(([l,c])=>`<div class="leg"><span class="sw" style="background:${c}"></span>${l}</div>`).join('')}</div>` : '';
+  /* lectura */
+  const tips=[];
+  if(planDay && a28.ordersDay<planDay*0.8) tips.push({sev:'warn', txt:`Estás en <b>${a28.ordersDay.toFixed(1)}</b> pedidos/día contra <b>${planDay}</b> del plan: el aporte real del canal a los fijos es ${fmt(a28.contribDay*(dv.days||26))}/mes, no ${fmt(plan.cm+plan.laborExtra+plan.ads)}. Ajustá el esquema o empujá el canal propio.`});
+  if(a28.cmPerOrder<=0) tips.push({sev:'bad', txt:`Cada pedido <b>pierde</b> plata antes de los fijos (${fmt(a28.cmPerOrder)}). Con ${Math.round(a28.appShare)}% por apps y ${dv.appPct||0}% de comisión, o subís el precio en la app o movés pedidos al canal propio.`});
+  else if(a28.profitDay<0) tips.push({sev:'warn', txt:`El pedido deja contribución (${fmt(a28.cmPerOrder)}), pero el volumen no cubre los ${fmt(deliveryFixedPerDay())} de fijos por día. Necesitás ~<b>${Math.ceil(deliveryFixedPerDay()/a28.cmPerOrder)}</b> pedidos/día para que el canal se pague solo.`});
+  if(a28.appShare>=85 && (dv.appPct||0)>=20) tips.push({sev:'warn', txt:`El ${Math.round(a28.appShare)}% entra por apps: cada 10 puntos que muevas a pedido directo te ahorran ~${fmt(a28.gross*0.10*((dv.appPct||0)/100)-a28.orders*0.10*(dv.courier||0))} en el período (comisión menos cadete).`});
+  if(all.cancel && all.orders && all.cancel/all.orders>0.05) tips.push({sev:'warn', txt:`${all.cancel} cancelados sobre ${all.orders} pedidos (${(all.cancel/all.orders*100).toFixed(0)}%): comida y envase tirados. Vale revisar tiempos de preparación y disponibilidad en la app.`});
+  const tipsHtml = tips.length ? `<div class="alerts">${tips.map(t=>`<div class="alert ${t.sev}">${t.txt}</div>`).join('')}</div>` : `<div class="okstate">✓ El canal rinde: cada pedido deja ${fmt(a28.cmPerOrder)} y el día cubre sus fijos.</div>`;
+  return `<div class="panel"><h3>Delivery 配 · canal</h3>${kp}${tipsHtml}
+    <div class="gkhdr" style="margin-top:12px">A dónde va cada peso neto de un pedido</div>${spine}
+    <div class="gkhdr" style="margin-top:12px">Pedidos promedio por día de semana</div>${bars}
+    <p class="desc" style="margin:10px 0 0">El delivery se evalúa por <b>pedido</b>, no por cubierto: el salón vende sillas y el delivery vende volumen con un ticket más chico y una comisión grande arriba. Lo que importa es la contribución por pedido y cuántos pedidos hacen falta para pagar los fijos que el canal absorbe (${Math.round(deliveryFixedShare()*100)}% de los comunes, ajustable en 勘定).</p></div>`;
 }
 
 /* ---- renders ---- */
@@ -3413,9 +3774,18 @@ function buildInsights(recs){
   const totalP=Object.values(byDay).reduce((a,b)=>a+b,0);
   let topDay=null,topV=-Infinity; Object.entries(byDay).forEach(([d,v])=>{ if(v>topV){topV=v;topDay=+d;} });
   const conc=totalP>0?topV/totalP*100:0;
-  const runMonth=mean*servicesPerMonth();
+  const runSalon=mean*servicesPerMonth();
+  /* el delivery absorbe una parte de los fijos comunes: su run-rate entra acá para que
+     el mensual cierre. Con registro, lo real; sin registro, el plan del esquema. */
+  const dPlan=deliveryCalc(S), fx=fixedCosts();
+  const dCommon=(fx.labor+fx.ocup+fx.oper+fx.capex)*deliveryFixedShare();
+  let runDlv=0, dlvNote='';
+  if(delivery.length){ const cut=fmtDate(new Date(Date.now()-56*86400000)); const dr=delivery.filter(d=>d.date>=cut); const da=dlvAgg((dr.length?dr:delivery).map(d=>({d,m:deliveryMetrics(d)})));
+    runDlv = da ? da.contribDay*(S.delivery.days||26) - dCommon - dPlan.laborExtra - dPlan.ads : 0; dlvNote='delivery real '+fmt(runDlv); }
+  else if(dPlan.on){ runDlv = dPlan.cm - dCommon; dlvNote='delivery (plan) '+fmt(runDlv); }
+  const runMonth=runSalon+runDlv;
   const meanGross=recs.reduce((a,r)=>a+r.m.grossTotal,0)/n;
-  const runMonthGross=meanGross*servicesPerMonth();
+  const runMonthGross=meanGross*servicesPerMonth() + (delivery.length||dPlan.on ? (dPlan.on?dPlan.gross:0) : 0);
   const ms=(l,v,nn,col)=>`<div class="ms"><div class="ml">${l}</div><div class="mv"${col?` style="color:${col}"`:''}>${v}</div>${nn?`<div class="mn">${nn}</div>`:''}</div>`;
   const grid=`<div class="mstat">
     ${ms('Servicios rentables', profShare.toFixed(0)+'%', profitable+' de '+n+' servicios', profShare>=70?'var(--good)':profShare>=50?'var(--warn)':'var(--bad)')}
@@ -3423,8 +3793,8 @@ function buildInsights(recs){
     ${ms('Concentración', conc.toFixed(0)+'%', 'del resultado: '+(topDay!=null?DOW_FULL[topDay]:'—'))}
     ${ms('Finde vs semana · result.', weA&&wkA?fmt(weA.profit)+' / '+fmt(wkA.profit):'—', 'resultado por servicio')}
     ${ms('Finde vs semana · bruto', weA&&wkA?fmt(weA.grossAvg)+' / '+fmt(wkA.grossAvg):'—', 'facturación por servicio', 'var(--indigo)')}
-    ${ms('Run-rate mensual · result.', fmt(runMonth), 'resultado proyectado a '+servicesPerMonth()+' serv.')}
-    ${ms('Run-rate mensual · bruto', fmt(runMonthGross), 'facturación proyectada', 'var(--indigo)')}
+    ${ms('Run-rate mensual · result.', fmt(runMonth), 'salón '+fmt(runSalon)+' a '+servicesPerMonth()+' serv.'+(dlvNote?' · '+dlvNote:''))}
+    ${ms('Run-rate mensual · bruto', fmt(runMonthGross), 'facturación proyectada'+(dPlan.on?' · incl. delivery plan':''), 'var(--indigo)')}
     ${ms('Run-rate anual · result.', fmt(runMonth*12), 'operativo, pre-Ganancias')}
     ${ms('Run-rate anual · bruto', fmt(runMonthGross*12), 'facturación bruta', 'var(--indigo)')}
   </div>`;
@@ -3465,6 +3835,14 @@ function exportMonthly(){
       Math.round(sum(r=>r.m.pagos)), Math.round(sum(r=>r.m.imp)), Math.round(sum(r=>r.m.allocLabor)),
       Math.round(a.totalProfit), a.margin.toFixed(1), Math.round(sum(r=>r.m.undeclared))]);
   });
+  /* delivery por mes, para el contador: pedidos, neto, comisiones, resultado del canal */
+  if(delivery.length){
+    const byD={}; delivery.forEach(d=>{ const k=monthKey(d.date); (byD[k]=byD[k]||[]).push({d, m:deliveryMetrics(d)}); });
+    rows.push([],['DELIVERY'],['Mes','Días','Pedidos','Facturación neta','CMV','Envases','Comisión apps','Envíos','Impuestos','Contribución','Fijos absorbidos','Resultado']);
+    Object.keys(byD).sort().forEach(k=>{ const a=dlvAgg(byD[k]), sum=f=>byD[k].reduce((x,r)=>x+f(r),0);
+      rows.push([monthLabel(k), a.n, a.orders, Math.round(a.net), Math.round(sum(r=>r.m.cmv)), Math.round(a.packaging), Math.round(a.commission), Math.round(a.courier),
+        Math.round(sum(r=>r.m.imp+r.m.pagos)), Math.round(a.contrib), Math.round(sum(r=>r.m.fixedDay)), Math.round(a.profit)]); });
+  }
   downloadFile('kanjo-resumen-mensual.csv', toCSV(rows)) ? tFlash('Resumen mensual exportado ✓') : tFlash('No se pudo exportar');
 }
 
@@ -3519,9 +3897,10 @@ function rankMetric(a,key){ return key==='n'?a.n : key==='grossAvg'?a.grossAvg :
 function renderTurnos(){
   const pe=document.getElementById('tProrate'); if(pe) pe.textContent=fmt(otherFixedAlloc());
   const A=document.getElementById('tAnalysis');
+  renderDeliveryList();
   if(!services.length){
     renderTKpis(null);
-    A.innerHTML=`<div class="panel"><h3>Análisis por turno</h3><div class="svempty">Cargá servicios (o tocá «Cargar ejemplo») y vas a ver el mapa de calor día×turno, el ranking de rentabilidad, la comparación entre turnos y una lectura de qué explica cada resultado.</div></div>`;
+    A.innerHTML=`<div class="panel"><h3>Análisis por turno</h3><div class="svempty">Cargá servicios (o tocá «Cargar ejemplo») y vas a ver el mapa de calor día×turno, el ranking de rentabilidad, la comparación entre turnos y una lectura de qué explica cada resultado.</div></div>`+deliveryPanelHtml();
     return;
   }
   const filterBar=buildFilterBar();
@@ -3601,14 +3980,19 @@ function renderTurnos(){
     <div class="panel"><h3>Resultado promedio por día</h3>${barByDay(byProfit)}</div>
     <div class="panel"><h3>Tendencia · resultado por servicio en el tiempo</h3>${trendChart(recs)}
       <p class="desc" style="margin:8px 0 0">Cada punto es un servicio, coloreado por turno. Sirve para ver si el negocio mejora semana a semana y cómo se separan los turnos.</p></div>
-    <div class="panel"><h3>Comparación por turno</h3>${turnoCompareHtml(turnAgg)}</div>`;
+    <div class="panel"><h3>Comparación por turno</h3>${turnoCompareHtml(turnAgg)}</div>
+    ${deliveryPanelHtml()}`;
 }
 
 /* ----------------------------- Heika · precios dinámicos ----------------------------- */
-let heika = { combo:'', disc:15, pts:6 };
+let heika = { combo:'', disc:15, pts:6, mode:'salon', dDisc:15, dPts:20, dApp:null, dPrice:0 };
 const HEIKA_PRESETS = { conservador:3, moderado:6, optimista:10 };
+const HEIKA_DPRESETS = { conservador:8, moderado:20, optimista:35 };   // % más pedidos por cada −10%
 const WEEKS_PER_MONTH = 52/12;   // un día×turno ocurre ~1 vez por semana
 
+function setHeikaMode(m){ heika.mode=m; renderHeika(); }
+function setHeikaD(k,v){ heika[k]=+v; renderHeika(); }
+function setHeikaDPreset(name){ heika.dPts=HEIKA_DPRESETS[name]; renderHeika(); }
 function setHeikaCombo(v){ heika.combo=v; renderHeika(); }
 function setHeikaDisc(v){ heika.disc=Math.max(0,Math.min(40,+v||0)); renderHeika(); }
 function setHeikaPts(v){ heika.pts=Math.max(0,Math.min(15,+v||0)); renderHeika(); }
@@ -3633,14 +4017,17 @@ function heikaSim(base, disc, occ){
   const price=base.pricePerCover*(1-disc/100);
   const omakase=covers*price, premium=covers*base.premPerCover, bebidas=covers*base.bevPerCover, extras=covers*base.extrasPerCover;
   const gross=omakase+premium+bebidas+extras;
-  const sv={ id:'sim', date:'2026-01-01', turno:base.turno, covers, omakase, premium, bebidas, extras,
+  const sv={ id:'sim', date:'', turno:base.turno, covers, omakase, premium, bebidas, extras,   /* sin fecha: htLaborReal no busca fichajes */
     payCard:gross*base.cardP, payQR:gross*base.qrP, payCash:gross*base.cashP, cashDiscPct:0, cashUndeclared:false };
   const m=serviceMetrics(sv);
   return { covers, occ, gross:m.grossTotal, profit:m.profit, net:m.netTotal };
 }
 // ocupación mínima (a ese descuento) para alcanzar un resultado objetivo
 function heikaBreakeven(base, disc, target){
-  for(let o=0;o<=100.0001;o+=0.25){ if(heikaSim(base,disc,o).profit>=target) return o; }
+  let prev=null;
+  for(let o=0;o<=100.0001;o+=0.25){ const p=heikaSim(base,disc,o).profit;
+    if(p>=target){ if(prev==null || prev.p===p) return o; return prev.o + (target-prev.p)/(p-prev.p)*(o-prev.o); }   /* cruce interpolado */
+    prev={o,p}; }
   return null;
 }
 
@@ -3652,11 +4039,15 @@ function heikaCombos(recs){
     .sort((x,y)=>x.profit-y.profit);   // flojos primero
 }
 
+function heikaModeBar(){
+  return `<div class="seltoggle" style="margin:0 0 14px"><button class="${heika.mode!=='delivery'?'on':''}" onclick="setHeikaMode('salon')">Salón · descuento en un día flojo</button><button class="${heika.mode==='delivery'?'on':''}" onclick="setHeikaMode('delivery')">Delivery · promo y canal</button></div>`;
+}
 function renderHeika(){
   const out=document.getElementById('hOut'), ctrl=document.getElementById('hControls'), kp=document.getElementById('hKpis');
   if(kp) kp.innerHTML='';
+  if(heika.mode==='delivery'){ renderHeikaDelivery(out,ctrl,kp); return; }
   if(!services.length){
-    if(ctrl) ctrl.innerHTML='<div class="svempty">Cargá servicios en el analista (o «Cargar ejemplo») para simular precios sobre tus días reales.</div>';
+    if(ctrl) ctrl.innerHTML=heikaModeBar()+'<div class="svempty">Cargá servicios en el analista (o «Cargar ejemplo») para simular precios sobre tus días reales.</div>';
     if(out) out.innerHTML=''; return;
   }
   const recs=services.map(sv=>({sv, m:serviceMetrics(sv), dow:dowOf(sv.date)}));
@@ -3679,7 +4070,7 @@ function renderHeika(){
   // ---- controls ----
   const presetBtn=(name,lbl)=>`<button class="${Math.abs(pts-HEIKA_PRESETS[name])<0.001?'on':''}" onclick="setHeikaPreset('${name}')">${lbl}</button>`;
   const comboOpts=combos.map(c=>`<option value="${c.key}"${c.key===heika.combo?' selected':''}>${DOW_FULL[c.dow]} · ${TURNO_LABEL[c.turno]||c.turno} — ${Math.round(c.occ)}% ocup · ${fmt(c.profit)}/serv</option>`).join('');
-  ctrl.innerHTML=`
+  ctrl.innerHTML=heikaModeBar()+`
     <div class="row"><label>Día y turno<span class="sub">flojos primero</span></label><div class="ifield"><select class="sel" onchange="setHeikaCombo(this.value)">${comboOpts}</select></div></div>
     <div class="hslider">
       <div class="hslab"><span>Descuento sobre el omakase</span><b>−${disc}%</b></div>
@@ -3738,6 +4129,131 @@ function renderHeika(){
       <p class="desc" style="margin:10px 0 0">Curva sólida = con el descuento; punteada = al precio de hoy. ● Hoy · ◆ Escenario. La línea horizontal es el resultado a batir; la vertical, el equilibrio de ocupación.</p></div>
     <div class="panel"><h3>¿Y si me equivoco con la reacción?</h3>${sens}
       <p class="desc" style="margin:10px 0 0">Misma jugada si la gente reacciona la mitad o el doble de lo que supusiste. Si incluso "a la mitad" sigue en verde, es una apuesta robusta.</p></div>`;
+}
+
+/* ---- Heika · delivery: otra elasticidad (pedidos, no sillas) y otra palanca (apps vs canal propio) ---- */
+function heikaDeliveryBase(){
+  const dv=S.delivery||{}, plan=deliveryCalc(S);
+  const cutoff=new Date(Date.now()-56*86400000);
+  const recs=delivery.filter(d=>parseDate(d.date)>=cutoff).map(d=>({d,m:deliveryMetrics(d)}));
+  if(recs.length>=4){
+    const n=recs.length, sum=f=>recs.reduce((a,r)=>a+f(r),0);
+    const orders=sum(r=>r.m.orders), gross=sum(r=>r.m.gross), own=sum(r=>r.m.own);
+    return { src:'hist', n, orders0:orders/n, ticket: orders? sum(r=>r.d.food)/orders : (dv.ticket||0), bevPer: orders? sum(r=>r.d.bev)/orders : (dv.bev||0),
+             appShare: gross? sum(r=>r.m.app)/gross : (dv.appShare||0)/100, cashShare: own? sum(r=>r.m.ownCash)/own : 0 };
+  }
+  return { src:'plan', n:recs.length, orders0:plan.on?(dv.orders||0):0, ticket:dv.ticket||0, bevPer:dv.bev||0, appShare:(dv.appShare||0)/100, cashShare:0 };
+}
+function heikaDeliverySim(base, disc, orders, appShare){
+  const food=orders*base.ticket*(1-disc/100), bev=orders*base.bevPer, gross=food+bev;
+  const app=gross*appShare, own=gross-app;
+  const d={ date:'2026-01-01', orders, food, bev, app, own, ownCash:own*base.cashShare, cancel:0 };
+  const m=deliveryMetrics(d);
+  return { orders, gross, contrib:m.contrib, profit:m.profit, commission:m.commission, courier:m.courier, cmPerOrder:m.cmPerOrder };
+}
+function renderHeikaDelivery(out, ctrl, kp){
+  const dv=S.delivery||{}; const base=heikaDeliveryBase();
+  if(!base.orders0){
+    ctrl.innerHTML=heikaModeBar()+'<div class="svempty">Sin pedidos en el plan ni en el registro 配. Prendé el canal en el esquema 勘定 o cargá días de delivery en el analista para simular.</div>';
+    out.innerHTML=''; return;
+  }
+  const disc=heika.dDisc, pts=heika.dPts;
+  const appShare0=base.appShare, appShare = heika.dApp==null ? appShare0 : Math.max(0,Math.min(1,heika.dApp/100));
+  const today=heikaDeliverySim(base, 0, base.orders0, appShare0);
+  const ordersScen=base.orders0*(1+(disc/10)*pts/100);
+  const scen=heikaDeliverySim(base, disc, ordersScen, appShare);
+  /* pedidos necesarios (a este descuento y mix) para igualar el resultado de hoy */
+  let beOrders=null, prevB=null;
+  for(let o=0;o<=base.orders0*4;o+=0.25){ const p=heikaDeliverySim(base,disc,o,appShare).profit;
+    if(p>=today.profit){ beOrders = (prevB==null||prevB.p===p) ? o : prevB.o + (today.profit-prevB.p)/(p-prevB.p)*(o-prevB.o); break; }
+    prevB={o,p}; }
+  const days=dv.days||26;
+  const deltaDay=scen.profit-today.profit, deltaMonth=deltaDay*days;
+  const wins=beOrders!=null && ordersScen>=beOrders;
+  /* palanca de canal, a pedidos constantes */
+  const chan=heikaDeliverySim(base, 0, base.orders0, appShare);
+  const chanDelta=chan.profit-today.profit;
+
+  const presetBtn=(name,lbl)=>`<button class="${Math.abs(pts-HEIKA_DPRESETS[name])<0.001?'on':''}" onclick="setHeikaDPreset('${name}')">${lbl}</button>`;
+  ctrl.innerHTML=heikaModeBar()+`
+    <p class="note" style="margin:0 0 10px">Base: <b>${base.orders0.toFixed(1)} pedidos/día</b>, ticket comida <b>${fmt(base.ticket)}</b>, ${Math.round(appShare0*100)}% por apps — ${base.src==='hist'?'promedio de '+base.n+' días reales':'del plan 勘定 (sin historial)'}.</p>
+    <div class="hslider">
+      <div class="hslab"><span>Promo sobre el ticket de comida</span><b>−${disc}%</b></div>
+      <input type="range" min="0" max="40" step="1" value="${disc}" oninput="setHeikaD('dDisc',this.value)">
+    </div>
+    <div class="hslab" style="margin-top:14px"><span>¿Cuánto reaccionan los pedidos?</span></div>
+    <div class="seltoggle" style="margin:6px 0 10px">${presetBtn('conservador','Conservador')}${presetBtn('moderado','Moderado')}${presetBtn('optimista','Optimista')}</div>
+    <div class="hslider">
+      <div class="hslab"><span>% más pedidos por cada −10%</span><b>+${pts}%</b></div>
+      <input type="range" min="0" max="60" step="1" value="${pts}" oninput="setHeikaD('dPts',this.value)">
+    </div>
+    <div class="hslab" style="margin-top:16px"><span>Mix de canal en el escenario</span></div>
+    <div class="hslider">
+      <div class="hslab"><span>Pedidos por apps</span><b>${Math.round(appShare*100)}%</b></div>
+      <input type="range" min="0" max="100" step="5" value="${Math.round(appShare*100)}" oninput="setHeikaD('dApp',this.value)">
+    </div>
+    <p class="note" style="margin-top:12px">Supuesto: con <b>−${disc}%</b> los pedidos pasan de <b>${base.orders0.toFixed(1)}</b> a <b>${ordersScen.toFixed(1)}</b> por día. La comisión de apps (${dv.appPct||0}%) se cobra sobre el precio ya rebajado; el cadete (${fmt(dv.courier||0)}/pedido) solo en canal propio.</p>`;
+
+  kp.innerHTML =
+    kpiH('Resultado / día delivery', fmt(scen.profit), deltaDay>=0?'var(--good)':'var(--bad)', (deltaDay>=0?'+':'')+fmt(deltaDay)+' vs hoy') +
+    kpiH('Impacto mensual', (deltaMonth>=0?'+':'')+fmt(deltaMonth), deltaMonth>=0?'var(--good)':'var(--bad)', days+' días de delivery') +
+    kpiH('Pedidos para empatar', beOrders==null?'inalcanzable':beOrders.toFixed(1)+'/día', wins?'var(--good)':'var(--bad)', beOrders==null?'ni al cuádruple':'a −'+disc+'% y '+Math.round(appShare*100)+'% apps');
+
+  const cmp=(l,a,b,f,better)=>{ const dv2=b-a, good=better==null?null:(better==='up'?dv2>=0:dv2<=0);
+    return `<tr><td>${l}</td><td>${f(a)}</td><td>${f(b)}</td><td style="color:${dv2===0?'var(--ink-soft)':good?'var(--good)':'var(--bad)'};font-weight:600">${dv2>0?'+':''}${f(dv2)}</td></tr>`; };
+  const table=`<table class="rank"><thead><tr><th>Métrica</th><th>Hoy</th><th>Escenario</th><th>Δ</th></tr></thead><tbody>
+    ${cmp('Pedidos / día', today.orders, scen.orders, v=>v.toFixed(1), 'up')}
+    ${cmp('Ticket comida', base.ticket, base.ticket*(1-disc/100), fmt, null)}
+    ${cmp('Facturación bruta / día', today.gross, scen.gross, fmt, 'up')}
+    ${cmp('Comisión apps / día', today.commission, scen.commission, fmt, 'down')}
+    ${cmp('Envíos propios / día', today.courier, scen.courier, fmt, 'down')}
+    ${cmp('Contribución / pedido', today.cmPerOrder, scen.cmPerOrder, fmt, 'up')}
+    ${cmp('Resultado / día', today.profit, scen.profit, fmt, 'up')}
+    ${cmp('Resultado mensual', today.profit*days, scen.profit*days, fmt, 'up')}
+  </tbody></table>`;
+  const verdict = beOrders==null
+    ? `<div class="hverdict bad">Con −${disc}% ni cuadruplicando los pedidos igualás el resultado de hoy: la promo se come la contribución por pedido, y la comisión de apps va sobre el precio rebajado.</div>`
+    : wins
+      ? `<div class="hverdict good">Tu supuesto (${ordersScen.toFixed(1)} pedidos/día) <b>supera</b> el umbral (${beOrders.toFixed(1)}). Si la demanda reacciona así, la jugada deja <b>${fmt(deltaDay)}</b> más por día.</div>`
+      : `<div class="hverdict bad">Tu supuesto (${ordersScen.toFixed(1)} pedidos/día) queda <b>por debajo</b> del umbral (${beOrders.toFixed(1)}). Para que convenga, la promo tiene que traer al menos ${(beOrders/base.orders0*100-100).toFixed(0)}% más pedidos.</div>`;
+  const chanTxt = Math.abs(appShare-appShare0)<0.001
+    ? `Mové el slider de apps para ver cuánto vale sacar pedidos de la app y llevarlos a WhatsApp/web: la comisión (${dv.appPct||0}% del bruto) contra el cadete (${fmt(dv.courier||0)} fijos por pedido) y el procesamiento propio (${S.pagos.procPct}%).`
+    : `A pedidos constantes, pasar de ${Math.round(appShare0*100)}% a ${Math.round(appShare*100)}% por apps ${chanDelta>=0?'<b>suma</b>':'<b>resta</b>'} <b>${fmt(Math.abs(chanDelta))}/día</b> (${fmt(Math.abs(chanDelta*days))}/mes). ${chanDelta>=0?'Cada pedido que sacás de la app vale más que lo que cuesta el envío propio: conviene invertir en canal directo (cupón de segunda compra, WhatsApp, QR en la caja).':'Con estos números el cadete propio sale más caro que la comisión: el canal propio solo conviene con pedidos grandes o retiro en local.'}`;
+  /* curva: resultado/día según pedidos, con y sin promo */
+  const W=560,H=280,pl=52,pr=14,pt=18,pb=34,pw=W-pl-pr,ph=H-pt-pb,yb=pt+ph;
+  const maxO=Math.max(base.orders0*2.5, ordersScen*1.2, 4);
+  const xs=[]; for(let i=0;i<=40;i++) xs.push(maxO*i/40);
+  const cur0=xs.map(o=>({o,p:heikaDeliverySim(base,0,o,appShare0).profit})), curD=xs.map(o=>({o,p:heikaDeliverySim(base,disc,o,appShare).profit}));
+  let mn=Infinity,mx=-Infinity; cur0.concat(curD).forEach(d=>{mn=Math.min(mn,d.p);mx=Math.max(mx,d.p);}); mn=Math.min(mn,0); const pad=(mx-mn)*0.1||1; mx+=pad; mn-=pad;
+  const X=o=>pl+o/maxO*pw, Y=p=>yb-(p-mn)/(mx-mn)*ph;
+  const path=arr=>arr.map((d,i)=>(i?'L':'M')+X(d.o).toFixed(1)+' '+Y(d.p).toFixed(1)).join(' ');
+  let g='';
+  if(mn<0&&mx>0){ g+=`<line x1="${pl}" y1="${Y(0)}" x2="${pl+pw}" y2="${Y(0)}" stroke="var(--ink)" stroke-dasharray="2 3" opacity="0.5"/><text class="axlab" x="${pl-6}" y="${Y(0)+3}" text-anchor="end">$0</text>`; }
+  [0,0.25,0.5,0.75,1].forEach(f=>{ const o=maxO*f; g+=`<text class="axlab" x="${X(o)}" y="${yb+16}" text-anchor="middle">${o.toFixed(0)}</text>`; });
+  g+=`<text class="axlab" x="${pl+pw/2}" y="${H-2}" text-anchor="middle" fill="var(--ink-soft)">pedidos por día</text>`;
+  g+=`<line x1="${pl}" y1="${Y(today.profit)}" x2="${pl+pw}" y2="${Y(today.profit)}" stroke="var(--brass)" stroke-dasharray="4 3" opacity="0.7"/>`;
+  if(beOrders!=null){ g+=`<line x1="${X(beOrders)}" y1="${pt}" x2="${X(beOrders)}" y2="${yb}" stroke="var(--vermilion)" stroke-dasharray="4 3" opacity="0.7"/><text class="glab" x="${X(beOrders)+4}" y="${pt+10}" fill="var(--vermilion)">empate ${beOrders.toFixed(1)}</text>`; }
+  g+=`<path d="${path(cur0)}" fill="none" stroke="var(--ink-soft)" stroke-width="1.4" stroke-dasharray="5 4" opacity="0.7"/>`;
+  g+=`<path d="${path(curD)}" fill="none" stroke="${COLORS.delivery}" stroke-width="2.4"/>`;
+  g+=`<circle cx="${X(base.orders0)}" cy="${Y(today.profit)}" r="5" fill="var(--ink)"/><text class="glab" x="${X(base.orders0)}" y="${Y(today.profit)-9}" text-anchor="middle" fill="var(--ink)">Hoy</text>`;
+  const sc=scen.profit>=today.profit?'var(--good)':'var(--vermilion)';
+  g+=`<path d="M ${X(ordersScen)} ${Y(scen.profit)-6} L ${X(ordersScen)+6} ${Y(scen.profit)} L ${X(ordersScen)} ${Y(scen.profit)+6} L ${X(ordersScen)-6} ${Y(scen.profit)} Z" fill="${sc}"/>`;
+  g+=`<text class="glab" x="${X(ordersScen)}" y="${Y(scen.profit)+(scen.profit>=today.profit?-11:20)}" text-anchor="middle" fill="${sc}">Escenario</text>`;
+  const chart=`<svg viewBox="0 0 ${W} ${H}">${g}</svg>`;
+
+  const half=heikaDeliverySim(base,disc,base.orders0*(1+(disc/10)*(pts/2)/100),appShare).profit, dbl=heikaDeliverySim(base,disc,base.orders0*(1+(disc/10)*(pts*2)/100),appShare).profit;
+  const ms=(l,v,n,col)=>`<div class="ms"><div class="ml">${l}</div><div class="mv"${col?` style="color:${col}"`:''}>${v}</div><div class="mn">${n}</div></div>`;
+  const sens=`<div class="mstat">${ms('Reacción a la mitad', fmt(half), 'pedidos +'+((disc/10)*(pts/2)).toFixed(0)+'%', half>=today.profit?'var(--good)':'var(--bad)')}${ms('Reacción supuesta', fmt(scen.profit), 'pedidos +'+((disc/10)*pts).toFixed(0)+'%', scen.profit>=today.profit?'var(--good)':'var(--bad)')}${ms('Reacción al doble', fmt(dbl), 'pedidos +'+((disc/10)*(pts*2)).toFixed(0)+'%', dbl>=today.profit?'var(--good)':'var(--bad)')}</div>`;
+
+  out.innerHTML=`
+    <div class="panel"><h3>Veredicto</h3>${verdict}
+      <p class="desc" style="margin:10px 0 0">En delivery la promo compite con una comisión que ya se lleva ${dv.appPct||0}% del bruto: el margen por pedido es finito y la única forma de que un descuento pague es <b>volumen</b>. El umbral es el número a validar con una promo de una semana.</p></div>
+    <div class="panel"><h3>Hoy vs escenario</h3>${table}</div>
+    <div class="panel"><h3>Resultado por día según pedidos</h3>${chart}
+      <p class="desc" style="margin:10px 0 0">Curva sólida = con la promo y el mix elegido; punteada = hoy. La horizontal es el resultado a batir; la vertical, los pedidos para empatar.</p></div>
+    <div class="panel"><h3>Apps vs canal propio</h3><div class="hverdict ${chanDelta>=0?'good':'bad'}" style="${Math.abs(appShare-appShare0)<0.001?'background:var(--panel-2);border-color:var(--rule)':''}">${chanTxt}</div></div>
+    <div class="panel"><h3>¿Y si me equivoco con la reacción?</h3>${sens}
+      <p class="desc" style="margin:10px 0 0">Misma promo si la gente reacciona la mitad o el doble de lo que supusiste. Si «a la mitad» sigue en verde, es una apuesta robusta.</p></div>`;
 }
 
 function kpiH(label, val, col, sub){
@@ -3825,9 +4341,13 @@ function fitModel(recs, originD){
   const cmap={}; recs.forEach(r=>{ const k=r.dow+'_'+r.sv.turno; (cmap[k]=cmap[k]||[]).push(r); });
   const combos={};
   Object.keys(cmap).forEach(k=>{ const seg=cmap[k],[d,t]=k.split('_');
-    combos[k]={key:k,dow:+d,turno:t,base:heikaBaseline(seg,t),
+    /* cm = contribución marginal por cubierto del combo: el resultado NO escala con la
+       demanda (los fijos asignados no se mueven), solo lo hace la contribución */
+    const segCov=seg.reduce((a,r)=>a+r.m.covers,0), segCm=seg.reduce((a,r)=>a+(r.m.netTotal-r.m.variable),0);
+    combos[k]={key:k,dow:+d,turno:t,base:heikaBaseline(seg,t), cm: segCov>0? segCm/segCov : 0,
       covers:statOf(seg.map(r=>r.m.covers)), gross:statOf(seg.map(r=>r.m.grossTotal)), profit:statOf(seg.map(r=>r.m.profit))}; });
   const gCov=statOf(recs.map(r=>r.m.covers)), gGross=statOf(recs.map(r=>r.m.grossTotal)), gProf=statOf(recs.map(r=>r.m.profit));
+  const gCovSum=recs.reduce((a,r)=>a+r.m.covers,0), gCm= gCovSum>0 ? recs.reduce((a,r)=>a+(r.m.netTotal-r.m.variable),0)/gCovSum : 0;
   const gCovCV=gCov.mean>0?gCov.sd/gCov.mean:0.2, gProfCV=Math.abs(gProf.mean)>0?Math.abs(gProf.sd/gProf.mean):0.3;
   // tendencia: ratio = covers/comboMean ~ semana
   let sx=0,sy=0,sxy=0,sxx=0,nn=0,maxW=0;
@@ -3852,9 +4372,13 @@ function fitModel(recs, originD){
     let f=trendRatio(wkOf(ds));
     if(isHoliday(ds)) f*=holidayMult.mult;
     if(isPayday(ds)) f*=paydayMult.mult;
+    const cm=c?c.cm:gCm;
     const band=(stat,lvl,cv,cap)=>{ let s=Math.max((stat&&stat.n>=3)?stat.sd:cv*Math.abs(lvl),0.10*Math.abs(lvl))*(1+0.05*(ahead||0));
       let e=lvl*f,p=e-s,o=e+s; if(cap!=null){p=Math.max(0,p);o=Math.min(cap,o);} return {exp:e,pess:p,opt:o}; };
-    return { factor:f, covers:band(c&&c.covers,lvlCov,gCovCV,seats), gross:band(c&&c.gross,lvlGross,gCovCV,null), profit:band(c&&c.profit,lvlProf,gProfCV,null) };
+    const covers=band(c&&c.covers,lvlCov,gCovCV,seats);
+    /* resultado = resultado medio del combo + (cubiertos extra × contribución marginal) */
+    const profit={ exp:lvlProf+(covers.exp-lvlCov)*cm, pess:lvlProf+(covers.pess-lvlCov)*cm, opt:lvlProf+(covers.opt-lvlCov)*cm };
+    return { factor:f, cm, lvlCov, covers, gross:band(c&&c.gross,lvlGross,gCovCV,null), profit };
   }
   return { combos, predict, wkOf, trendRatio, slope, trendPctWeek:slope*100, holidayMult, paydayMult, gCov, seats, numW };
 }
@@ -3875,7 +4399,7 @@ function walkForward(recs, originD){
       const b=curBias(r.dow), pb=p.covers.exp, pcorr=pb*b;
       if(act>0){ sB+=Math.abs(act-pb)/act; cB++; sC+=Math.abs(act-pcorr)/act; cC++; weSum+=Math.abs(act-pb)/act; weN++;
         if(pb>0) upd.push([r.dow, act/pb]); }
-      actP+=r.m.profit; predP+=p.profit.exp; predPc+=p.profit.exp*b; });
+      actP+=r.m.profit; predP+=p.profit.exp; predPc+=p.profit.exp+p.covers.exp*(b-1)*p.cm; });
     if(actP!==0){ ps+=Math.abs(actP-predP)/Math.abs(actP); pc++; }
     series.push({w:tw, actual:actP, pred:predP, predCorr:predPc, err:weN?weSum/weN*100:null});
     upd.forEach(([d,r])=>{ acc[d]=acc[d]||{sum:0,n:0}; acc[d].sum+=r; acc[d].n++; });   // el sesgo se actualiza DESPUÉS de evaluar → sin leakage
@@ -3900,7 +4424,11 @@ function detectDegradation(series){
 function scaleBias(f, b){
   if(b===1) return f;
   const sc=o=>({exp:o.exp*b, pess:o.pess*b, opt:o.opt*b});
-  return { factor:f.factor*b, covers:sc(f.covers), gross:sc(f.gross), profit:sc(f.profit) };
+  const covers=sc(f.covers);
+  /* el sesgo mueve cubiertos; el resultado se ajusta por la contribución de esos cubiertos */
+  const cm=f.cm||0;
+  const profit={ exp:f.profit.exp+(covers.exp-f.covers.exp)*cm, pess:f.profit.pess+(covers.pess-f.covers.pess)*cm, opt:f.profit.opt+(covers.opt-f.covers.opt)*cm };
+  return { factor:f.factor*b, cm, lvlCov:f.lvlCov, covers, gross:sc(f.gross), profit };
 }
 
 function buildForecast(recs, horizonWeeks){
@@ -3939,6 +4467,74 @@ function buildForecast(recs, horizonWeeks){
   return { model, weeks, histWeeks, inMape, naiveMape, wf, biasImproves, relMape, degradation, anoms, upcomingHol, numWeeks:model.numW, lastD, lastWk, trendPctWeek:model.trendPctWeek, seats:model.seats, nServices:recs.length };
 }
 
+/* ---- pronóstico del delivery: por día de semana, sobre el registro 配 ----
+   Modelo simple y honesto: promedio y desvío por día de semana de las últimas
+   8 semanas, con una tendencia amortiguada (últimas 4 vs 4 anteriores).
+   Sin historial usa el plan del esquema 勘定. */
+function buildDeliveryForecast(horizonWeeks){
+  const plan=deliveryCalc(S), dv=S.delivery||{};
+  const fx=fixedCosts();
+  /* fijos que carga el canal por semana: su parte de los comunes + dotación y pauta.
+     Se cobra por semana calendario, igual en el plan y en el historial (no depende
+     de cuántos días de la semana tengan registro). */
+  const fixedW=((fx.labor+fx.ocup+fx.oper+fx.capex)*deliveryFixedShare() + plan.laborExtra + plan.ads)/WEEKS_PER_MONTH;
+  const planWeek = plan.on ? { orders:plan.orders/WEEKS_PER_MONTH, gross:plan.gross/WEEKS_PER_MONTH, net:plan.rev/WEEKS_PER_MONTH,
+    app:plan.appGross/WEEKS_PER_MONTH, own:plan.ownGross/WEEKS_PER_MONTH, contrib:(plan.rev-plan.variable)/WEEKS_PER_MONTH,
+    profit:(plan.rev-plan.variable)/WEEKS_PER_MONTH - fixedW } : { orders:0, gross:0, net:0, app:0, own:0, contrib:0, profit:0 };
+  const today=new Date(); const cutoff=new Date(today.getTime()-56*86400000);
+  const recs=delivery.filter(d=>parseDate(d.date)>=cutoff).map(d=>({d, m:deliveryMetrics(d), dow:dowOf(d.date)}));
+  const weeks=[];
+  if(recs.length<4){
+    for(let h=1;h<=horizonWeeks;h++) weeks.push({ ahead:h, ordersExp:planWeek.orders, grossExp:planWeek.gross, netExp:planWeek.net, appExp:planWeek.app, ownExp:planWeek.own,
+      contribExp:planWeek.contrib, profitExp:planWeek.profit, profitPess:planWeek.profit*0.8-Math.abs(planWeek.profit)*0.05, profitOpt:planWeek.profit*1.2+Math.abs(planWeek.profit)*0.05 });
+    return { weeks, source:'plan', n:recs.length, byDow:{}, trendPct:0, plan:planWeek, hasData:false };
+  }
+  /* semanas con registro (para no contar como cero los días sin cargar dentro de una semana cargada) */
+  const byDow={}; recs.forEach(r=>{ (byDow[r.dow]=byDow[r.dow]||[]).push(r); });
+  const stat=arr=>{ const n=arr.length, mean=arr.reduce((a,b)=>a+b,0)/(n||1); const sd=n>1?Math.sqrt(arr.reduce((a,b)=>a+(b-mean)**2,0)/(n-1)):Math.abs(mean)*0.3; return {mean,sd,n}; };
+  const prof={};
+  Object.keys(byDow).forEach(d=>{ const l=byDow[d]; prof[d]={ orders:stat(l.map(r=>r.m.orders)), gross:stat(l.map(r=>r.m.gross)), net:stat(l.map(r=>r.m.net)),
+    app:stat(l.map(r=>r.m.app)), own:stat(l.map(r=>r.m.own)), contrib:stat(l.map(r=>r.m.contrib)), profit:stat(l.map(r=>r.m.profit)) }; });
+  /* tendencia: pedidos/día últimas 4 semanas vs 4 anteriores, amortiguada y acotada */
+  const mid=new Date(today.getTime()-28*86400000);
+  const recent=recs.filter(r=>parseDate(r.d.date)>=mid), earlier=recs.filter(r=>parseDate(r.d.date)<mid);
+  let trend=1;
+  if(recent.length>=4 && earlier.length>=4){ const a=recent.reduce((x,r)=>x+r.m.orders,0)/recent.length, b=earlier.reduce((x,r)=>x+r.m.orders,0)/earlier.length; if(b>0) trend=Math.max(0.7,Math.min(1.4,1+(a/b-1)*0.5)); }
+  const dows=Object.keys(prof).map(Number);
+  for(let h=1;h<=horizonWeeks;h++){
+    const f=Math.pow(trend, Math.min(h,4)/4);   /* la tendencia se aplica gradualmente, y no más allá de un mes */
+    let o=0,g=0,n=0,a=0,ow=0,c=0,var2=0;
+    dows.forEach(d=>{ const p=prof[d]; o+=p.orders.mean*f; g+=p.gross.mean*f; n+=p.net.mean*f; a+=p.app.mean*f; ow+=p.own.mean*f; c+=p.contrib.mean*f; var2+=p.contrib.sd**2; });
+    const band=Math.sqrt(var2)*(1+0.05*h);
+    const pe=c-fixedW;   /* contribución de la semana menos los fijos semanales del canal */
+    weeks.push({ ahead:h, ordersExp:o, grossExp:g, netExp:n, appExp:a, ownExp:ow, contribExp:c, profitExp:pe, profitPess:pe-band, profitOpt:pe+band });
+  }
+  return { weeks, source:'hist', n:recs.length, byDow:prof, trendPct:(trend-1)*100, plan:planWeek, hasData:true, daysPerWeek:dows.length, fixedW };
+}
+function deliveryForecastPanel(dfc, horizon){
+  const dv=S.delivery||{}, plan=dfc.plan;
+  const wAvg=k=>dfc.weeks.reduce((s,w)=>s+w[k],0)/dfc.weeks.length;
+  const mo=wAvg('profitExp')*WEEKS_PER_MONTH, moP=wAvg('profitPess')*WEEKS_PER_MONTH, moO=wAvg('profitOpt')*WEEKS_PER_MONTH;
+  const ms=(l,v,n,col)=>`<div class="ms"><div class="ml">${l}</div><div class="mv"${col?` style="color:${col}"`:''}>${v}</div><div class="mn">${n}</div></div>`;
+  const head=`<div class="mstat">
+    ${ms('Pedidos / semana', Math.round(wAvg('ordersExp')), dfc.hasData?(dfc.daysPerWeek+' días/sem con delivery · plan '+Math.round(plan.orders)):'del plan 勘定 (sin historial)', dfc.hasData&&plan.orders?(wAvg('ordersExp')>=plan.orders*0.9?'var(--good)':'var(--bad)'):null)}
+    ${ms('Facturación / semana', fmt(wAvg('grossExp')), 'bruta c/IVA · '+Math.round(wAvg('grossExp')?wAvg('appExp')/wAvg('grossExp')*100:0)+'% por apps')}
+    ${ms('Resultado / mes', fmt(mo), fmt(moP)+' a '+fmt(moO)+' · tras '+fmt((dfc.fixedW||0)*WEEKS_PER_MONTH)+' de fijos del canal', mo>=0?'var(--good)':'var(--bad)')}
+    ${ms('Tendencia', (dfc.trendPct>=0?'+':'')+dfc.trendPct.toFixed(0)+'%', dfc.hasData?'últimas 4 semanas vs anteriores':'—', dfc.trendPct>3?'var(--good)':dfc.trendPct<-3?'var(--bad)':'var(--ink)')}
+  </div>`;
+  let t=`<table class="rank"><thead><tr><th>Semana</th><th>Pedidos</th><th>Facturación</th><th>Contribución</th><th>Resultado (pes–esp–opt)</th></tr></thead><tbody>`;
+  dfc.weeks.forEach(w=>{ t+=`<tr><td>+${w.ahead} sem</td><td>${Math.round(w.ordersExp)}</td><td>${fmt(w.grossExp)}</td><td>${fmt(w.contribExp)}</td>
+    <td><span style="color:var(--ink-soft)">${fmt(w.profitPess)}</span> · <b style="color:${w.profitExp>=0?'var(--good)':'var(--bad)'}">${fmt(w.profitExp)}</b> · <span style="color:var(--ink-soft)">${fmt(w.profitOpt)}</span></td></tr>`; });
+  t+=`</tbody></table>`;
+  let dowHtml='';
+  if(dfc.hasData){ const ds=DOW_ORDER.filter(d=>dfc.byDow[d]);
+    dowHtml=`<div class="mstat" style="grid-template-columns:repeat(${Math.max(1,ds.length)},1fr);margin-top:10px">`+ds.map(d=>{ const p=dfc.byDow[d]; return `<div class="ms"><div class="ml">${DOW_SHORT[d]}</div><div class="mv" style="font-size:15px">${p.orders.mean.toFixed(1)}</div><div class="mn">±${p.orders.sd.toFixed(1)} · ${fmt(p.contrib.mean)}</div></div>`; }).join('')+`</div>`; }
+  const note = dfc.hasData
+    ? `Promedio y desvío por día de semana de las últimas 8 semanas de registro 配, con tendencia amortiguada. Compará contra el plan: si los pedidos reales quedan lejos de los ${Math.round(plan.orders)}/semana del esquema, el aporte del canal a los fijos también.`
+    : `Sin historial suficiente (${dfc.n} días): proyecta el plan del esquema 勘定 (${dv.orders||0} pedidos/día × ${dv.days||0} días). Cargá los días de delivery en el analista 番付 y el pronóstico pasa a usar lo real.`;
+  return `<div class="panel"><h3>Delivery 配 · próximas ${horizon} semanas</h3>${head}${t}${dowHtml}<p class="desc" style="margin:10px 0 0">${note}</p></div>`;
+}
+
 function nextDateForDow(fromDate, dow, weeksAhead){
   const d=new Date(fromDate.getTime()+86400000);
   while(d.getDay()!==dow) d.setDate(d.getDate()+1);
@@ -3949,12 +4545,15 @@ function nextDateForDow(fromDate, dow, weeksAhead){
 function renderYoso(){
   const out=document.getElementById('yOut'), ctrl=document.getElementById('yControls'), kp=document.getElementById('yKpis');
   if(kp) kp.innerHTML='';
+  const dfc=buildDeliveryForecast(yoso.horizon);
+  const dlvOn=deliveryCalc(S).on || delivery.length>0;
   if(services.length<2){
     if(ctrl) ctrl.innerHTML='<div class="svempty">Necesitás al menos un par de semanas de servicios cargados (o «Cargar ejemplo» en el analista) para proyectar. Cuanta más data, mejor el pronóstico.</div>';
-    if(out) out.innerHTML=''; return;
+    if(out) out.innerHTML= dlvOn ? deliveryForecastPanel(dfc, yoso.horizon) : ''; return;
   }
   const recs=services.map(sv=>({sv, m:serviceMetrics(sv), dow:dowOf(sv.date)}));
   const fc=buildForecast(recs, yoso.horizon);
+  const dMonth = dlvOn ? dfc.weeks.reduce((a,w)=>a+w.profitExp,0)/dfc.weeks.length*WEEKS_PER_MONTH : 0;
   const M=fc.model;
 
   const wAvg=a=>fc.weeks.reduce((s,w)=>s+w[a],0)/fc.weeks.length;
@@ -3969,7 +4568,7 @@ function renderYoso(){
   if(oosAvail) recordFcHealth({ date:fmtDate(new Date()), rel:+relMape.toFixed(1), base:+fc.wf.coversMape.toFixed(1), corr:fc.wf.coversMapeCorrected!=null?+fc.wf.coversMapeCorrected.toFixed(1):null, n:fc.nServices, bias:fc.biasImproves });
 
   kp.innerHTML =
-    kpiH('Resultado proyectado / mes', fmt(monthExp), monthExp>=0?'var(--good)':'var(--bad)', fmt(monthPess)+' a '+fmt(monthOpt)) +
+    kpiH('Resultado proyectado / mes', fmt(monthExp+dMonth), (monthExp+dMonth)>=0?'var(--good)':'var(--bad)', dlvOn ? ('salón '+fmt(monthExp)+' · delivery '+fmt(dMonth)) : (fmt(monthPess)+' a '+fmt(monthOpt))) +
     kpiH('Confiabilidad (real)', '±'+Math.round(relMape)+'%', precision>=70?'var(--good)':precision>=50?'var(--brass-deep)':'var(--vermilion)', oosAvail?(fc.biasImproves?'walk-forward · con corrector':'error out-of-sample'):'pocas semanas para walk-forward') +
     kpiH('Tendencia', trendLabel, trendCol, (fc.trendPctWeek>=0?'+':'')+fc.trendPctWeek.toFixed(1)+'% por semana');
 
@@ -4089,8 +4688,9 @@ function renderYoso(){
       ${dowProfileChart(recs)}
       <p class="desc" style="margin:10px 0 0">La forma de tu semana: qué días llenan y cuáles aflojan. La barra es el promedio; el bigote, el rango observado.</p></div>
     ${holHtml}
-    <div class="panel"><h3>Próximas ${yoso.horizon} semanas</h3>${wt}
+    <div class="panel"><h3>Salón · próximas ${yoso.horizon} semanas</h3>${wt}
       <p class="desc" style="margin:10px 0 0">Resultado proyectado por semana, con escenarios. Asume que el patrón semanal de tu historial se mantiene.</p></div>
+    ${dlvOn ? deliveryForecastPanel(dfc, yoso.horizon) : ''}
     <div class="panel"><h3>Qué esperar la próxima semana</h3>${nsT}
       <p class="desc" style="margin:10px 0 0">Servicio por servicio, con la banda de cubiertos y marcas de feriado/quincena. Útil para planificar compras y personal.</p></div>
     <div class="panel"><h3>Anomalías recientes</h3>${anomHtml}</div>`;
@@ -4279,8 +4879,9 @@ function gkToday(){ return fmtDate(new Date()); }
 function defaultGenka(){
   const t=gkToday();
   const I=(id,n,cat,ars,qty,unit,iva,rend)=>({id,n,cat,ars,qty,unit,iva,rend,upd:t});
-  return {
-    params:{ tc:1500, factorQ:4, premGross:85, targetPct:32, colchonPp:3, turnoRef:'N1', variant:'std' },
+  const g = {
+    params:{ tc:1500, factorQ:4, targetPct:32, colchonPp:3 },
+    menuId:'omakase',
     insumos:[
       I('salmon','Salmón rosado entero','pescado',120000,6,'kg',10.5,52),
       I('chernia','Pesca blanca (chernia)','pescado',45000,3,'kg',10.5,45),
@@ -4297,7 +4898,8 @@ function defaultGenka(){
       I('miso','Pasta miso','almacén',16000,1,'kg',21,100),
       I('wasabi','Hon-wasabi (43g)','almacén',20000,0.043,'kg',21,100),
     ],
-    pasos:[
+    menus:[
+     { id:'omakase', n:'Omakase', kind:'salon', main:true, turnoRef:'N1', priceGross:null, premGross:85, variant:'std', packaging:null, pasos:[
       {id:gkId(), n:'Sakizuke', d:'amuse — vieira curada', prem:false, ing:[{ins:'vieira',q:0.015},{ins:'miso',q:0.005}]},
       {id:gkId(), n:'Zensai', d:'entrada fría de estación', prem:false, ing:[{ins:'chernia',q:0.030},{ins:'tobiko',q:0.003}]},
       {id:gkId(), n:'Sashimi selección', d:'salmón · chernia · chutoro', prem:false, ing:[{ins:'salmon',q:0.040},{ins:'chernia',q:0.030},{ins:'chutoro',q:0.020},{ins:'wasabi',q:0.002}]},
@@ -4312,19 +4914,69 @@ function defaultGenka(){
       {id:gkId(), n:'Postre', d:'estacional', prem:false, ing:[{ins:'huevo',q:0.5},{ins:'arroz',q:0.010}]},
       {id:gkId(), n:'Gunkan — uni', d:'1 pieza · erizo', prem:true, ing:[{ins:'uni',q:0.014},{ins:'arroz',q:0.015},{ins:'nori',q:0.5}]},
       {id:gkId(), n:'Wagyu aburi', d:'2 piezas · soplete', prem:true, ing:[{ins:'wagyu',q:0.030},{ins:'arroz',q:0.020}]},
+     ]},
+     /* menú de delivery: menos pasos, porciones para viajar, precio propio */
+     { id:'box', n:'Box delivery', kind:'delivery', main:false, turnoRef:null, priceGross:42, premGross:null, variant:'std', packaging:null, pasos:[
+      {id:gkId(), n:'Nigiri mix ×8', d:'salmón · pesca del día · langostino', prem:false, ing:[{ins:'salmon',q:0.045},{ins:'chernia',q:0.030},{ins:'langos',q:0.022},{ins:'arroz',q:0.120},{ins:'wasabi',q:0.002}]},
+      {id:gkId(), n:'Roll salmón ×8', d:'uramaki con tobiko', prem:false, ing:[{ins:'salmon',q:0.040},{ins:'arroz',q:0.090},{ins:'nori',q:1},{ins:'tobiko',q:0.006}]},
+      {id:gkId(), n:'Sashimi 6 cortes', d:'salmón y pesca blanca', prem:false, ing:[{ins:'salmon',q:0.045},{ins:'chernia',q:0.035}]},
+      {id:gkId(), n:'Gari · wasabi · shoyu', d:'acompañamientos', prem:false, ing:[{ins:'wasabi',q:0.002}]},
+      {id:gkId(), n:'Ikura extra', d:'gunkan ×2 · opcional', prem:true, ing:[{ins:'ikura',q:0.025},{ins:'arroz',q:0.030},{ins:'nori',q:1}]},
+     ]},
     ],
   };
+  return gkInstall(g);
+}
+/* G.pasos es una VISTA del menú principal (★): todos los otros módulos
+   —Carta QR, Maridaje, Servicio, triángulo de food cost— la leen como antes.
+   Dentro de Genka se edita gkMenu() (el seleccionado). No se serializa. */
+function gkInstall(g){
+  const own=Object.getOwnPropertyDescriptor(g,'pasos');
+  if(!own || !own.get){
+    delete g.pasos;
+    Object.defineProperty(g,'pasos',{ enumerable:false, configurable:true,
+      get(){ return gkMainMenuOf(g).pasos; },
+      set(v){ gkMainMenuOf(g).pasos = Array.isArray(v)?v:[]; } });
+  }
+  return g;
+}
+function gkMenuShape(m, ix){
+  m = (m && typeof m==='object') ? m : {};
+  if(!m.id) m.id=gkId();
+  if(!m.n) m.n = ix===0 ? 'Omakase' : 'Menú '+(ix+1);
+  m.kind = m.kind==='delivery' ? 'delivery' : 'salon';
+  m.main = !!m.main;
+  if(m.turnoRef===undefined) m.turnoRef = m.kind==='salon' ? 'N1' : null;
+  if(m.priceGross===undefined) m.priceGross=null;
+  if(m.premGross===undefined) m.premGross = m.kind==='salon' ? 85 : null;
+  if(m.variant!=='prem') m.variant='std';
+  if(m.packaging===undefined) m.packaging=null;
+  if(!Array.isArray(m.pasos)) m.pasos=[];
+  m.pasos.forEach(p=>{ if(!p.id) p.id=gkId(); if(!Array.isArray(p.ing)) p.ing=[]; p.prem=!!p.prem; });
+  return m;
 }
 function ensureGenka(g){
   const d=defaultGenka();
   if(!g || typeof g!=='object') return d;
   g.params = Object.assign({}, d.params, g.params||{});
   if(!Array.isArray(g.insumos)) g.insumos=[];
-  if(!Array.isArray(g.pasos)) g.pasos=[];
   g.insumos.forEach(i=>{ if(!i.id) i.id=gkId(); if(!i.upd) i.upd=gkToday(); if(i.unit!=='un'&&i.unit!=='l') i.unit=i.unit||'kg'; });
-  g.pasos.forEach(p=>{ if(!p.id) p.id=gkId(); if(!Array.isArray(p.ing)) p.ing=[]; p.prem=!!p.prem; });
-  return g;
+  /* migración: un solo menú (pasos + params.turnoRef/premGross/variant) → menus[] */
+  if(!Array.isArray(g.menus) || !g.menus.length){
+    const own = Object.getOwnPropertyDescriptor(g,'pasos');
+    const pasos = (own && !own.get && Array.isArray(g.pasos)) ? g.pasos : [];
+    g.menus=[{ id:'omakase', n:'Omakase', kind:'salon', main:true, turnoRef:g.params.turnoRef||'N1', priceGross:null,
+               premGross:g.params.premGross!=null?g.params.premGross:85, variant:g.params.variant||'std', packaging:null, pasos }];
+  }
+  g.menus=g.menus.map(gkMenuShape);
+  if(!g.menus.some(m=>m.main && m.kind==='salon')){ const first=g.menus.find(m=>m.kind==='salon')||g.menus[0]; g.menus.forEach(m=>m.main=false); first.main=true; }
+  if(!g.menuId || !g.menus.find(m=>m.id===g.menuId)) g.menuId=g.menus.find(m=>m.main).id;
+  delete g.params.turnoRef; delete g.params.premGross; delete g.params.variant;
+  return gkInstall(g);
 }
+function gkMainMenuOf(g){ return g.menus.find(m=>m.main) || g.menus[0] || gkMenuShape({},0); }
+function gkMainMenu(){ return gkMainMenuOf(G); }
+function gkMenu(){ return G.menus.find(m=>m.id===G.menuId) || gkMainMenu(); }
 let G = defaultGenka();
 const gkUI = { open:{}, shockIns:null, shockPct:30, collapsed:{} };
 
@@ -4351,29 +5003,49 @@ function gkUsdUtil(i, tc, shock){
 function gkPasoCost(p, shock){
   return p.ing.reduce((s,l)=>{ const i=gkInsById(l.ins); return i? s+gkUsdUtil(i,G.params.tc,shock)*(l.q||0) : s; },0);
 }
-function gkTurnoRef(){
-  return S.turnos.find(t=>t.id===G.params.turnoRef) || S.turnos[1] || S.turnos[0] || {price:60,label:'—'};
+function gkTurnoRef(m){
+  m = m || gkMenu();
+  return S.turnos.find(t=>t.id===m.turnoRef) || S.turnos[1] || S.turnos[0] || {price:60,label:'—'};
 }
-function gkPrecios(){
+/* precio de referencia del menú: turno del esquema (salón) o precio propio
+   (delivery, o salón con turnoRef 'fixed') */
+function gkPrecios(m){
+  m = m || gkMenu();
   const ivaDiv = 1+(S.iva?S.iva.rateVentas:21)/100;
-  const t = gkTurnoRef();
-  return { std: t.price/ivaDiv, stdGross:t.price, stdLabel:t.label,
-           prem:(G.params.premGross||0)/ivaDiv, premGross:G.params.premGross, ivaDiv };
+  const fixed = m.kind==='delivery' || m.turnoRef==='fixed';
+  if(fixed){
+    const g = m.priceGross!=null ? +m.priceGross : (m.kind==='delivery' ? (S.delivery&&S.delivery.ticket)||0 : 0);
+    return { std:g/ivaDiv, stdGross:g, stdLabel: m.kind==='delivery'?'precio del box':'precio propio', fixed:true,
+             prem:(m.premGross||0)/ivaDiv, premGross:m.premGross, ivaDiv };
+  }
+  const t = gkTurnoRef(m);
+  return { std: t.price/ivaDiv, stdGross:t.price, stdLabel:t.label, fixed:false,
+           prem:(m.premGross||0)/ivaDiv, premGross:m.premGross, ivaDiv };
 }
-function gkCompute(shock){
-  const v = G.params.variant;
-  const pasos = G.pasos.filter(p=>!p.prem || v==='prem');
+function gkCompute(shock, m){
+  m = m || gkMenu();
+  const v = m.variant;
+  const pasos = m.pasos.filter(p=>!p.prem || v==='prem');
   const costs = pasos.map(p=>gkPasoCost(p, shock));
   const sub = costs.reduce((a,b)=>a+b,0);
   const total = sub*(1+(G.params.factorQ||0)/100);
-  const pr = gkPrecios();
-  const precio = v==='prem' ? pr.prem : pr.std;
+  const pr = gkPrecios(m);
+  const precio = (v==='prem' && pr.premGross) ? pr.prem : pr.std;
   const fc = precio>0 ? total/precio*100 : 0;
-  const plan = S.cmv.foodPct;
+  const isDlv = m.kind==='delivery';
+  const dv = S.delivery||{};
+  const plan = isDlv ? ((dv.foodPct!=null&&dv.foodPct!=='')?+dv.foodPct:S.cmv.foodPct) : S.cmv.foodPct;
   const contrib={};
   pasos.forEach(p=>p.ing.forEach(l=>{ const i=gkInsById(l.ins); if(i) contrib[i.id]=(contrib[i.id]||0)+gkUsdUtil(i,G.params.tc,shock)*(l.q||0); }));
+  /* delivery: al costo de comida se le suma el envase; y el precio que queda
+     después de la comisión de la app es el que realmente paga la receta */
+  const packaging = isDlv ? (m.packaging!=null ? +m.packaging : (dv.packaging||0)) : 0;
+  const appPct = isDlv ? (dv.appPct||0) : 0;
+  const totalCanal = total+packaging;
+  const netApp = precio - precio*pr.ivaDiv*appPct/100;  // neto por pedido si entra por app (la app cobra sobre el bruto c/IVA)
+  const fcApp = netApp>0 ? totalCanal/netApp*100 : 0;   // costo comida+envase sobre lo que te queda
   return { pasos, costs, sub, total, precio, precioGross:precio*pr.ivaDiv, fc, plan, delta:fc-plan,
-           margen:precio-total, contrib, pr };
+           margen:precio-total, contrib, pr, menu:m, isDlv, packaging, totalCanal, appPct, netApp, fcApp, margenApp:netApp-totalCanal };
 }
 const gkFmt2 = n => (n<0?'-':'')+'$'+Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 function gkStale(i){
@@ -4382,10 +5054,57 @@ function gkStale(i){
 
 /* ---- mutations: params ---- */
 function gkSetParam(k,v){
-  G.params[k] = (k==='turnoRef'||k==='variant') ? v : (+v||0);
+  const m=gkMenu();
+  if(k==='turnoRef') m.turnoRef=v;
+  else if(k==='premGross') m.premGross=(v===''||v==null)?null:(+v||0);
+  else if(k==='priceGross') m.priceGross=+v||0;
+  else if(k==='packaging') m.packaging=(v===''||v==null)?null:(+v||0);
+  else G.params[k] = +v||0;
   gkPersist(); renderGenka();
 }
-function gkSetVariant(v){ G.params.variant=v; gkPersist(); renderGenka(); }
+function gkSetVariant(v){ gkMenu().variant=v; gkPersist(); renderGenka(); }
+
+/* ---- menús ---- */
+function gkSelectMenu(id){ if(G.menus.find(m=>m.id===id)){ G.menuId=id; gkPersist(); renderGenka(); renderMix(); } }
+function gkAddMenu(kind){
+  const isD=kind==='delivery';
+  const name=prompt(isD?'Nombre del menú de delivery':'Nombre del menú', isD?'Box delivery':'Omakase '+(G.menus.filter(m=>m.kind==='salon').length+1));
+  if(name==null) return;
+  const m=gkMenuShape({ id:gkId(), n:String(name).trim().slice(0,40)||'Menú', kind, main:false,
+    turnoRef:isD?null:'N1', priceGross:isD?((S.delivery&&S.delivery.ticket)||0):null, premGross:isD?null:85, variant:'std', packaging:null, pasos:[] }, G.menus.length);
+  G.menus.push(m); G.menuId=m.id; gkPersist(); renderGenka(); renderMix();
+}
+function gkDupMenu(){
+  const src=gkMenu();
+  const name=prompt('Nombre de la copia', src.n+' (copia)'); if(name==null) return;
+  const m=JSON.parse(JSON.stringify(src)); m.id=gkId(); m.n=String(name).trim().slice(0,40)||src.n+' (copia)'; m.main=false;
+  m.pasos.forEach(p=>{ p.id=gkId(); });
+  G.menus.push(m); G.menuId=m.id; gkPersist(); renderGenka(); renderMix();
+}
+function gkRenameMenu(){
+  const m=gkMenu(); const name=prompt('Nuevo nombre', m.n); if(name==null) return;
+  m.n=String(name).trim().slice(0,40)||m.n; gkPersist(); renderGenka();
+}
+function gkSetMenuKind(kind){
+  const m=gkMenu(); if(m.main && kind==='delivery'){ flash('El menú principal ★ tiene que ser de salón: marcá otro como principal primero'); renderGenka(); return; }
+  m.kind = kind==='delivery'?'delivery':'salon';
+  if(m.kind==='delivery'){ if(m.priceGross==null) m.priceGross=(S.delivery&&S.delivery.ticket)||0; }
+  else if(!m.turnoRef) m.turnoRef='N1';
+  gkPersist(); renderGenka();
+}
+function gkSetMain(id){
+  const m=G.menus.find(x=>x.id===id); if(!m) return;
+  if(m.kind!=='salon'){ flash('El principal es el menú de salón que leen Carta QR, Maridaje y Servicio'); return; }
+  G.menus.forEach(x=>x.main=(x.id===id)); gkPersist(); renderGenka(); flash('«'+m.n+'» es ahora el menú principal ★');
+}
+function gkDelMenu(){
+  const m=gkMenu();
+  if(G.menus.length<=1){ flash('Tiene que quedar al menos un menú'); return; }
+  if(m.main){ flash('No se borra el menú principal ★: marcá otro como principal primero'); return; }
+  if(!confirm('¿Borrar el menú «'+m.n+'» con sus '+m.pasos.length+' pasos? Los insumos quedan.')) return;
+  G.menus=G.menus.filter(x=>x.id!==m.id); G.menuId=gkMainMenu().id;
+  gkPersist(); renderGenka(); renderMix();
+}
 
 /* ---- mutations: insumos ---- */
 function gkSetIns(id,field,val){
@@ -4400,8 +5119,8 @@ function gkAddIns(){
   gkPersist(); renderGenka();
 }
 function gkDelIns(id){
-  const used = G.pasos.some(p=>p.ing.some(l=>l.ins===id));
-  if(used){ flash('No se puede borrar: el insumo está usado en algún paso'); return; }
+  const used = G.menus.some(m=>m.pasos.some(p=>p.ing.some(l=>l.ins===id)));
+  if(used){ flash('No se puede borrar: el insumo está usado en algún paso (de este u otro menú)'); return; }
   G.insumos = G.insumos.filter(i=>i.id!==id);
   gkPersist(); renderGenka();
 }
@@ -4409,23 +5128,23 @@ function gkDelIns(id){
 /* ---- mutations: pasos ---- */
 function gkAddPaso(){
   const p={id:gkId(), n:'Nuevo paso', d:'', prem:false, ing:[]};
-  G.pasos.push(p); gkUI.open[p.id]=true;
+  gkMenu().pasos.push(p); gkUI.open[p.id]=true;
   gkPersist(); renderGenka();
 }
 function gkDelPaso(id){
-  const p=G.pasos.find(x=>x.id===id); if(!p) return;
+  const M=gkMenu(); const p=M.pasos.find(x=>x.id===id); if(!p) return;
   if(!confirm('¿Borrar el paso «'+p.n+'» y su escandallo?')) return;
-  G.pasos=G.pasos.filter(x=>x.id!==id);
+  M.pasos=M.pasos.filter(x=>x.id!==id);
   gkPersist(); renderGenka();
 }
 function gkMovePaso(id,dir){
-  const ix=G.pasos.findIndex(x=>x.id===id); if(ix<0) return;
-  const j=ix+dir; if(j<0||j>=G.pasos.length) return;
-  const t=G.pasos[ix]; G.pasos[ix]=G.pasos[j]; G.pasos[j]=t;
+  const P=gkMenu().pasos; const ix=P.findIndex(x=>x.id===id); if(ix<0) return;
+  const j=ix+dir; if(j<0||j>=P.length) return;
+  const t=P[ix]; P[ix]=P[j]; P[j]=t;
   gkPersist(); renderGenka();
 }
 function gkSetPaso(id,field,val){
-  const p=G.pasos.find(x=>x.id===id); if(!p) return;
+  const p=gkMenu().pasos.find(x=>x.id===id); if(!p) return;
   if(field==='prem') p.prem=!!val; else p[field]=String(val).slice(0,80);
   gkPersist(); renderGenka();
 }
@@ -4433,20 +5152,20 @@ function gkTogglePaso(id){ gkUI.open[id]=!gkUI.open[id]; renderGenka(); }
 
 /* ---- mutations: líneas de escandallo ---- */
 function gkSetIngQ(pasoId, insId, val){
-  const p=G.pasos.find(x=>x.id===pasoId); if(!p) return;
+  const p=gkMenu().pasos.find(x=>x.id===pasoId); if(!p) return;
   const l=p.ing.find(x=>x.ins===insId); if(!l) return;
   const i=gkInsById(insId);
   l.q = i && i.unit==='un' ? (+val||0) : (+val||0)/1000;   // g → kg/l
   gkPersist(); renderGenka();
 }
 function gkDelIng(pasoId, insId){
-  const p=G.pasos.find(x=>x.id===pasoId); if(!p) return;
+  const p=gkMenu().pasos.find(x=>x.id===pasoId); if(!p) return;
   p.ing=p.ing.filter(l=>l.ins!==insId);
   gkPersist(); renderGenka();
 }
 function gkAddIng(pasoId){
   const sel=document.getElementById('gkAddSel-'+pasoId); if(!sel||!sel.value) return;
-  const p=G.pasos.find(x=>x.id===pasoId); if(!p) return;
+  const p=gkMenu().pasos.find(x=>x.id===pasoId); if(!p) return;
   if(p.ing.some(l=>l.ins===sel.value)){ flash('Ese insumo ya está en el paso'); return; }
   const i=gkInsById(sel.value);
   p.ing.push({ins:sel.value, q: i&&i.unit==='un'?1:0.010});
@@ -4458,15 +5177,25 @@ function gkEnviarEsquema(){
   const c=gkCompute();
   const nuevo=+( (c.fc + (G.params.colchonPp||0)).toFixed(1) );
   if(!(nuevo>0)){ flash('El teórico todavía es 0 — cargá insumos y pasos'); return; }
+  if(c.isDlv){
+    const dv=S.delivery;
+    const t=c.pr.stdGross||0;
+    if(!confirm('Pisar en el esquema 勘定 el canal delivery:\n· food cost '+((dv.foodPct!=null&&dv.foodPct!=='')?dv.foodPct:S.cmv.foodPct)+'% → '+nuevo+'% (teórico '+c.fc.toFixed(1)+'% + colchón '+(G.params.colchonPp||0)+' pp)\n· ticket comida $'+(dv.ticket||0)+' → $'+t+' c/IVA'+(c.menu.packaging!=null?'\n· envase $'+dv.packaging+' → $'+c.packaging+' por pedido':''))) return;
+    dv.foodPct=nuevo; if(t>0) dv.ticket=t; if(c.menu.packaging!=null) dv.packaging=c.packaging;
+    renderInputs(); renderOutputs(); renderGenka();
+    flash('Canal delivery del esquema actualizado ✓ (guardá la baseline en 勘定)');
+    return;
+  }
+  if(!c.menu.main && !confirm('Este no es el menú principal ★. ¿Igual pisar el food cost del esquema con su teórico?')) return;
   if(!confirm('Pisar el food cost del esquema 勘定: '+S.cmv.foodPct+'% → '+nuevo+'%\n(teórico '+c.fc.toFixed(1)+'% + colchón '+(G.params.colchonPp||0)+' pp)')) return;
   S.cmv.foodPct=nuevo;
   renderInputs(); renderOutputs(); renderGenka();
-  flash('Food cost del esquema actualizado a '+nuevo+'% ✓');
+  flash('Food cost del esquema actualizado a '+nuevo+'% ✓ (guardá la baseline en 勘定)');
 }
 function gkExportCSV(){
   const c=gkCompute();
   const rows=[
-    ['Kanjō · Escandallo del menú ('+(G.params.variant==='prem'?'premium':'estándar')+')'],
+    ['Kanjō · Escandallo · '+c.menu.n+' ('+(c.menu.kind==='delivery'?'delivery · ':'')+(c.menu.variant==='prem'?'premium':'estándar')+')'],
     ['TC ARS/USD', G.params.tc, 'Factor Q %', G.params.factorQ],
     [],
     ['INSUMOS'],
@@ -4487,12 +5216,13 @@ function gkExportCSV(){
     ['Subtotal pasos',c.sub.toFixed(2)],
     ['Factor Q '+G.params.factorQ+'%',(c.total-c.sub).toFixed(2)],
     ['Costo por cubierto',c.total.toFixed(2)],
+    ...(c.isDlv?[['Envase por pedido',c.packaging.toFixed(2)],['Costo comida + envase',c.totalCanal.toFixed(2)],['Neto tras comisión app '+c.appPct+'%',c.netApp.toFixed(2)],['Food cost s/ neto app %',c.fcApp.toFixed(1)]]:[]),
     ['Precio neto',c.precio.toFixed(2)],
     ['Food cost teórico %',c.fc.toFixed(1)],
     ['Plan (esquema) %',c.plan],
     ['Delta pp',c.delta.toFixed(1)],
     ['Margen bruto por cubierto',c.margen.toFixed(2)]);
-  downloadFile('kanjo-escandallo.csv', toCSV(rows)) ? flash('Escandallo exportado ✓') : flash('No se pudo exportar en este entorno');
+  downloadFile('kanjo-escandallo-'+c.menu.n.toLowerCase().replace(/[^a-z0-9]+/g,'-')+'.csv', toCSV(rows)) ? flash('Escandallo exportado ✓') : flash('No se pudo exportar en este entorno');
 }
 
 /* ---- render ---- */
@@ -4502,21 +5232,50 @@ function gkToggleCard(key){
   if(cd) cd.classList.toggle('collapsed', gkUI.collapsed[key]);
 }
 function renderGenka(){
-  const c=gkCompute();
+  const M=gkMenu();
+  const c=gkCompute(undefined, M);
   const P=G.params;
+  const unit = c.isDlv ? 'pedido' : 'cubierto';
 
   /* kpis */
   document.getElementById('gkKpis').innerHTML =
-    '<div class="kpi"><div class="lab">Costo / cubierto</div><div class="val mono">'+gkFmt2(c.total)+'</div><div class="ksub">'+(P.variant==='prem'?'premium':'estándar')+' · incl. factor Q '+P.factorQ+'%</div></div>'
-    +'<div class="kpi"><div class="lab">Food cost teórico</div><div class="val mono" style="color:var(--indigo)">'+c.fc.toFixed(1)+'%</div><div class="ksub">sobre precio neto '+gkFmt2(c.precio)+'</div></div>'
-    +'<div class="kpi"><div class="lab">vs. plan</div><div class="val mono" style="color:'+(c.delta<=0?'var(--good)':'var(--vermilion)')+'">'+(c.delta>=0?'+':'')+c.delta.toFixed(1)+' pp</div><div class="ksub">plan actual '+c.plan+'% en 勘定</div></div>';
+    '<div class="kpi"><div class="lab">Costo / '+unit+'</div><div class="val mono">'+gkFmt2(c.isDlv?c.totalCanal:c.total)+'</div><div class="ksub">'+escapeHtml(M.n)+' · '+(M.variant==='prem'?'premium':'estándar')+(c.isDlv?' · comida + envase':' · incl. factor Q '+P.factorQ+'%')+'</div></div>'
+    +'<div class="kpi"><div class="lab">Food cost teórico</div><div class="val mono" style="color:var(--indigo)">'+c.fc.toFixed(1)+'%</div><div class="ksub">sobre precio neto '+gkFmt2(c.precio)+(c.isDlv?' · tras app '+c.fcApp.toFixed(0)+'%':'')+'</div></div>'
+    +'<div class="kpi"><div class="lab">vs. plan</div><div class="val mono" style="color:'+(c.delta<=0?'var(--good)':'var(--vermilion)')+'">'+(c.delta>=0?'+':'')+c.delta.toFixed(1)+' pp</div><div class="ksub">plan '+(c.isDlv?'delivery ':'')+c.plan+'% en 勘定</div></div>';
+
+  /* menús guardados */
+  const mc=document.getElementById('gkMenuCount'); if(mc) mc.textContent=G.menus.length;
+  const chips=G.menus.map(m=>{ const cc=gkCompute(undefined,m); const on=m.id===M.id;
+    return '<button class="gkmenu'+(on?' on':'')+'" onclick="gkSelectMenu(\''+m.id+'\')" title="'+escapeHtml(m.n)+'">'
+      +(m.main?'<span class="star">★</span>':'')+'<b>'+escapeHtml(m.n)+'</b>'
+      +'<span class="k">'+(m.kind==='delivery'?'delivery':'salón')+' · '+m.pasos.length+' pasos</span>'
+      +'<span class="fc" style="color:'+(cc.delta<=0?'var(--good)':'var(--vermilion)')+'">'+(cc.fc>0?cc.fc.toFixed(1)+'%':'—')+'</span></button>'; }).join('');
+  document.getElementById('gkMenus').innerHTML =
+    '<div class="gkmenus">'+chips+'</div>'
+    +'<div class="toolbar" style="margin-top:10px;flex-wrap:wrap">'
+    +'<button class="minib" onclick="gkAddMenu(\'salon\')">+ Menú de salón</button>'
+    +'<button class="minib" onclick="gkAddMenu(\'delivery\')">+ Menú de delivery</button>'
+    +'<button class="minib" onclick="gkDupMenu()">Duplicar «'+escapeHtml(M.n)+'»</button>'
+    +'<button class="minib" onclick="gkRenameMenu()">Renombrar</button>'
+    +(M.main?'':'<button class="minib" onclick="gkSetMain(\''+M.id+'\')"'+(M.kind!=='salon'?' disabled title="solo un menú de salón puede ser principal"':'')+'>★ Hacer principal</button>')
+    +(M.main?'':'<button class="minib" style="color:var(--vermilion)" onclick="gkDelMenu()">Borrar</button>')
+    +'</div>'
+    +'<p class="desc" style="margin:8px 0 0">Todos los menús comparten la lista de insumos y el TC. El ★ principal es el que leen Carta QR 献立, Maridaje 相性, Servicio 席 y el food cost teórico del Resumen; los otros son escenarios de carta (temporada, degustación corta) o el box de delivery, y se costean acá.</p>';
 
   /* params */
-  const turnoOpts=S.turnos.map(t=>'<option value="'+t.id+'"'+(t.id===P.turnoRef?' selected':'')+'>'+escapeHtml(t.label)+' — $'+t.price+' c/IVA</option>').join('');
+  const turnoOpts=S.turnos.map(t=>'<option value="'+t.id+'"'+(t.id===M.turnoRef?' selected':'')+'>'+escapeHtml(t.label)+' — $'+t.price+' c/IVA</option>').join('')
+    +'<option value="fixed"'+(M.turnoRef==='fixed'?' selected':'')+'>Precio propio (no sigue al esquema)</option>';
+  const kindSel='<div class="row"><label>Tipo de menú<span class="sub">'+(c.isDlv?'se costea con envase y comisión de apps':'el precio sigue al turno del esquema')+'</span></label><div class="ifield"><select onchange="gkSetMenuKind(this.value)" style="border:none;background:transparent;font-family:\'Inter\',sans-serif;font-size:13px;outline:none"><option value="salon"'+(!c.isDlv?' selected':'')+'>Salón</option><option value="delivery"'+(c.isDlv?' selected':'')+'>Delivery</option></select></div></div>';
+  const priceRows = c.isDlv
+    ? '<div class="row"><label>Precio del box (carta, c/IVA)<span class="sub">neto: '+gkFmt2(c.pr.std)+' · en el esquema hoy $'+((S.delivery&&S.delivery.ticket)||0)+'</span></label><div class="ifield"><span class="pre">$</span><input type="number" value="'+(M.priceGross==null?'':M.priceGross)+'" onchange="gkSetParam(\'priceGross\',this.value)"></div></div>'
+      +'<div class="row"><label>Envase por pedido<span class="sub">vacío = el del esquema ($'+((S.delivery&&S.delivery.packaging)||0)+')</span></label><div class="ifield"><span class="pre">$</span><input type="number" step="0.1" placeholder="'+((S.delivery&&S.delivery.packaging)||0)+'" value="'+(M.packaging==null?'':M.packaging)+'" onchange="gkSetParam(\'packaging\',this.value)"></div></div>'
+      +'<div class="row"><label>Precio premium (c/IVA)<span class="sub">variante con extras · vacío = no aplica</span></label><div class="ifield"><span class="pre">$</span><input type="number" value="'+(M.premGross==null?'':M.premGross)+'" onchange="gkSetParam(\'premGross\',this.value)"></div></div>'
+    : '<div class="row"><label>Turno de referencia (precio estándar)<span class="sub">neto: '+gkFmt2(c.pr.std)+' = $'+c.pr.stdGross+' ÷ '+c.pr.ivaDiv.toFixed(2)+'</span></label><div class="ifield"><select onchange="gkSetParam(\'turnoRef\',this.value)" style="border:none;background:transparent;font-family:\'Inter\',sans-serif;font-size:13px;outline:none">'+turnoOpts+'</select></div></div>'
+      +(M.turnoRef==='fixed'?'<div class="row"><label>Precio propio (carta, c/IVA)</label><div class="ifield"><span class="pre">$</span><input type="number" value="'+(M.priceGross==null?'':M.priceGross)+'" onchange="gkSetParam(\'priceGross\',this.value)"></div></div>':'')
+      +'<div class="row"><label>Precio premium (carta, c/IVA)<span class="sub">neto: '+gkFmt2(c.pr.prem)+'</span></label><div class="ifield"><span class="pre">$</span><input type="number" value="'+(M.premGross==null?'':M.premGross)+'" onchange="gkSetParam(\'premGross\',this.value)"></div></div>';
   document.getElementById('gkParams').innerHTML =
-    '<p class="note">El precio estándar sale <b>del esquema</b> (elegí el turno de referencia); cambiarlo ahí lo cambia acá. El premium es propio de este tab. El <b>factor Q</b> cubre condimentos y varios no escandallados (shoyu, sal, aceites, garnish). El <b>colchón</b> son los puntos que le sumás al teórico al enviarlo al esquema, para absorber merma operativa.</p>'
-    +'<div class="row"><label>Turno de referencia (precio estándar)<span class="sub">neto: '+gkFmt2(c.pr.std)+' = $'+c.pr.stdGross+' ÷ '+c.pr.ivaDiv.toFixed(2)+'</span></label><div class="ifield"><select onchange="gkSetParam(\'turnoRef\',this.value)" style="border:none;background:transparent;font-family:\'Inter\',sans-serif;font-size:13px;outline:none">'+turnoOpts+'</select></div></div>'
-    +'<div class="row"><label>Precio premium (carta, c/IVA)<span class="sub">neto: '+gkFmt2(c.pr.prem)+'</span></label><div class="ifield"><span class="pre">$</span><input type="number" value="'+P.premGross+'" onchange="gkSetParam(\'premGross\',this.value)"></div></div>'
+    '<p class="note">'+(c.isDlv?'Un menú de <b>delivery</b> tiene precio propio y carga el <b>envase</b>; el food cost se mira también sobre lo que queda <b>después de la comisión de la app</b> ('+c.appPct+'% en 勘定), que es lo que de verdad paga la receta.':'El precio estándar sale <b>del esquema</b> (elegí el turno de referencia); cambiarlo ahí lo cambia acá. El premium es propio de este menú.')+' El <b>factor Q</b> cubre condimentos y varios no escandallados (shoyu, sal, aceites, garnish). El <b>colchón</b> son los puntos que le sumás al teórico al enviarlo al esquema, para absorber merma operativa.</p>'
+    +kindSel+priceRows
     +'<div class="row"><label>Tipo de cambio<span class="sub">ARS por USD · compra efectiva</span></label><div class="ifield"><input type="number" value="'+P.tc+'" onchange="gkSetParam(\'tc\',this.value)"><span class="post">ARS</span></div></div>'
     +'<div class="row"><label>Factor Q — condimentos y varios</label><div class="ifield"><input type="number" step="0.5" value="'+P.factorQ+'" onchange="gkSetParam(\'factorQ\',this.value)"><span class="post">%</span></div></div>'
     +'<div class="row"><label>Target de food cost<span class="sub">para el precio sugerido</span></label><div class="ifield"><input type="number" value="'+P.targetPct+'" onchange="gkSetParam(\'targetPct\',this.value)"><span class="post">%</span></div></div>'
@@ -4539,11 +5298,11 @@ function renderGenka(){
   }).join('');
 
   /* variant toggle */
-  const nStd=G.pasos.filter(p=>!p.prem).length, nAll=G.pasos.length;
-  document.getElementById('gkVStd').textContent='Omakase estándar · '+nStd+' pasos';
+  const nStd=M.pasos.filter(p=>!p.prem).length, nAll=M.pasos.length;
+  document.getElementById('gkVStd').textContent=M.n+' estándar · '+nStd+' pasos';
   document.getElementById('gkVPrem').textContent='Premium · '+nAll+' pasos';
-  document.getElementById('gkVStd').classList.toggle('on',P.variant==='std');
-  document.getElementById('gkVPrem').classList.toggle('on',P.variant==='prem');
+  document.getElementById('gkVStd').classList.toggle('on',M.variant==='std');
+  document.getElementById('gkVPrem').classList.toggle('on',M.variant==='prem');
 
   /* pasos */
   const max=Math.max.apply(null,c.costs.concat([0.0001]));
@@ -4588,18 +5347,27 @@ function renderGenka(){
   const cS=gkCompute(shock);
   const top=Object.entries(c.contrib).sort((a,b)=>b[1]-a[1]).slice(0,5);
   const tmax=top.length?top[0][1]:1;
-  const sug=P.targetPct>0 ? c.total/(P.targetPct/100) : 0;
+  /* precio sugerido: en delivery el target se mira sobre el neto tras app y con envase */
+  const sug = P.targetPct>0 ? (c.isDlv ? c.totalCanal/(P.targetPct/100)/Math.max(0.01,1-c.appPct/100) : c.total/(P.targetPct/100)) : 0;
   let verdict;
-  if(c.fc<=35) verdict='<div class="gkverdict good">Teórico <b>sano</b>. Si el CMV real del analista 番付 da bastante más que '+c.fc.toFixed(0)+'%, la brecha es merma operativa, porciones o precios de compra — no receta.</div>';
-  else if(c.fc<=42) verdict='<div class="gkverdict warn">Teórico en zona de <b>vigilancia</b>. Los insumos de arriba del pareto concentran el problema: sustituir o renegociar ahí mueve más que tocar diez pasos chicos.</div>';
-  else verdict='<div class="gkverdict bad">Teórico <b>crítico</b>: la receta ya nace cara antes de cualquier merma operativa. Revisá precio del menú o composición de pasos.</div>';
+  if(c.isDlv){
+    if(c.fcApp<=45) verdict='<div class="gkverdict good">El box <b>cierra</b>: comida + envase son el '+c.fcApp.toFixed(0)+'% de lo que te deja la app. Queda margen para promos puntuales sin regalar el pedido.</div>';
+    else if(c.fcApp<=60) verdict='<div class="gkverdict warn">Zona de <b>vigilancia</b>: tras la comisión, comida + envase se llevan el '+c.fcApp.toFixed(0)+'%. Un descuento de la app sobre este precio te deja casi sin contribución — empujá el canal propio o subí el precio en app.</div>';
+    else verdict='<div class="gkverdict bad">El box <b>no cierra por app</b>: comida + envase son el '+c.fcApp.toFixed(0)+'% de lo que queda tras la comisión. O el precio en la app es más alto que en el local, o el box lleva menos pescado caro.</div>';
+  } else {
+    if(c.fc<=35) verdict='<div class="gkverdict good">Teórico <b>sano</b>. Si el CMV real del analista 番付 da bastante más que '+c.fc.toFixed(0)+'%, la brecha es merma operativa, porciones o precios de compra — no receta.</div>';
+    else if(c.fc<=42) verdict='<div class="gkverdict warn">Teórico en zona de <b>vigilancia</b>. Los insumos de arriba del pareto concentran el problema: sustituir o renegociar ahí mueve más que tocar diez pasos chicos.</div>';
+    else verdict='<div class="gkverdict bad">Teórico <b>crítico</b>: la receta ya nace cara antes de cualquier merma operativa. Revisá precio del menú o composición de pasos.</div>';
+  }
 
   document.getElementById('gkOut').innerHTML =
     '<div class="gklines" style="margin-top:12px">'
-    +'<div class="line big"><span>Costo por cubierto</span><span class="v">'+gkFmt2(c.total)+'</span></div>'
-    +'<div class="line"><span>Precio neto ('+escapeHtml(P.variant==='prem'?'premium':c.pr.stdLabel)+')</span><span class="v">'+gkFmt2(c.precio)+'</span></div>'
+    +'<div class="line big"><span>Costo comida / '+unit+'</span><span class="v">'+gkFmt2(c.total)+'</span></div>'
+    +(c.isDlv?'<div class="line"><span>+ Envase</span><span class="v">'+gkFmt2(c.packaging)+'</span></div><div class="line"><span>Costo total / pedido</span><span class="v">'+gkFmt2(c.totalCanal)+'</span></div>':'')
+    +'<div class="line"><span>Precio neto ('+escapeHtml(M.variant==='prem'&&c.pr.premGross?'premium':c.pr.stdLabel)+')</span><span class="v">'+gkFmt2(c.precio)+'</span></div>'
     +'<div class="line big"><span>Food cost teórico</span><span class="v" style="color:var(--indigo)">'+c.fc.toFixed(1)+'%</span></div>'
-    +'<div class="line"><span>Margen bruto / cubierto</span><span class="v" style="color:var(--good)">'+gkFmt2(c.margen)+'</span></div>'
+    +(c.isDlv?'<div class="line"><span>Neto tras comisión app '+c.appPct+'%</span><span class="v">'+gkFmt2(c.netApp)+'</span></div><div class="line big"><span>Comida + envase s/ neto app</span><span class="v" style="color:'+(c.fcApp<=45?'var(--good)':c.fcApp<=60?'var(--warn)':'var(--vermilion)')+'">'+c.fcApp.toFixed(1)+'%</span></div><div class="line"><span>Margen / pedido por app</span><span class="v" style="color:'+(c.margenApp>=0?'var(--good)':'var(--vermilion)')+'">'+gkFmt2(c.margenApp)+'</span></div>':'')
+    +'<div class="line"><span>Margen bruto / '+unit+(c.isDlv?' (canal propio)':'')+'</span><span class="v" style="color:var(--good)">'+gkFmt2(c.isDlv?c.precio-c.totalCanal:c.margen)+'</span></div>'
     +'<div class="line"><span>vs. plan ('+c.plan+'%)</span><span class="v" style="color:'+(c.delta<=0?'var(--good)':'var(--vermilion)')+'">'+(c.delta>=0?'+':'')+c.delta.toFixed(1)+' pp</span></div>'
     +'</div>'
     +'<div class="gkgauge"><div class="gl"><span>sano &lt;35%</span><span>vigilar</span><span>&gt;42% crítico</span></div>'
@@ -4614,9 +5382,9 @@ function renderGenka(){
     +'<div class="gkshock"><input type="range" min="-30" max="80" value="'+gkUI.shockPct+'" oninput="gkUI.shockPct=+this.value;renderGenka()"><span class="sv">'+(gkUI.shockPct>=0?'+':'')+gkUI.shockPct+'%</span></div>'
     +'<div class="gkshockres">'+(gkUI.shockIns?('Si <b>'+escapeHtml(gkInsById(gkUI.shockIns).n)+'</b> '+(gkUI.shockPct>=0?'sube':'baja')+' '+Math.abs(gkUI.shockPct)+'%: costo <b>'+gkFmt2(cS.total)+'</b> · food cost <b>'+cS.fc.toFixed(1)+'%</b> ('+((cS.fc-c.fc)>=0?'+':'')+(cS.fc-c.fc).toFixed(1)+' pp)'):'—')+'</div>'
     +'<div class="gklines" style="margin-top:16px">'
-    +'<div class="line"><span>Precio sugerido p/ target <b>'+P.targetPct+'%</b></span><span class="v">'+gkFmt2(sug)+' <small style="font-weight:400;color:var(--ink-soft)">neto · carta '+gkFmt2(sug*c.pr.ivaDiv)+'</small></span></div>'
+    +'<div class="line"><span>Precio sugerido p/ target <b>'+P.targetPct+'%</b>'+(c.isDlv?' <small style="color:var(--ink-soft)">(vendido por app, con envase)</small>':'')+'</span><span class="v">'+gkFmt2(sug)+' <small style="font-weight:400;color:var(--ink-soft)">neto · carta '+gkFmt2(sug*c.pr.ivaDiv)+'</small></span></div>'
     +'</div>'
-    +'<button class="btn" style="width:100%;margin-top:12px" onclick="gkEnviarEsquema()">Enviar al esquema → food cost '+( (c.fc+(P.colchonPp||0)).toFixed(1) )+'%</button>'
+    +'<button class="btn" style="width:100%;margin-top:12px" onclick="gkEnviarEsquema()">'+(c.isDlv?'Enviar al esquema → canal delivery':'Enviar al esquema → food cost '+( (c.fc+(P.colchonPp||0)).toFixed(1) )+'%')+'</button>'
     +'<button class="btn ghost" style="width:100%;margin-top:8px" onclick="gkExportCSV()">Exportar escandallo CSV</button>';
 
   /* restaurar colapsados */
@@ -4909,9 +5677,9 @@ function renderCompras(){
 /* =====================================================================
    TAB 7 · GENKIN 現金 — flujo de caja proyectado semana a semana
    ===================================================================== */
-let caja={ saldo0:0, asOf:'', horizon:13, cardLag:10, extras:[] };
+let caja={ saldo0:0, asOf:'', horizon:13, cardLag:10, appLag:7, extras:[] };
 function cjEnsure(c){
-  const d={ saldo0:0, asOf:'', horizon:13, cardLag:10, extras:[] };
+  const d={ saldo0:0, asOf:'', horizon:13, cardLag:10, appLag:7, extras:[] };
   if(!c||typeof c!=='object') return d;
   c=Object.assign({},d,c);
   if(!Array.isArray(c.extras)) c.extras=[];
@@ -4965,6 +5733,17 @@ function cjBuild(){
   const blendCmv=(fShare*S.cmv.foodPct+(1-fShare)*S.cmv.bevPct)/100;
   const fx0=fixedCosts();
   const cardRate=(S.pagos.cardRate||0)/100, qrRate=(S.pagos.qrRate||0)/100;
+  /* delivery: semana a semana desde el pronóstico 配 (o el plan). Las apps
+     liquidan neto de comisión y con rezago; el canal propio cobra en la semana. */
+  const dvOn = deliveryCalc(S).on || delivery.length>0;
+  const dfc = dvOn ? buildDeliveryForecast(H) : null;
+  const dW = i => { if(!dfc) return {gross:0,app:0,own:0,orders:0,net:0}; const w=dfc.weeks[Math.min(i,dfc.weeks.length-1)]; return {gross:w.grossExp, app:w.appExp, own:w.ownExp, orders:w.ordersExp, net:w.netExp}; };
+  const dvp=S.delivery||{}, dcalc=deliveryCalc(S);
+  const appLagW=Math.max(0, Math.round((caja.appLag||0)/7));
+  const dFoodPct=(dvp.foodPct!=null&&dvp.foodPct!=='')?+dvp.foodPct:S.cmv.foodPct;
+  const dFoodShare=((dvp.ticket||0)+(dvp.bev||0))>0 ? (dvp.ticket||0)/((dvp.ticket||0)+(dvp.bev||0)) : 1;
+  const dBlendCmv=(dFoodShare*dFoodPct+(1-dFoodShare)*(S.cmv.bevPct||0))/100;
+  const ivaRate=S.iva.rateVentas/100;
 
   const weeks=[];
   let saldo=caja.saldo0||0;
@@ -4977,32 +5756,49 @@ function cjBuild(){
     const inQR=gross*pQR*(1-qrRate);
     const cardSettled = i-lagW>=0 ? weekGross[i-lagW]*pCard : steadyCard;   /* pre-horizonte: régimen estable */
     const inCard=cardSettled*(1-cardRate);
-    const inflow=inCash+inQR+inCard;
+    /* delivery: apps con rezago y neto de comisión; propio en la semana, neto de procesamiento */
+    const dw=dW(i), dwLag=dW(Math.max(0,i-appLagW));
+    const inApp=dwLag.app*(1-(dvp.appPct||0)/100);
+    const inOwn=dw.own*(1-(S.pagos.procPct||0)/100);
+    const inflow=inCash+inQR+inCard+inApp+inOwn;
     const lines=[];
     let out=0;
     const cmvW=net*blendCmv; out+=cmvW; lines.push(['CMV (compras)', -cmvW]);
+    let dNet=0;
+    if(dvOn && dw.orders>0){
+      dNet=dw.net;
+      const dCmv=dw.net*dBlendCmv; out+=dCmv; lines.push(['CMV delivery', -dCmv]);
+      const appShareW = dw.gross>0 ? dw.app/dw.gross : (dvp.appShare||0)/100;
+      const canal=dw.orders*(dvp.packaging||0) + dw.orders*(1-appShareW)*(dvp.courier||0);
+      out+=canal; lines.push(['Envases + cadete', -canal]);
+      if(inApp>0) lines.push(['Liquidación apps (neto)', inApp, 'extra']);
+    }
     /* eventos por día calendario dentro de la semana */
     for(let d=new Date(ws.getTime()); d<=we; d.setDate(d.getDate()+1)){
       const day=d.getDate(), mo=d.getMonth();
       if(day===1){ out+=fx0.ocup+fx0.oper; lines.push(['Alquiler + operación', -(fx0.ocup+fx0.oper)]);
-        const iibb=net*WEEKS_PER_MONTH*(S.impuestos.iibbPct+S.impuestos.debCredPct)/100;
-        out+=iibb; lines.push(['IIBB + déb/créd (mes ant.)', -iibb]); }
-      if(day===4){ out+=fx0.labor; lines.push(['Sueldos (mes ant.)', -fx0.labor]); }
+        const iibb=(net+dNet)*WEEKS_PER_MONTH*(S.impuestos.iibbPct+S.impuestos.debCredPct)/100;
+        out+=iibb; lines.push(['IIBB + déb/créd (mes ant.)', -iibb]);
+        if(dcalc.ads>0){ out+=dcalc.ads; lines.push(['Pauta en apps', -dcalc.ads]); } }
+      if(day===4){ const sal=fx0.labor+dcalc.laborExtra; out+=sal; lines.push(['Sueldos (mes ant.)', -sal]); }
       if(day===1 && [3,6,9,0].includes(mo)){ /* abr jul oct ene: IVA del trimestre anterior */
-        const netM=net*WEEKS_PER_MONTH;
-        const deb=netM*S.iva.rateVentas/100;
-        const cred=netM*blendCmv*S.iva.rateCMV/100 + (fx0.ocup*S.iva.shareOcup/100+fx0.oper*S.iva.shareOper/100)*0.21;
+        const netM=net*WEEKS_PER_MONTH, dNetM=dNet*WEEKS_PER_MONTH;
+        const deb=(netM+dNetM)*S.iva.rateVentas/100;
+        const feesM=(gross*pCard*cardRate + gross*pQR*qrRate + dw.own*(S.pagos.procPct||0)/100)*WEEKS_PER_MONTH;   /* comisiones facturan con IVA */
+        const cred=netM*blendCmv*S.iva.rateCMV/100 + dNetM*dBlendCmv*S.iva.rateCMV/100 + (fx0.ocup*S.iva.shareOcup/100+fx0.oper*S.iva.shareOper/100)*ivaRate
+                 + feesM*ivaRate + (dvOn ? (dw.orders*WEEKS_PER_MONTH*(dvp.packaging||0) + dw.app*WEEKS_PER_MONTH*(dvp.appPct||0)/100)*ivaRate : 0);
         const ivaQ=Math.max(0,(deb-cred)*3);
         out+=ivaQ; lines.push(['IVA trimestral (aprox.)', -ivaQ, 'iva']); }
     }
     (caja.extras||[]).forEach(e=>{ const ed=parseDate(e.date); if(ed>=ws&&ed<=we){ if(e.amt>=0){ lines.push([e.label, e.amt,'extra']); } else { out+=-e.amt; lines.push([e.label, e.amt,'extra']); } } });
     const extraIn=(caja.extras||[]).reduce((a,e)=>{ const ed=parseDate(e.date); return (ed>=ws&&ed<=we&&e.amt>0)? a+e.amt : a; },0);
     saldo += inflow+extraIn-out;
-    const wk={i, ws, we, gross, inflow:inflow+extraIn, out, saldo, lines, iva:lines.some(l=>l[2]==='iva')};
+    const wk={i, ws, we, gross:gross+dw.gross, inflow:inflow+extraIn, out, saldo, lines, iva:lines.some(l=>l[2]==='iva'), dlvGross:dw.gross, dlvIn:inApp+inOwn};
     if(minW==null||saldo<minW.saldo) minW=wk;
     weeks.push(wk);
   }
-  return {weeks, minW, source, safety:fx0.total, useFc};
+  if(dvOn && dfc) source += ' · delivery: '+(dfc.hasData?'registro 配':'plan 勘定');
+  return {weeks, minW, source, safety:fx0.total, useFc, dvOn};
 }
 
 function cjChart(weeks, safety){
@@ -5037,6 +5833,7 @@ function renderCaja(){
     <div class="row"><label>Saldo hoy en caja/banco<span class="sub">USD disponibles</span></label><div class="ifield"><span class="pre">$</span><input type="number" value="${caja.saldo0||''}" onchange="cjSet('saldo0',this.value)" placeholder="0"></div></div>
     <div class="row"><label>Fecha de referencia</label><div class="ifield"><input type="date" value="${caja.asOf||fmtDate(new Date())}" onchange="cjSet('asOf',this.value)"></div></div>
     <div class="row"><label>Acreditación tarjeta<span class="sub">días hasta cobrar</span></label><div class="ifield"><input type="number" value="${caja.cardLag}" onchange="cjSet('cardLag',this.value)"><span class="post">días</span></div></div>
+    ${B.dvOn?`<div class="row"><label>Liquidación de apps<span class="sub">Rappi / PedidosYa · días hasta cobrar, neto de comisión</span></label><div class="ifield"><input type="number" value="${caja.appLag}" onchange="cjSet('appLag',this.value)"><span class="post">días</span></div></div>`:''}
     <div class="hslab" style="margin-top:12px"><span>Horizonte</span></div>
     <div class="seltoggle" style="margin:6px 0 10px">${hbtn(8)}${hbtn(13)}${hbtn(26)}</div>
     <div class="ystate"><div class="ystat"><span>Fuente de ingresos</span><b style="max-width:60%;text-align:right;font-size:10.5px">${B.source}</b></div></div>
@@ -5063,7 +5860,7 @@ function renderCaja(){
 
   out.innerHTML=`
     <div class="panel"><h3>Saldo proyectado</h3>${cjChart(B.weeks,B.safety)}
-      <p class="desc" style="margin:8px 0 0">Línea roja = caja en cero · punteada dorada = colchón de un mes de fijos · ▼ = pago de IVA trimestral. Los cobros con tarjeta entran con ${caja.cardLag} días de rezago; el efectivo y QR, en la semana.</p></div>
+      <p class="desc" style="margin:8px 0 0">Línea roja = caja en cero · punteada dorada = colchón de un mes de fijos · ▼ = pago de IVA trimestral. Los cobros con tarjeta entran con ${caja.cardLag} días de rezago; el efectivo y QR, en la semana.${B.dvOn?` Las apps de delivery liquidan a ${caja.appLag} días y ya neto de su comisión (${S.delivery.appPct||0}%); envases y cadete salen en la semana.`:''}</p></div>
     ${alertsHtml}
     <div class="panel"><h3>Detalle semana a semana</h3><div style="overflow-x:auto"><table class="gkins"><thead><tr><th style="text-align:left">Semana</th><th>Cobros</th><th>Egresos</th><th>Saldo</th><th style="text-align:left">Eventos</th></tr></thead><tbody>${rows}</tbody></table></div>
       <p class="desc" style="margin:10px 0 0">Modelo <b>aproximado</b> y transparente: alquiler+operación e IIBB el día 1, sueldos el 4, IVA trimestral el 1 de abr/jul/oct/ene. Las compras de CMV se asumen semanales y proporcionales a la venta. No reemplaza al contador — te avisa antes que él.</p></div>`;
@@ -5226,7 +6023,7 @@ function meMonths(){
   return [...set].sort().reverse();
 }
 function meItemCost(it){
-  if(it.src==='paso'){ const p=G.pasos.find(x=>x.id===it.paso); return p? gkPasoCost(p) : 0; }
+  if(it.src==='paso'){ let p=null; G.menus.some(m=>{ p=m.pasos.find(x=>x.id===it.paso); return !!p; }); return p? gkPasoCost(p) : 0; }
   return +it.cost||0;
 }
 function meAddItem(){ meEnsureMix(); G.mix.items.push({id:gkId(), n:'Nuevo extra', price:15, src:'man', paso:'', cost:4}); gkPersist(); renderMix(); }
@@ -5265,7 +6062,7 @@ function renderMix(){
   if(!meUI.month || !meMonths().includes(meUI.month)) meUI.month=meMonths()[0];
   const mk=meUI.month, div=1+S.iva.rateVentas/100;
   const sales=G.mix.sales[mk]||{};
-  const premPasos=G.pasos.filter(p=>p.prem);
+  const premPasos=gkMenu().pasos.filter(p=>p.prem);
   const rowsData=G.mix.items.map(it=>{
     const qty=sales[it.id]||0, cost=meItemCost(it), net=(it.price||0)/div, marg=net-cost;
     return {it, qty, cost, net, marg};
@@ -5347,8 +6144,9 @@ function cpTriangleData(mk){
   const pasosStd=G.pasos.filter(p=>!p.prem);
   const sub=pasosStd.reduce((s,p)=>s+gkPasoCost(p),0);
   const costCover=sub*(1+(G.params.factorQ||0)/100);
-  const tRef=S.turnos.find(t=>t.id===G.params.turnoRef)||S.turnos[0];
-  const netPrice=tRef?(tRef.price||0)/div:0;
+  const prM=gkPrecios(gkMainMenu());
+  const tRef=prM.fixed ? {label:prM.stdLabel, price:prM.stdGross} : (S.turnos.find(t=>t.id===gkMainMenu().turnoRef)||S.turnos[0]);
+  const netPrice=prM.std;
   const teor=netPrice>0? costCover/netPrice*100 : 0;
   const plan=S.cmv.foodPct;
   const buys=compras.filter(c=>monthKey(c.date)===mk && (c.cat||'comida')==='comida');
@@ -5819,7 +6617,7 @@ async function kjLogout(){
 /* ---- backup / restore total ---- */
 /* el backup cubre TODAS las claves de la app; las que el rol no pueda leer
    o escribir se saltean solas (el servidor devuelve 403 y se ignora) */
-const KANJO_KEYS=['kanjo:baseline','kanjo:scenarios','kanjo:services','kanjo:fchealth','kanjo:genka','kanjo:compras','kanjo:mermas','kanjo:fxlog','kanjo:caja','kanjo:reservas','kanjo:stock','kanjo:crm','kanjo:auth','kanjo:cierres','kanjo:aisho','kanjo:kata','kanjo:kataruns','kanjo:dou','kanjo:shun','kanjo:zaiko','kanjo:oroshi','kanjo:wa','kanjo:hito','kanjo:hitopay','kanjo:hitopunch','kanjo:kondate','kanjo:seki'];
+const KANJO_KEYS=['kanjo:baseline','kanjo:scenarios','kanjo:services','kanjo:delivery','kanjo:fchealth','kanjo:genka','kanjo:compras','kanjo:mermas','kanjo:fxlog','kanjo:caja','kanjo:reservas','kanjo:stock','kanjo:crm','kanjo:auth','kanjo:cierres','kanjo:aisho','kanjo:kata','kanjo:kataruns','kanjo:dou','kanjo:shun','kanjo:zaiko','kanjo:oroshi','kanjo:wa','kanjo:hito','kanjo:hitopay','kanjo:hitopunch','kanjo:kondate','kanjo:seki'];
 async function kjBackup(){
   const data={};
   for(const k of KANJO_KEYS){
@@ -5860,8 +6658,9 @@ async function kjRestoreFile(input){
 function kjReprice(){
   const div=1+S.iva.rateVentas/100;
   const cost=G.pasos.filter(p=>!p.prem).reduce((s,p)=>s+gkPasoCost(p),0)*(1+(G.params.factorQ||0)/100);
-  const tRef=S.turnos.find(t=>t.id===G.params.turnoRef)||S.turnos[0];
-  const price=tRef?(tRef.price||0):0;
+  const prM=gkPrecios(gkMainMenu());
+  const tRef=prM.fixed ? {label:prM.stdLabel, price:prM.stdGross} : (S.turnos.find(t=>t.id===gkMainMenu().turnoRef)||S.turnos[0]);
+  const price=prM.stdGross||0;
   const netP=price/div;
   const teorPct=netP>0? cost/netP*100 : 0;
   const tgt=G.params.targetPct||32, col=G.params.colchonPp||0;
@@ -5883,6 +6682,11 @@ function renderResumen(){
   const occ4=r28.length? r28.reduce((a,r)=>a+r.m.occ,0)/r28.length : null;
   const cov28=r28.reduce((a,r)=>a+r.m.covers,0);
   const tix=cov28? r28.reduce((a,r)=>a+r.m.grossTotal,0)/cov28 : null;
+  /* --- delivery: últimas 4 semanas vs plan --- */
+  const dPlan=deliveryCalc(S);
+  const d28=delivery.filter(d=>d.date>=cut28).map(d=>({d, m:deliveryMetrics(d)}));
+  const dA=dlvAgg(d28);
+  const dPlanDay=dPlan.on?(S.delivery.orders||0):0;
 
   /* --- rentabilidad --- */
   let fc=null, monthExp=null;
@@ -5891,6 +6695,9 @@ function renderResumen(){
       monthExp=fc.weeks.reduce((s,w)=>s+w.profitExp,0)/fc.weeks.length*WEEKS_PER_MONTH;
     }catch(e){}
   }
+  let dMonthR=0;
+  if(dPlan.on || delivery.length){ try{ const dfcR=buildDeliveryForecast(6); dMonthR=dfcR.weeks.reduce((a,w)=>a+w.profitExp,0)/dfcR.weeks.length*WEEKS_PER_MONTH; }catch(e){} }
+  const monthSalon=monthExp; if(monthExp!=null) monthExp+=dMonthR;
   const tri=cpTriangleData(mk);
   const realShown = tri.realAdj!=null? tri.realAdj : tri.real;
 
@@ -5912,7 +6719,7 @@ function renderResumen(){
 
   /* KPIs de cabecera */
   kp.innerHTML=
-    kpiH('Resultado proyectado / mes', monthExp==null?'—':fmt(monthExp), monthExp==null?'var(--ink-soft)':monthExp>=0?'var(--good)':'var(--bad)', monthExp==null?'cargá 8+ servicios':'del pronóstico 予想')+
+    kpiH('Resultado proyectado / mes', monthExp==null?'—':fmt(monthExp), monthExp==null?'var(--ink-soft)':monthExp>=0?'var(--good)':'var(--bad)', monthExp==null?'cargá 8+ servicios':((dPlan.on||delivery.length)?'salón '+fmt(monthSalon)+' · delivery '+fmt(dMonthR):'del pronóstico 予想'))+
     kpiH('Ocupación · 4 semanas', occ4==null?'—':occ4.toFixed(0)+'%', occ4==null?'var(--ink-soft)':occ4>=S.revenue.occupancy?'var(--good)':occ4>=S.revenue.occupancy-8?'var(--brass-deep)':'var(--bad)', 'plan: '+S.revenue.occupancy+'%'+(tix?' · ticket '+fmt(tix):''))+
     kpiH('Caja mínima proyectada', B?fmt(B.minW.saldo):'—', !B?'var(--ink-soft)':B.minW.saldo<0?'var(--bad)':B.minW.saldo<B.safety?'var(--brass-deep)':'var(--good)', B?'semana del '+fmtDate(B.minW.ws):'');
 
@@ -5937,6 +6744,9 @@ function renderResumen(){
       row('Ocupación (4 sem)', occ4==null?'—':occ4.toFixed(0)+'% <span style="font-weight:400;color:var(--ink-soft)">/ '+S.revenue.occupancy+'%</span>', occC, r28.length+' servicios'),
       row('Tendencia', trend||'—', trend? (fc.trendPctWeek>0.6?'g':fc.trendPctWeek<-0.6?'r':'g'):'s', fc?(fc.trendPctWeek>=0?'+':'')+fc.trendPctWeek.toFixed(1)+'% por semana':''),
       row('No-show', nsRate==null?'—':nsRate.toFixed(1)+'%', nsC, totResv? totResv+' reservas medidas':'cargá reservas 予約'),
+      ...((dPlan.on||delivery.length)?[row('Delivery (4 sem)', dA? dA.ordersDay.toFixed(1)+' ped/día <span style="font-weight:400;color:var(--ink-soft)">/ '+dPlanDay+'</span>' : '—',
+        !dA?'s': !dPlanDay?'g': dA.ordersDay>=dPlanDay*0.9?'g': dA.ordersDay>=dPlanDay*0.7?'a':'r',
+        dA? (dA.n+' días · contribución '+fmt(dA.contrib)+' · '+Math.round(dA.appShare)+'% apps') : 'cargá los días en 番付')]:[]),
     ])+
     sec('Rentabilidad', [
       row('Resultado proyectado', monthExp==null?'—':fmt(monthExp)+'/mes', expC, monthExp==null?'necesita historial':''),
@@ -5958,6 +6768,9 @@ function renderResumen(){
   else if(B && B.minW.saldo<B.safety) ins.push({sev:'warn', txt:`<b>Caja:</b> el mínimo proyectado (${fmt(B.minW.saldo)}) queda debajo del colchón de un mes de fijos (${fmt(B.safety)}).`});
   if(realShown!=null && realShown-tri.teor>3) ins.push({sev:'warn', txt:`<b>Food cost:</b> el real (${realShown.toFixed(1)}%) supera al teórico (${tri.teor.toFixed(1)}%) por ${(realShown-tri.teor).toFixed(1)} pp — merma operativa, porciones${tri.realAdj==null?' o stock acumulado (contá cámara en 仕入 para descartarlo)':''}.`});
   if(fc && fc.trendPctWeek<-0.6) ins.push({sev:'warn', txt:`<b>Tendencia:</b> las ventas caen ${Math.abs(fc.trendPctWeek).toFixed(1)}% por semana. Mirá qué combos día×turno arrastran en 番付.`});
+  if(dA && dA.cmPerOrder<=0) ins.push({sev:'bad', txt:`<b>Delivery:</b> cada pedido deja ${fmt(dA.cmPerOrder)} después de comida, envase y comisión — el canal pierde antes de los fijos. Revisá precio en app o mix de canal en 平価.`});
+  else if(dA && dA.profitDay<0) ins.push({sev:'warn', txt:`<b>Delivery:</b> ${dA.ordersDay.toFixed(1)} pedidos/día no cubren los ${fmt(deliveryFixedPerDay())} de fijos que absorbe el canal; hacen falta ~${Math.ceil(deliveryFixedPerDay()/Math.max(0.01,dA.cmPerOrder))}/día.`});
+  if(dPlan.on && dPlan.cm<0) ins.push({sev:'warn', txt:`<b>Delivery (plan):</b> con los parámetros del esquema el canal aporta ${fmt(dPlan.cm)}/mes a los fijos — negativo. O el ticket, o la comisión, o el envase no cierran en 勘定.`});
   if(nsRate!=null && nsRate>=8 && totResv>=30) ins.push({sev:'warn', txt:`<b>No-show</b> sostenido de ${nsRate.toFixed(0)}%: evaluá seña u overbooking en 予約.`});
   if(merPct!=null && merPct>=6) ins.push({sev:'warn', txt:`<b>Mermas</b> al ${merPct.toFixed(1)}% de las compras del mes (${fmt(merUsd)}). El desglose por motivo está en 仕入.`});
   if(basket && basket.pct>=12) ins.push({sev:'warn', txt:`<b>Inflación:</b> la canasta subió ${basket.pct.toFixed(1)}% en ~90 días. Si el precio del menú no acompañó, el margen lo está absorbiendo.`});
@@ -6028,8 +6841,12 @@ function kjSnapshotMonth(mk){
   const rvM=reservas.filter(r=>monthKey(r.date)===mk && rvCovers(r)!=null);
   const totResv=rvM.reduce((a,r)=>a+r.resv,0);
   const nsPct=totResv>0? rvM.reduce((a,r)=>a+rvNoShow(r),0)/totResv*100 : null;
+  const dM=delivery.filter(d=>monthKey(d.date)===mk).map(d=>({d, m:deliveryMetrics(d)}));
+  const dA=dlvAgg(dM);
   return {
     mk, closedAt:new Date().toISOString(), tc:G.params.tc||null,
+    dlvDays: dM.length, dlvOrders: dA? dA.orders : 0, dlvGross: dA? +dA.gross.toFixed(0) : 0, dlvNet: dA? +dA.net.toFixed(0) : 0,
+    dlvContrib: dA? +dA.contrib.toFixed(0) : 0, dlvProfit: dA? +dA.profit.toFixed(0) : 0, dlvAppPct: dA? +dA.appShare.toFixed(0) : null,
     services:svM.length, covers, occ:+occ.toFixed(1),
     gross:+gross.toFixed(0), net:+net.toFixed(0),
     ticket: covers? +(gross/covers).toFixed(1) : null,
@@ -6081,7 +6898,8 @@ function kjCierresHtml(){
       <td style="text-align:left">${monthLabel(mk)}<span class="gcat">cerrado ${(c.closedAt||'').slice(0,10)}</span></td>
       <td>${c.services}<span class="gcat">${c.covers} cub · ${c.occ}%</span></td>
       <td>${fmt(c.net)}<span class="gcat">bruto ${fmt(c.gross)}</span></td>
-      <td style="font-weight:700;color:${c.profit>=0?'var(--good)':'var(--bad)'}">${fmt(c.profit)}</td>
+      <td style="font-weight:700;color:${c.profit>=0?'var(--good)':'var(--bad)'}">${fmt(c.profit)}${c.dlvDays?`<span class="gcat">salón · delivery ${fmt(c.dlvProfit)}</span>`:''}</td>
+      <td>${c.dlvDays? c.dlvOrders+'<span class="gcat">'+fmt(c.dlvNet)+' neto · '+c.dlvAppPct+'% apps</span>' : '—'}</td>
       <td>${fr==null?'—':fr.toFixed(1)+'%'}<span class="gcat">teór ${c.foodTeor}%</span></td>
       <td>${c.mermasPct==null?'—':c.mermasPct+'%'}</td>
       <td>${c.noshowPct==null?'—':c.noshowPct+'%'}</td>
@@ -6089,7 +6907,7 @@ function kjCierresHtml(){
     </tr>`; }).join('');
   return `<div class="panel"><h3>Cierre de mes <span style="font-family:'Zilla Slab',serif">締</span> <span style="font-weight:400;color:var(--ink-soft);font-size:11px">· P&L histórico congelado</span></h3>
     ${action}
-    <div style="overflow-x:auto"><table class="gkins"><thead><tr><th style="text-align:left">Mes</th><th>Servicios</th><th>Fact. neta</th><th>Resultado</th><th>Food cost</th><th>Mermas</th><th>No-show</th>${admin?'<th></th>':''}</tr></thead><tbody>${rows}</tbody></table></div>
+    <div style="overflow-x:auto"><table class="gkins"><thead><tr><th style="text-align:left">Mes</th><th>Servicios</th><th>Fact. neta</th><th>Resultado</th><th>Delivery</th><th>Food cost</th><th>Mermas</th><th>No-show</th>${admin?'<th></th>':''}</tr></thead><tbody>${rows}</tbody></table></div>
     <p class="desc" style="margin:8px 0 0">Los valores están congelados al momento del cierre — el resto de los tabs siguen recalculando en vivo con los parámetros de hoy. Esa es la diferencia entre <b>registro</b> y <b>simulador</b>.</p></div>`;
 }
 
@@ -6170,6 +6988,7 @@ function kjQuick(){
   ov.innerHTML=`<div class="kjqbox">
     <div class="kjqhead"><span style="font-family:'Zilla Slab',serif;font-size:18px;font-weight:600">Carga rápida</span><button class="kjqx" onclick="kjQuickClose()">×</button></div>
     <button class="kjqbtn" onclick="kjQuickGo('turnos','svCovers')"><span class="k">番</span><span><b>Servicio de hoy</b><i>cubiertos y facturación del turno</i></span></button>
+    <button class="kjqbtn" onclick="kjQuickGo('turnos','dvOrders')"><span class="k">配</span><span><b>Delivery de hoy</b><i>pedidos, facturación y por dónde entraron</i></span></button>
     <button class="kjqbtn" onclick="kjQuickGo('reservas','rvResv')"><span class="k">約</span><span><b>Reservas</b><i>reservas, walk-ins y no-shows</i></span></button>
     <button class="kjqbtn" onclick="kjQuickGo('compras','cpArs')"><span class="k">仕</span><span><b>Factura de compra</b><i>proveedor, insumo, total ARS</i></span></button>
     <button class="kjqbtn" onclick="kjQuickGo('compras','mrQty')"><span class="k">廃</span><span><b>Merma</b><i>qué se tiró y por qué</i></span></button>
@@ -8233,6 +9052,7 @@ initChartTips();
 renderInputs();
 renderOutputs();
 document.getElementById('svDate').value = fmtDate(new Date());
+document.getElementById('dvDate').value = fmtDate(new Date());
 /* =====================================================================
    TAB · DŌ 道 — Procedimientos: los 28 del camino a la estrella
    Texto en bundle (DOU_PROCS); solo los parámetros [DEFINIR] persisten
@@ -9657,7 +10477,7 @@ async function loadMe(){
 }
 loadMe().then(()=>Promise.all([          /* la sesión primero: define qué claves se pueden leer */
   loadBaselineSilent(),                        /* el esquema guardado ES la app: sin esto todo calcula sobre defaults */
-  loadServices(), loadFcHealth(),
+  loadServices(), loadDelivery(), loadFcHealth(),
   loadGenka().then(()=>{ meEnsureMix(); }),
   loadCompras(), loadMermas(), loadFxlog(),
   loadCaja(), loadReservas(),
