@@ -15,7 +15,7 @@
     --panel:#F4EEE1;
     --panel-2:#E5DCC8;
     --ink:#211C16;
-    --ink-soft:#6A6052;
+    --ink-soft:#5E5449;
     --indigo:#1E3A4C;
     --indigo-soft:#2F5468;
     --brass:#A87338;
@@ -347,7 +347,8 @@
   .tabs{border-bottom:2px solid var(--ink);margin-bottom:26px}
   .tabrow{display:flex;flex-wrap:wrap;align-items:center;gap:5px 4px;padding:7px 0}
   .tabrow + .tabrow{border-top:1px dotted var(--rule)}
-  .tabrow:not(:has(.tab:not([data-hidden="1"]))){display:none}
+  .tabrow:not(.navutilrow):not(:has(.tab:not([data-hidden="1"]))){display:none}
+  .tabrow.navutilrow{border-top:none;padding-top:0;justify-content:flex-end}
   .tglab{font-family:'Inter',sans-serif;font-size:9.5px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-soft);width:96px;flex:none;padding-right:8px}
   @media(max-width:640px){.tglab{width:100%;padding:2px 0 1px}}
   .tab[data-hidden="1"]{display:none}
@@ -1068,38 +1069,145 @@
   .skhist div{display:flex;justify-content:space-between;padding:2px 0}.skhist span.mono{color:var(--ink-soft)}
   @media (max-width:980px){.kdgrid,.skgrid{grid-template-columns:1fr}.htgrid{grid-template-columns:120px repeat(7,minmax(70px,1fr));overflow-x:auto}}
 
+  /* ---------- navegación pegajosa + compacta en teléfono ---------- */
+  nav.tabs{position:sticky;top:0;z-index:60;background:var(--paper)}
+  .kjloading{display:none;font-size:11.5px;color:var(--ink-soft);font-style:italic;margin:-18px 0 14px}
+  body.kj-loading .kjloading{display:block}
+  body.kj-loading .tabpanel{opacity:.35;pointer-events:none}
+  @media(max-width:640px){
+    nav.tabs{margin-bottom:18px}
+    .tabrow{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:4px 0;gap:3px}
+    .tabrow::-webkit-scrollbar{display:none}
+    .tglab{width:auto;flex:none;padding:0 6px 0 0;font-size:9px;letter-spacing:.08em}
+    .tab{padding:5px 9px 6px;font-size:13px;flex:none}
+    .tab .tk{display:none}
+    .tabrow.navutilrow{overflow:visible;padding:2px 0 4px}
+    .navutils{width:auto;flex:none;margin-left:auto;gap:2px}
+    .roletab{padding:4px 6px;font-size:9.5px}
+  }
+
+  /* ---------- sin desborde horizontal en teléfono ---------- */
+  .grid>*,.gkgrid>*,.tgrid>*,.cgrid>*,.ivagrid>*,.awglay>*,.awlists>*,.tcomp>*,.fgrid>*,.kdgrid>*,.skgrid>*,.wagnform>*,.wagnstep>*{min-width:0}
+  .grid,.gkgrid,.tgrid,.cgrid,.ivagrid{min-width:0}
+  .tabpanel{min-width:0}
+  .turnogrid,.scenwrap,.tscroll{overflow-x:auto;max-width:100%}
+  .tscroll{margin:0 -2px;padding:0 2px}
+  .fcal{grid-template-columns:repeat(7,minmax(0,1fr))}
+  .fcell{min-width:0}
+  @media(max-width:640px){
+    .wrap{padding:16px 16px 60px}
+    .fcal{gap:2px}
+    .fcell{padding:4px 3px 5px;min-height:54px}
+    .fcell .fcov{font-size:12px}
+    .fcell .fcov small{display:none}
+    .fcell .fgr{font-size:9px}
+    .fcell .fhol{display:none}
+    input.tcell{width:52px}
+    .gkpaso .gph{grid-template-columns:22px minmax(0,1fr) 70px 60px 34px 14px;gap:5px;padding:8px 8px}
+    .gkline{grid-template-columns:minmax(0,1fr) 62px 26px 62px 20px;gap:5px}
+    .gkmeta input.gnm{width:100%}
+    .gkmeta input.gds{min-width:0;width:100%}
+    .svlist{max-height:none}
+    .svrow{gap:6px}
+    .mstat{grid-template-columns:repeat(auto-fit,minmax(92px,1fr))!important}   /* pisa el inline de 7 columnas (por día) */
+    .mstat .ms{min-width:0;overflow-wrap:anywhere}
+  }
+
+  /* ---------- KPIs del header en grilla ---------- */
+  @media(max-width:900px){
+    .kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;flex:1 1 100%}
+    .kpi{padding:8px 12px;border-left:1px solid var(--rule);border-top:1px solid var(--rule);min-width:0}
+    .kpi:first-child{border-left:1px solid var(--rule);padding-left:12px}
+    .kpi:nth-child(3n+1){border-left:none;padding-left:0}
+    .kpi:nth-child(-n+3){border-top:none}
+    .kpi .ksub{max-width:none}
+    .kpi .val{font-size:18px;overflow-wrap:anywhere}
+  }
+  @media(max-width:640px){
+    .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .kpi:nth-child(3n+1){border-left:1px solid var(--rule);padding-left:12px}
+    .kpi:nth-child(-n+3){border-top:1px solid var(--rule)}
+    .kpi:nth-child(odd){border-left:none;padding-left:0}
+    .kpi:nth-child(-n+2){border-top:none}
+  }
+
+  /* ---------- toasts apilados abajo a la derecha ---------- */
+  #kjFlashStack{position:fixed;right:14px;bottom:14px;z-index:9999;display:flex;flex-direction:column;align-items:flex-end;gap:6px;pointer-events:none;max-width:min(340px,86vw)}
+  .kjtoast{background:#26221c;color:#f4efe6;font:12px 'Inter',sans-serif;line-height:1.4;padding:9px 14px;border-radius:3px;box-shadow:0 4px 14px rgba(0,0,0,.25);opacity:0;transform:translateY(6px);transition:opacity .25s,transform .25s;border-left:3px solid var(--brass)}
+  .kjtoast.on{opacity:1;transform:none}
+
+  /* ---------- modal propio (reemplaza prompt/confirm) ---------- */
+  #kjModalOv{position:fixed;inset:0;background:rgba(38,34,28,.45);z-index:9995;display:flex;align-items:flex-end;justify-content:center}
+  @media(min-width:641px){#kjModalOv{align-items:center}#kjModalOv .kjqbox{border-radius:8px;padding:18px 20px 20px}}
+  .kjmtitle{font-family:'Zilla Slab',serif;font-size:18px;font-weight:600}
+  .kjmtext{font-size:13px;line-height:1.55;color:var(--ink);margin:0 0 12px;white-space:pre-line}
+  .kjminput{width:100%;text-align:left;font-family:'Inter',sans-serif;font-size:14px;padding:8px 10px;margin-bottom:14px}
+  .kjmbtns{display:flex;gap:8px;justify-content:flex-end}
+  .kjmbtns .btn.danger{background:var(--vermilion)}
+  .kjmbtns .btn.danger:hover{background:#8f2f23}
+
+  /* ---------- foco visible + accesibilidad ---------- */
+  button:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible,summary:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+  input:focus-visible{outline:2px solid var(--brass);outline-offset:0;border-color:var(--brass-deep)}
+
+  /* ---------- Yosō · panel avanzado plegable ---------- */
+  details.kjadv{margin:4px 0 14px}
+  details.kjadv>summary{cursor:pointer;list-style:none;font-family:'Zilla Slab',serif;font-weight:600;font-size:14.5px;color:var(--ink-soft);padding:10px 14px;border:1px dashed var(--rule);border-radius:3px;background:var(--panel);user-select:none}
+  details.kjadv>summary::-webkit-details-marker{display:none}
+  details.kjadv>summary::before{content:"▸";display:inline-block;margin-right:8px;color:var(--brass);transition:transform .15s}
+  details.kjadv[open]>summary{margin-bottom:14px;color:var(--ink)}
+  details.kjadv[open]>summary::before{transform:rotate(90deg)}
+  .collapsectl{display:flex;gap:6px;justify-content:flex-end;margin-bottom:8px}
+
+  /* ---------- impresión ---------- */
+  @media print{
+    body{background:#fff;color:#000;font-size:12px}
+    .wrap{max-width:none;padding:0}
+    nav.tabs,.kjloading,.toolbar,.addrow,.delrow,.editrow,.gkdel,.navutils,.kjqlaunch,#kjFlashStack,#kjModalOv,#kjQuickOv,.collapsectl,input[type=range],.hslider,.scenbtns,.gkadd,.minib,.btn{display:none!important}
+    .tabpanel:not(.active){display:none!important}
+    .tabpanel.active{display:block!important;opacity:1!important}
+    .card,.panel{page-break-inside:avoid;break-inside:avoid;background:#fff;border-color:#bbb;box-shadow:none}
+    .card.collapsed > .body{display:block}
+    .card > .head{background:#f2f2f2}
+    input,select,textarea{border:none!important;background:transparent!important;color:#000!important;box-shadow:none!important;-webkit-appearance:none;appearance:none}
+    .svlist{max-height:none;overflow:visible}
+    a{color:#000;text-decoration:none}
+  }
+
 </style>
 
 <div class="wrap">
-  <nav class="tabs">
+  <nav class="tabs" role="tablist" aria-label="Módulos">
     <div class="tabrow">
       <span class="tglab">Números</span>
-      <button class="tab active" data-tab="resumen" onclick="switchTab('resumen')">Resumen <span class="tk">週報</span></button>
-      <button class="tab" data-tab="costos" onclick="switchTab('costos')">Esquema de costos <span class="tk">勘定</span></button>
-      <button class="tab" data-tab="turnos" onclick="switchTab('turnos')">Analista de turnos <span class="tk">番付</span></button>
-      <button class="tab" data-tab="heika" onclick="switchTab('heika')">Precios dinámicos <span class="tk">平価</span></button>
-      <button class="tab" data-tab="yoso" onclick="switchTab('yoso')">Pronóstico <span class="tk">予想</span></button>
-      <button class="tab" data-tab="caja" onclick="switchTab('caja')">Caja <span class="tk">現金</span></button>
+      <button class="tab active" role="tab" aria-selected="true" aria-controls="tab-resumen" data-tab="resumen" onclick="switchTab('resumen')">Resumen <span class="tk">週報</span></button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="tab-costos" data-tab="costos" onclick="switchTab('costos')">Esquema de costos <span class="tk">勘定</span></button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="tab-turnos" data-tab="turnos" onclick="switchTab('turnos')">Analista de turnos <span class="tk">番付</span></button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="tab-heika" data-tab="heika" onclick="switchTab('heika')">Precios dinámicos <span class="tk">平価</span></button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="tab-yoso" data-tab="yoso" onclick="switchTab('yoso')">Pronóstico <span class="tk">予想</span></button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="tab-caja" data-tab="caja" onclick="switchTab('caja')">Caja <span class="tk">現金</span></button>
     </div>
     <div class="tabrow">
       <span class="tglab">Producto</span>
-      <button class="tab" data-tab="genka" onclick="switchTab('genka')">Costeo de menú <span class="tk">原価</span></button>
-      <button class="tab" data-tab="compras" onclick="switchTab('compras')">Compras <span class="tk">仕入</span></button>
-      <button class="tab" data-tab="oroshi" onclick="switchTab('oroshi')">Proveedores <span class="tk">卸</span></button>
-      <button class="tab" data-tab="zaiko" onclick="switchTab('zaiko')">Inventario <span class="tk">在庫</span></button>
-      <button class="tab" data-tab="shun" onclick="switchTab('shun')">Estacionalidad <span class="tk">旬</span></button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="tab-genka" data-tab="genka" onclick="switchTab('genka')">Costeo de menú <span class="tk">原価</span></button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="tab-compras" data-tab="compras" onclick="switchTab('compras')">Compras <span class="tk">仕入</span></button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="tab-oroshi" data-tab="oroshi" onclick="switchTab('oroshi')">Proveedores <span class="tk">卸</span></button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="tab-zaiko" data-tab="zaiko" onclick="switchTab('zaiko')">Inventario <span class="tk">在庫</span></button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="tab-shun" data-tab="shun" onclick="switchTab('shun')">Estacionalidad <span class="tk">旬</span></button>
     </div>
     <div class="tabrow">
       <span class="tglab">Sala y equipo</span>
-      <button class="tab" data-tab="reservas" onclick="switchTab('reservas')">Reservas <span class="tk">予約</span></button>
-      <button class="tab" data-tab="crm" onclick="switchTab('crm')">Clientes <span class="tk">顧客</span></button>
-      <button class="tab" data-tab="aisho" onclick="switchTab('aisho')">Maridaje <span class="tk">相性</span></button>
-      <button class="tab" data-tab="wa" onclick="switchTab('wa')">Rueda <span class="tk">輪</span></button>
-      <button class="tab" data-tab="kata" onclick="switchTab('kata')">Manual <span class="tk">型</span></button>
-      <button class="tab" data-tab="dou" onclick="switchTab('dou')">Procedimientos <span class="tk">道</span></button>
-      <button class="tab" data-tab="hito" onclick="switchTab('hito')">Equipo <span class="tk">人</span></button>
-      <button class="tab" data-tab="kondate" onclick="switchTab('kondate')">Carta QR <span class="tk">献立</span></button>
-      <button class="tab" data-tab="seki" onclick="switchTab('seki')">Servicio <span class="tk">席</span></button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="tab-reservas" data-tab="reservas" onclick="switchTab('reservas')">Reservas <span class="tk">予約</span></button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="tab-crm" data-tab="crm" onclick="switchTab('crm')">Clientes <span class="tk">顧客</span></button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="tab-aisho" data-tab="aisho" onclick="switchTab('aisho')">Maridaje <span class="tk">相性</span></button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="tab-wa" data-tab="wa" onclick="switchTab('wa')">Rueda <span class="tk">輪</span></button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="tab-kata" data-tab="kata" onclick="switchTab('kata')">Manual <span class="tk">型</span></button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="tab-dou" data-tab="dou" onclick="switchTab('dou')">Procedimientos <span class="tk">道</span></button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="tab-hito" data-tab="hito" onclick="switchTab('hito')">Equipo <span class="tk">人</span></button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="tab-kondate" data-tab="kondate" onclick="switchTab('kondate')">Carta QR <span class="tk">献立</span></button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="tab-seki" data-tab="seki" onclick="switchTab('seki')">Servicio <span class="tk">席</span></button>
+    </div>
+    <div class="tabrow navutilrow">
       <span class="navutils">
         <button class="roletab kjqlaunch" onclick="kjQuick()">⚡ carga rápida</button>
         <button class="roletab" id="roleBtn" onclick="kjRoleToggle()">⚙ roles</button>
@@ -1107,8 +1215,9 @@
       </span>
     </div>
   </nav>
+  <div class="kjloading" id="kjLoading" aria-live="polite">cargando datos…</div>
 
-  <div id="tab-costos" class="tabpanel">
+  <div id="tab-costos" role="tabpanel" class="tabpanel">
   <header class="top">
     <div class="brand">
       <div>
@@ -1154,11 +1263,12 @@
 
       <div class="panel">
         <h3>Desglose mensual por centro</h3>
-        <table class="bd" id="bdtable"></table>
+        <div class="tscroll"><table class="bd" id="bdtable"></table></div>
         <div class="toolbar">
           <button class="btn" onclick="saveBaseline()">Guardar baseline</button>
           <button class="btn ghost" onclick="loadBaseline()">Cargar baseline</button>
           <button class="btn ghost" onclick="exportPL()">Exportar P&amp;L (CSV)</button>
+          <button class="btn ghost" type="button" onclick="window.print()" title="Imprimir esta pestaña">🖨 imprimir</button>
           <button class="btn ghost" onclick="resetState()">Restaurar valores base</button>
         </div>
       </div>
@@ -1237,7 +1347,7 @@
   </div>
   </div><!-- /tab-costos -->
 
-  <div id="tab-turnos" class="tabpanel">
+  <div id="tab-turnos" role="tabpanel" class="tabpanel">
     <header class="top">
       <div class="brand">
         <div>
@@ -1322,7 +1432,7 @@
     </div>
   </div><!-- /tab-turnos -->
 
-  <div id="tab-heika" class="tabpanel">
+  <div id="tab-heika" role="tabpanel" class="tabpanel">
     <header class="top">
       <div class="brand">
         <div>
@@ -1351,7 +1461,7 @@
     </div>
   </div><!-- /tab-heika -->
 
-  <div id="tab-yoso" class="tabpanel">
+  <div id="tab-yoso" role="tabpanel" class="tabpanel">
     <header class="top">
       <div class="brand">
         <div>
@@ -1380,7 +1490,7 @@
     </div>
   </div><!-- /tab-yoso -->
 
-  <div id="tab-genka" class="tabpanel">
+  <div id="tab-genka" role="tabpanel" class="tabpanel">
     <header class="top">
       <div class="brand">
         <div>
@@ -1450,7 +1560,7 @@
       </div>
     </div>
   </div><!-- /tab-genka -->
-  <div id="tab-aisho" class="tabpanel">
+  <div id="tab-aisho" role="tabpanel" class="tabpanel">
     <header class="top">
       <div class="brand">
         <div>
@@ -1557,7 +1667,7 @@
     </div>
   </div><!-- /tab-aisho -->
 
-  <div id="tab-compras" class="tabpanel">
+  <div id="tab-compras" role="tabpanel" class="tabpanel">
     <header class="top">
       <div class="brand">
         <div>
@@ -1618,7 +1728,7 @@
     </div>
   </div><!-- /tab-compras -->
 
-  <div id="tab-caja" class="tabpanel">
+  <div id="tab-caja" role="tabpanel" class="tabpanel">
     <header class="top">
       <div class="brand">
         <div>
@@ -1650,7 +1760,7 @@
     </div>
   </div><!-- /tab-caja -->
 
-  <div id="tab-reservas" class="tabpanel">
+  <div id="tab-reservas" role="tabpanel" class="tabpanel">
     <header class="top">
       <div class="brand">
         <div>
@@ -1684,7 +1794,7 @@
       <div class="tright" id="rvOut"></div>
     </div>
   </div><!-- /tab-reservas -->
-  <div id="tab-resumen" class="tabpanel active">
+  <div id="tab-resumen" role="tabpanel" class="tabpanel active">
     <header class="top">
       <div class="brand">
         <div>
@@ -1706,7 +1816,7 @@
     </div>
   </div><!-- /tab-resumen -->
 
-  <div id="tab-crm" class="tabpanel">
+  <div id="tab-crm" role="tabpanel" class="tabpanel">
     <header class="top">
       <div class="brand">
         <div>
@@ -1756,7 +1866,7 @@
   </div><!-- /tab-crm -->
 
   <!-- ============ TAB · DŌ 道 — Procedimientos ============ -->
-  <div id="tab-dou" class="tabpanel">
+  <div id="tab-dou" role="tabpanel" class="tabpanel">
     <div class="filterbar" style="margin-bottom:10px">
       <span class="fl">Categoría</span><span id="douCats"></span>
       <input type="search" id="douSearch" placeholder="Buscar procedimiento…" style="min-width:180px" oninput="renderDou()">
@@ -1767,7 +1877,7 @@
   </div>
 
   <!-- ============ TAB · SHUN 旬 — Estacionalidad ============ -->
-  <div id="tab-shun" class="tabpanel">
+  <div id="tab-shun" role="tabpanel" class="tabpanel">
     <div class="filterbar" style="margin-bottom:10px">
       <span class="fl">Familia</span>
       <select class="sel" id="shunFilter" onchange="renderShun()"><option value="">Todas</option><option>Pescado de mar</option><option>Marisco</option><option>Río</option><option>Huerta</option></select>
@@ -1779,7 +1889,7 @@
   </div>
 
   <!-- ============ TAB · ZAIKO 在庫 — Inventario ============ -->
-  <div id="tab-zaiko" class="tabpanel">
+  <div id="tab-zaiko" role="tabpanel" class="tabpanel">
     <div class="filterbar" style="margin-bottom:10px">
       <span class="fl">Familia</span>
       <select class="sel" id="zkFilter" onchange="renderZaiko()"><option value="">Todo</option><option value="Pescado">Pescado / marisco</option><option value="Bebida">Bebidas</option><option value="Despensa">Despensa</option><option value="Consumible">Consumibles</option><option value="alerta">Alertas</option><option value="prot">Protegidos 守</option></select>
@@ -1794,7 +1904,7 @@
   </div>
 
   <!-- ============ TAB · OROSHI 卸 — Proveedores ============ -->
-  <div id="tab-oroshi" class="tabpanel">
+  <div id="tab-oroshi" role="tabpanel" class="tabpanel">
     <header class="top">
       <div class="brand">
         <div>
@@ -1886,7 +1996,7 @@
     </div>
   </div>
 
-  <div id="tab-kata" class="tabpanel">
+  <div id="tab-kata" role="tabpanel" class="tabpanel">
     <header class="top">
       <div class="brand">
         <div>
@@ -1947,7 +2057,7 @@
     </div>
   </div><!-- /tab-kata -->
 
-  <div id="tab-wa" class="tabpanel">
+  <div id="tab-wa" role="tabpanel" class="tabpanel">
     <header class="top">
       <div class="brand">
         <div>
@@ -2038,7 +2148,7 @@
     </div>
   </div><!-- /tab-wa -->
 
-  <div id="tab-hito" class="tabpanel">
+  <div id="tab-hito" role="tabpanel" class="tabpanel">
     <header class="top">
       <div class="brand"><div><h1>Equipo <span class="kanji">人</span></h1><p class="sub">Legajo · grilla de turnos · fichaje · costo laboral real por servicio</p></div></div>
       <span class="warotag">ficha cada uno · edita admin</span>
@@ -2047,7 +2157,7 @@
     <div id="htRoot"></div>
   </div><!-- /tab-hito -->
 
-  <div id="tab-kondate" class="tabpanel">
+  <div id="tab-kondate" role="tabpanel" class="tabpanel">
     <header class="top">
       <div class="brand"><div><h1>Carta <span class="kanji">献立</span></h1><p class="sub">La carta del servicio, pública por QR · solo lectura para el comensal</p></div></div>
       <span class="warotag">aprueba y publica admin</span>
@@ -2056,7 +2166,7 @@
     <div id="kdRoot"></div>
   </div><!-- /tab-kondate -->
 
-  <div id="tab-seki" class="tabpanel">
+  <div id="tab-seki" role="tabpanel" class="tabpanel">
     <header class="top">
       <div class="brand"><div><h1>Servicio <span class="kanji">席</span></h1><p class="sub">La barra en vivo · quién está en cada asiento, qué restricción tiene, en qué paso va</p></div></div>
       <span class="warotag">opera la sala</span>
@@ -2083,6 +2193,118 @@ const COLORS = {
   cmv:'#A8392B', labor:'#1E3A4C', ocup:'#2F5468', oper:'#6A6052',
   pagos:'#A87338', imp:'#8A5E2C', capex:'#8a8377', delivery:'#5C7A3E', margen:'#3E6B4E', loss:'#A8392B'
 };
+
+/* ----------------------------- estado de UI persistido -----------------------------
+   Preferencias de pantalla (tarjetas colapsadas, paneles abiertos). Viven en
+   localStorage bajo 'kanjo:ui'; si el navegador no lo permite, viven en memoria. */
+const kjUI=(()=>{ try{ const v=JSON.parse(localStorage.getItem('kanjo:ui')||'{}'); return (v&&typeof v==='object')?v:{}; }catch(e){ return {}; } })();
+function kjUISave(){ try{ localStorage.setItem('kanjo:ui', JSON.stringify(kjUI)); }catch(e){} }
+
+/* ----------------------------- modal propio (prompt / confirm) -----------------------------
+   kjModal({title,text,input:{value,placeholder}|null,ok,cancel,danger}) → Promise
+   · con input: resuelve el string ingresado, o null si se cancela (como prompt)
+   · sin input: resuelve true/false (como confirm) */
+function kjModal(o){
+  o=o||{};
+  const E=s=>String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  return new Promise(res=>{
+    const prev=document.getElementById('kjModalOv'); if(prev) prev.remove();
+    const hasIn=!!o.input;
+    const ov=document.createElement('div'); ov.id='kjModalOv'; ov.setAttribute('role','dialog'); ov.setAttribute('aria-modal','true');
+    if(o.title) ov.setAttribute('aria-label', o.title);
+    ov.innerHTML='<div class="kjqbox kjmbox">'
+      +'<div class="kjqhead"><span class="kjmtitle">'+E(o.title||(hasIn?'Ingresá un valor':'Confirmar'))+'</span><button class="kjqx" type="button" title="Cerrar" aria-label="Cerrar" data-act="cancel">×</button></div>'
+      +(o.text?'<p class="kjmtext">'+E(o.text)+'</p>':'')
+      +(hasIn?'<input type="'+(o.input.type==='password'?'password':'text')+'" class="kjminput" value="'+E(o.input.value)+'" placeholder="'+E(o.input.placeholder||'')+'"'+(o.input.type==='password'?' autocomplete="off"':'')+'>':'')
+      +'<div class="kjmbtns"><button class="btn ghost" type="button" data-act="cancel">'+E(o.cancel||'Cancelar')+'</button><button class="btn'+(o.danger?' danger':'')+'" type="button" data-act="ok">'+E(o.ok||'Aceptar')+'</button></div>'
+      +'</div>';
+    const prevFocus=document.activeElement;
+    let closed=false;
+    const done=v=>{ if(closed) return; closed=true; ov.remove(); document.removeEventListener('keydown',onKey,true); try{ if(prevFocus&&prevFocus.focus&&document.contains(prevFocus)) prevFocus.focus({preventScroll:true}); }catch(e){} res(v); };
+    const ok=()=>done(hasIn? ov.querySelector('.kjminput').value : true);
+    const cancel=()=>done(hasIn? null : false);
+    ov.addEventListener('click',e=>{ const a=e.target.closest('[data-act]'); if(a){ a.dataset.act==='ok'?ok():cancel(); return; } if(e.target===ov) cancel(); });
+    const onKey=e=>{
+      if(e.key==='Escape'){ e.preventDefault(); cancel(); return; }
+      if(e.key==='Enter' && hasIn && e.target && e.target.classList && e.target.classList.contains('kjminput')){ e.preventDefault(); ok(); return; }
+      if(e.key==='Tab'){ /* el foco queda dentro del modal */
+        const f=[...ov.querySelectorAll('input,button')].filter(x=>!x.disabled);
+        if(!f.length) return;
+        const i=f.indexOf(document.activeElement);
+        if(e.shiftKey && (i<=0)){ e.preventDefault(); f[f.length-1].focus(); }
+        else if(!e.shiftKey && (i===-1 || i===f.length-1)){ e.preventDefault(); f[0].focus(); }
+      }
+    };
+    document.addEventListener('keydown',onKey,true);
+    document.body.appendChild(ov);
+    const f=ov.querySelector(hasIn?'.kjminput':(o.danger?'[data-act="cancel"]':'[data-act="ok"]'));
+    if(f){ f.focus(); if(hasIn) f.select(); }
+  });
+}
+/* kjConfirm(texto, opciones) → true/false · kjPrompt(pregunta, valorInicial, opciones) → string|null
+   La pregunta corta del prompt va como título del modal, igual que el mensaje del prompt nativo. */
+const kjConfirm=(text,o)=>kjModal(Object.assign({text, ok:'Aceptar', cancel:'Cancelar'}, o||{}));
+const kjPrompt=(text,value,o)=>kjModal(Object.assign({title:text, input:{value:value==null?'':value}, ok:'Aceptar', cancel:'Cancelar'}, o||{}));
+
+/* ----------------------------- foco estable entre re-renders -----------------------------
+   Los inputs que disparan un render completo llevan data-k="<clave estable>".
+   Antes de re-renderizar se anota el activo (clave + selección) y después se
+   restaura sobre el nuevo nodo con la misma clave. Si el render lo disparó un
+   Tab, el foco sigue al elemento enfocable siguiente/anterior, como esperaba
+   el usuario. Todo sincrónico: el Tab nativo ya no encuentra su destino
+   (el nodo viejo murió), pero el nuevo foco ya está puesto. */
+let kjLastTab=null, kjLastPtr=null;
+document.addEventListener('keydown',e=>{ if(e.key==='Tab') kjLastTab={dir:e.shiftKey?-1:1, t:performance.now()}; else kjLastTab=null; },true);
+/* si el cambio lo disparó un toque/click en otro lado, el foco va ahí (o a ningún lado), no vuelve al input */
+document.addEventListener('pointerdown',e=>{ const t=(e.target&&e.target.closest)?e.target.closest('[data-k]'):null; kjLastPtr={k:t?t.dataset.k:'', t:performance.now()}; kjLastTab=null; },true);
+const kjKSel=k=>'[data-k="'+(window.CSS&&CSS.escape?CSS.escape(k):String(k).replace(/"/g,'\\"'))+'"]';
+function kjFocusSnap(){
+  /* Durante el change que dispara un Tab el navegador ya vació activeElement:
+     el input que se está editando es el target del evento en curso. */
+  const ev=window.event;
+  let a=(ev && ev.target && ev.target.dataset && ev.target.dataset.k) ? ev.target : document.activeElement;
+  if(!a||!a.dataset||!a.dataset.k) return null;
+  let s=null,e=null; try{ s=a.selectionStart; e=a.selectionEnd; }catch(_){ }
+  const now=performance.now();
+  const ptr=(kjLastPtr && now-kjLastPtr.t<500) ? kjLastPtr.k : null;
+  return {k:a.dataset.k, s, e, tab:(kjLastTab && now-kjLastTab.t<120)?kjLastTab.dir:0, ptr};
+}
+function kjFocusRestore(f){
+  if(!f) return;
+  let el=null;
+  if(f.ptr!=null){
+    if(f.ptr==='') return;                       /* tocó fuera de los campos: no se le devuelve el foco */
+    try{ el=document.querySelector(kjKSel(f.ptr)); }catch(_){ }
+    if(!el) return;
+    try{ el.focus({preventScroll:true}); if(typeof el.select==='function' && /^(text|number)$/i.test(el.type||'text')) el.select(); }catch(_){ }
+    return;
+  }
+  try{ el=document.querySelector(kjKSel(f.k)); }catch(_){ }
+  if(!el) return;
+  if(f.tab){
+    const all=[...document.querySelectorAll('input,select,textarea,button,a[href],[tabindex]:not([tabindex="-1"])')].filter(x=>!x.disabled && x.tabIndex>=0 && x.offsetParent!==null);
+    const i=all.indexOf(el);
+    if(i>=0 && all[i+f.tab]) el=all[i+f.tab];
+  }
+  try{
+    el.focus({preventScroll:true});
+    if(!f.tab && f.s!=null && typeof el.setSelectionRange==='function' && /^(text|search|url|tel|password)$/i.test(el.type||'text')) el.setSelectionRange(f.s,f.e);
+    else if(f.tab && typeof el.select==='function' && /^(text|search|url|tel|password|number)$/i.test(el.type||'text')) el.select();
+  }catch(_){ }
+}
+
+/* ----------------------------- accesibilidad básica -----------------------------
+   Botones solo con ícono: copian su title a aria-label. Corre después de cada
+   render (observer con debounce) y al cambiar de tab. */
+function kjA11y(){
+  document.querySelectorAll('button[title]:not([aria-label])').forEach(b=>b.setAttribute('aria-label',b.title));
+  document.querySelectorAll('.tab[data-tab]').forEach(b=>b.setAttribute('aria-selected', b.classList.contains('active')?'true':'false'));
+}
+let kjA11yT=null;
+try{
+  new MutationObserver(()=>{ if(kjA11yT) return; kjA11yT=requestAnimationFrame(()=>{ kjA11yT=null; kjA11y(); }); })
+    .observe(document.documentElement,{childList:true,subtree:true});
+}catch(e){}
 
 /* ----------------------------- default state ----------------------------- */
 function defaultState(){
@@ -2270,9 +2492,9 @@ function compute(){
 }
 
 /* ----------------------------- format ----------------------------- */
-const fmt = n => (n<0?'-':'')+'$'+Math.abs(Math.round(n)).toLocaleString('en-US');
-const fmt1 = n => (n<0?'-':'')+'$'+Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:1,maximumFractionDigits:1});
-const pct = n => n.toLocaleString('en-US',{minimumFractionDigits:1,maximumFractionDigits:1})+'%';
+const fmt = n => (n<0?'-':'')+'$'+Math.abs(Math.round(n)).toLocaleString('es-AR');
+const fmt1 = n => (n<0?'-':'')+'$'+Math.abs(n).toLocaleString('es-AR',{minimumFractionDigits:1,maximumFractionDigits:1});
+const pct = n => n.toLocaleString('es-AR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%';
 
 /* benchmark class for a % of revenue */
 function bench(key,p){
@@ -2286,7 +2508,11 @@ function bench(key,p){
 function renderInputs(){
   const c = compute();
   const box = document.getElementById('inputs');
+  const _focus = kjFocusSnap();                 /* el render completo mata el foco: se restaura al final */
   box.innerHTML = '';
+  const ctl=document.createElement('div'); ctl.className='collapsectl';
+  ctl.innerHTML='<button class="minib" type="button" onclick="setAllCards(true)">colapsar todo</button><button class="minib" type="button" onclick="setAllCards(false)">expandir todo</button>';
+  box.appendChild(ctl);
 
   box.appendChild(card('ingresos','◷','Ingresos','mix','Cada turno tiene sus propios <b>días por mes, precio y bebida</b> (precios de carta, IVA incluido). El mediodía corre solo sábados y domingos. El modelo netea (÷ '+(1+S.iva.rateVentas/100).toFixed(2)+') para el margen; la caja bruta la ves en la sección IVA.', `
     ${numRow('Asientos por turno','revenue.seats',S.revenue.seats,'',0,'')}
@@ -2372,9 +2598,14 @@ function renderInputs(){
     if(collapsed[cd.dataset.key]) cd.classList.add('collapsed');
   });
   renderIvaInputs();
+  kjFocusRestore(_focus);
 }
 
-const collapsed = {};
+const collapsed = (kjUI.collapsed && typeof kjUI.collapsed==='object') ? kjUI.collapsed : (kjUI.collapsed={});
+function setAllCards(v){
+  document.querySelectorAll('#inputs .card[data-key]').forEach(cd=>{ collapsed[cd.dataset.key]=!!v; cd.classList.toggle('collapsed',!!v); });
+  kjUISave();
+}
 function card(key,num,title,tag,note,inner,open=false){
   const tags = {fij:['fij','fijo'],var:['var','variable'],mix:['mix','mixto']}[tag];
   const el = document.createElement('div');
@@ -2396,7 +2627,8 @@ function card(key,num,title,tag,note,inner,open=false){
 function toggleCard(key){
   collapsed[key] = !collapsed[key];
   const cd = document.querySelector(`.card[data-key="${key}"]`);
-  cd.classList.toggle('collapsed');
+  if(cd) cd.classList.toggle('collapsed', !!collapsed[key]);
+  kjUISave();
 }
 
 function numRow(label,path,val,unit,dec,sub){
@@ -2404,30 +2636,30 @@ function numRow(label,path,val,unit,dec,sub){
   const post = unit==='%'?`<span class="post">%</span>`:'';
   return `<div class="row">
     <label>${label}${sub?`<span class="sub">${sub}</span>`:''}</label>
-    <div class="ifield">${pre}<input type="number" step="${dec?'0.1':'1'}" value="${val}" oninput="setVal('${path}',this.value)">${post}</div>
+    <div class="ifield">${pre}<input type="number" data-k="${path}" step="${dec?'0.1':'1'}" value="${val}" oninput="setVal('${path}',this.value)">${post}</div>
   </div>`;
 }
 function turnoRow(t,i){
   return `<div class="trow">
     <span class="tl">${t.label}</span>
-    <div class="ifield"><input type="number" class="tcell" value="${t.days}" oninput="setTurno(${i},'days',this.value)" title="días/mes"></div>
-    <div class="ifield"><span class="pre">$</span><input type="number" class="tcell" value="${t.price}" oninput="setTurno(${i},'price',this.value)" title="omakase carta c/IVA"></div>
-    <div class="ifield"><span class="pre">$</span><input type="number" class="tcell" value="${t.bev}" oninput="setTurno(${i},'bev',this.value)" title="bebida carta c/IVA"></div>
+    <div class="ifield"><input type="number" class="tcell" value="${t.days}" data-k="turno:${i}:days" oninput="setTurno(${i},'days',this.value)" title="días/mes"></div>
+    <div class="ifield"><span class="pre">$</span><input type="number" class="tcell" value="${t.price}" data-k="turno:${i}:price" oninput="setTurno(${i},'price',this.value)" title="omakase carta c/IVA"></div>
+    <div class="ifield"><span class="pre">$</span><input type="number" class="tcell" value="${t.bev}" data-k="turno:${i}:bev" oninput="setTurno(${i},'bev',this.value)" title="bebida carta c/IVA"></div>
   </div>`;
 }
 function setTurno(i,field,v){ S.turnos[i][field]=parseFloat(v)||0; renderOutputs(); refreshSubtotals(); }
 function laborRow(x,i){
   return `<div class="row">
-    <input type="text" class="name" value="${esc(x.name)}" oninput="setList('labor',${i},'name',this.value)">
-    <div class="ifield"><span class="pre">$</span><input type="number" class="small" value="${x.gross}" oninput="setList('labor',${i},'gross',this.value)" title="bruto"></div>
-    <div class="ifield"><span class="pre">×</span><input type="number" step="0.05" class="small" value="${x.mult}" oninput="setList('labor',${i},'mult',this.value)" title="multiplicador cargas"></div>
+    <input type="text" class="name" data-k="labor:${i}:name" value="${esc(x.name)}" oninput="setList('labor',${i},'name',this.value)">
+    <div class="ifield"><span class="pre">$</span><input type="number" class="small" data-k="labor:${i}:gross" value="${x.gross}" oninput="setList('labor',${i},'gross',this.value)" title="bruto"></div>
+    <div class="ifield"><span class="pre">×</span><input type="number" step="0.05" class="small" data-k="labor:${i}:mult" value="${x.mult}" oninput="setList('labor',${i},'mult',this.value)" title="multiplicador cargas"></div>
     <button class="delrow" onclick="delItem('labor',${i})" title="quitar">×</button>
   </div>`;
 }
 function amtRow(cat,x,i){
   return `<div class="row">
-    <input type="text" class="name" value="${esc(x.name)}" oninput="setList('${cat}',${i},'name',this.value)">
-    <div class="ifield"><span class="pre">$</span><input type="number" value="${x.amount}" oninput="setList('${cat}',${i},'amount',this.value)"></div>
+    <input type="text" class="name" data-k="${cat}:${i}:name" value="${esc(x.name)}" oninput="setList('${cat}',${i},'name',this.value)">
+    <div class="ifield"><span class="pre">$</span><input type="number" data-k="${cat}:${i}:amount" value="${x.amount}" oninput="setList('${cat}',${i},'amount',this.value)"></div>
     <button class="delrow" onclick="delItem('${cat}',${i})" title="quitar">×</button>
   </div>`;
 }
@@ -2452,6 +2684,9 @@ function addItem(cat){
   if(cat==='labor') S.labor.push({name:'Nuevo rol',gross:0,mult:1.45});
   else S[cat].push({name:'Nueva línea',amount:0});
   renderInputs(); renderOutputs();
+  /* el foco va a la línea nueva */
+  const el=document.querySelector('[data-k="'+cat+':'+(S[cat].length-1)+':name"]');
+  if(el){ try{ el.focus({preventScroll:true}); el.select(); }catch(e){} }
 }
 function delItem(cat,i){ S[cat].splice(i,1); renderInputs(); renderOutputs(); }
 
@@ -3026,14 +3261,18 @@ function resetState(){ S = defaultState(); renderInputs(); renderOutputs(); flas
 function flash(msg){
   /* toast fijo global: el viejo #savemsg vivía dentro del tab Esquema y los
      mensajes disparados desde cualquier otro tab eran invisibles */
-  let el=document.getElementById('kjFlash');
-  if(!el){
-    el=document.createElement('div'); el.id='kjFlash';
-    el.style.cssText='position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#26221c;color:#f4efe6;font:12px Inter,sans-serif;padding:9px 16px;border-radius:3px;z-index:9999;box-shadow:0 4px 14px rgba(0,0,0,.25);opacity:0;transition:opacity .25s;pointer-events:none;max-width:86vw;text-align:center';
-    document.body.appendChild(el);
+  let st=document.getElementById('kjFlashStack');
+  if(!st){
+    st=document.createElement('div'); st.id='kjFlashStack'; st.setAttribute('role','status'); st.setAttribute('aria-live','polite');
+    document.body.appendChild(st);
   }
-  el.textContent=msg; el.style.opacity='1';
-  clearTimeout(el._t); el._t=setTimeout(()=>{ el.style.opacity='0'; },2600);
+  const el=document.createElement('div'); el.className='kjtoast'; el.textContent=msg;
+  st.appendChild(el);                                   /* el más nuevo abajo */
+  const kill=t=>{ if(!t||t._dead) return; t._dead=true; clearTimeout(t._t); t.classList.remove('on'); setTimeout(()=>t.remove(),260); };
+  const live=[...st.children].filter(t=>!t._dead);
+  while(live.length>3) kill(live.shift());
+  requestAnimationFrame(()=>el.classList.add('on'));
+  el._t=setTimeout(()=>kill(el),2600);
 }
 
 /* =====================================================================
@@ -3102,7 +3341,24 @@ function switchTab(name){
   if(name==='kondate') renderKondate();
   if(name==='seki') renderSeki();
   window.scrollTo(0,0);
+  /* ruta en el hash (sin entrada de historial ni salto de scroll) */
+  try{ if(location.hash!=='#'+name) history.replaceState(null,'','#'+name); }catch(e){ try{ location.hash=name; }catch(e2){} }
+  kjA11y();
 }
+/* tab pedido en la URL: válido si existe y el rol puede verlo */
+function kjTabFromHash(){
+  const h=(location.hash||'').replace(/^#/,'').trim();
+  if(!h || !/^[a-z]+$/.test(h)) return null;
+  if(!document.getElementById('tab-'+h) || !document.querySelector('.tab[data-tab="'+h+'"]')) return null;
+  try{ if(!kjR(h)) return null; }catch(e){ return null; }
+  return h;
+}
+function kjOpenHash(){
+  const h=kjTabFromHash(); if(!h) return false;
+  const cur=document.querySelector('.tabpanel.active'); if(cur && cur.id==='tab-'+h) return true;
+  switchTab(h); return true;
+}
+window.addEventListener('hashchange', ()=>{ kjOpenHash(); });
 
 /* ---- helpers ---- */
 function rid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
@@ -3399,7 +3655,7 @@ function dlvFormMode(){
   if(dlvEditing){ if(b)b.textContent='Guardar cambios'; if(c)c.style.display=''; if(t)t.textContent='Editar delivery'; }
   else { if(b)b.textContent='Registrar delivery'; if(c)c.style.display='none'; if(t)t.textContent='Registrar delivery del día'; }
 }
-function submitDelivery(){
+async function submitDelivery(){
   const date=document.getElementById('dvDate').value;
   if(!date){ tFlash('Falta la fecha'); return; }
   const f=dlvReadForm();
@@ -3410,7 +3666,7 @@ function submitDelivery(){
     tFlash('Cambios guardados ✓');
   } else {
     const dup=delivery.find(x=>x.date===date);
-    if(dup && !confirm('Ya hay un registro de delivery para '+date+'. ¿Agregar otro igual?')) return;
+    if(dup && !(await kjConfirm('Ya hay un registro de delivery para '+date+'. ¿Agregar otro igual?',{title:'Delivery duplicado',ok:'Agregar igual'}))) return;
     delivery.push(dlvEnsure({id:rid(), date, ...f}));
     tFlash('Delivery registrado ✓');
   }
@@ -3433,9 +3689,9 @@ function delDelivery(id){
   if(dlvEditing===id) cancelDeliveryEdit();
   persistDelivery(); renderDeliveryList(); renderTurnos(); tFlash('Registro eliminado');
 }
-function seedDelivery(){
+async function seedDelivery(){
   const dv=S.delivery||{};
-  if(delivery.length && !confirm('Esto agrega 28 días de ejemplo a lo que ya cargaste. ¿Seguir?')) return;
+  if(delivery.length && !(await kjConfirm('Esto agrega 28 días de ejemplo a lo que ya cargaste. ¿Seguir?',{title:'Cargar ejemplo',ok:'Seguir'}))) return;
   const today=new Date(); const dowF={0:1.35,1:0.55,2:0.7,3:0.8,4:0.95,5:1.25,6:1.4};
   for(let k=28;k>=1;k--){
     const d=new Date(today.getTime()-k*86400000); const ds=fmtDate(d);
@@ -3454,7 +3710,9 @@ function renderDeliveryList(){
   const el=document.getElementById('dvList'); if(!el) return;
   const pe=document.getElementById('dvProrate'); if(pe) pe.textContent=fmt(deliveryFixedPerDay());
   if(!delivery.length){ el.innerHTML='<div class="svempty">Sin días de delivery cargados. Un registro por día con pedidos y facturación, y el canal se lee solo.</div>'; return; }
-  const sorted=[...delivery].sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:0).slice(0,60);
+  const sortedAll=[...delivery].sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:0);
+  const pg=kjPaged('delivery', sortedAll, 40, dlvEditing? sortedAll.findIndex(d=>d.id===dlvEditing) : -1);
+  const sorted=pg.rows;
   el.innerHTML=sorted.map(d=>{ const m=deliveryMetrics(d);
     return `<div class="svrow${dlvEditing===d.id?' editing':''}">
       <span class="d">${d.date.slice(5)}</span>
@@ -3463,7 +3721,7 @@ function renderDeliveryList(){
       <span class="pf" style="color:${m.profit>=0?'var(--good)':'var(--bad)'}">${fmt(m.profit)}</span>
       <button class="editrow" onclick="editDelivery('${d.id}')" title="editar">✎</button>
       <button class="delrow" onclick="delDelivery('${d.id}')" title="quitar">×</button>
-    </div>`; }).join('') + (delivery.length>60?`<div class="svempty">… y ${delivery.length-60} más (exportá el CSV para verlos todos)</div>`:'');
+    </div>`; }).join('') + kjMoreBtn('delivery', pg.rest, 40, 'renderDeliveryList()');
 }
 function exportDelivery(){
   if(!delivery.length){ tFlash('No hay delivery para exportar'); return; }
@@ -3529,7 +3787,9 @@ function renderServiceList(){
   const el=document.getElementById('svList');
   document.getElementById('svCount').textContent=services.length;
   if(!services.length){ el.innerHTML='<div class="svempty">Todavía no cargaste servicios. Registrá tus turnos o tocá «Cargar ejemplo» para ver el análisis con datos de muestra.</div>'; return; }
-  const sorted=[...services].sort((a,b)=> a.date<b.date?1 : a.date>b.date?-1 : String(a.turno).localeCompare(String(b.turno)));
+  const sortedAll=[...services].sort((a,b)=> a.date<b.date?1 : a.date>b.date?-1 : String(a.turno).localeCompare(String(b.turno)));
+  const pg=kjPaged('services', sortedAll, 40, editingId? sortedAll.findIndex(s=>s.id===editingId) : -1);
+  const sorted=pg.rows;
   el.innerHTML=sorted.map(sv=>{
     const m=serviceMetrics(sv);
     const nd = sv.cashUndeclared ? ' · <span style="color:var(--brass-deep)">s/d</span>' : '';
@@ -3541,7 +3801,19 @@ function renderServiceList(){
       <button class="editrow" onclick="editService('${sv.id}')" title="editar">✎</button>
       <button class="delrow" onclick="delService('${sv.id}')" title="quitar">×</button>
     </div>`;
-  }).join('');
+  }).join('') + kjMoreBtn('services', pg.rest, 40, 'renderServiceList()');
+}
+/* listas largas: se muestran de a tandas, con «ver más» al pie; la fila en edición siempre queda visible */
+const kjMore={};
+function kjPaged(key, arr, batch, keepIdx){
+  let lim=kjMore[key]||batch;
+  if(keepIdx!=null && keepIdx>=lim) lim=Math.ceil((keepIdx+1)/batch)*batch;
+  kjMore[key]=lim;
+  return { rows:arr.slice(0,lim), rest:Math.max(0,arr.length-lim) };
+}
+function kjMoreBtn(key, rest, batch, rerender){
+  if(!(rest>0)) return '';
+  return `<button class="addrow" type="button" onclick="kjMore['${key}']=(kjMore['${key}']||${batch})+${batch};${rerender}">ver más · ${Math.min(batch,rest)} de ${rest} restante${rest>1?'s':''}</button>`;
 }
 
 function heatColor(v,maxAbs){ const t=Math.min(1,Math.abs(v)/maxAbs); const o=(0.12+0.62*t).toFixed(2); return v>=0?`rgba(62,107,78,${o})`:`rgba(168,57,43,${o})`; }
@@ -3756,12 +4028,12 @@ function monthlyPanelHtml(recs){
   const {cat, strong, weak, median}=monthCats(rows);
   const bar=monthBar(rows, cat);
   const clsOf=k=> cat[k]==='strong'?'mstrong':cat[k]==='median'?'mmedian':cat[k]==='weak'?'mweak':'';
-  let tbl=`<table class="rank"><thead><tr><th>Mes</th><th>Serv.</th><th>Fact. bruta</th><th>Fact. neta</th><th>Margen</th><th>Result. total</th></tr></thead><tbody>`;
+  let tbl=`<div class="tscroll"><table class="rank"><thead><tr><th>Mes</th><th>Serv.</th><th>Fact. bruta</th><th>Fact. neta</th><th>Margen</th><th>Result. total</th></tr></thead><tbody>`;
   rows.forEach(r=>{ const a=r.a;
     tbl+=`<tr class="${clsOf(r.k)}"><td>${monthLabel(r.k)}</td><td>${a.n}</td><td>${fmt(a.totalGross)}</td><td>${fmt(a.totalNet)}</td>
       <td style="color:${a.margin>=15?'var(--good)':a.margin>=8?'var(--warn)':'var(--bad)'}">${a.margin.toFixed(0)}%</td>
       <td style="color:${a.totalProfit>=0?'var(--good)':'var(--bad)'};font-weight:700">${fmt(a.totalProfit)}</td></tr>`; });
-  tbl+=`</tbody></table>`;
+  tbl+=`</tbody></table></div>`;
   const legend=`<div class="mlegend"><span><i style="background:#A87338"></i>Más fuertes</span><span><i style="background:var(--good)"></i>Mediana · mes típico</span><span><i style="background:var(--vermilion)"></i>Más flojos</span></div>`;
   let note;
   if(rows.length===1){ note=`Un solo mes cargado. Sumá más meses para ver los 3 más fuertes, los 3 más flojos y la mediana.`; }
@@ -4110,14 +4382,14 @@ function renderHeika(){
   const cmp=(l,a,b,fmtf,better)=>{ const dv=b-a, good=better==null?null:(better==='up'?dv>=0:dv<=0);
     return `<tr><td>${l}</td><td>${fmtf(a)}</td><td>${fmtf(b)}</td><td style="color:${dv===0?'var(--ink-soft)':good?'var(--good)':'var(--bad)'};font-weight:600">${dv>0?'+':''}${fmtf(dv)}</td></tr>`; };
   const pctf=v=>Math.round(v)+'%', moneyf=v=>fmt(v), cf=v=>Math.round(v)+' cub';
-  const table=`<table class="rank"><thead><tr><th>Métrica</th><th>Hoy</th><th>Escenario</th><th>Δ</th></tr></thead><tbody>
+  const table=`<div class="tscroll"><table class="rank"><thead><tr><th>Métrica</th><th>Hoy</th><th>Escenario</th><th>Δ</th></tr></thead><tbody>
     ${cmp('Ocupación', base.occ0, occScen, pctf, 'up')}
     ${cmp('Cubiertos', today.covers, scen.covers, cf, 'up')}
     ${cmp('Precio omakase / cub.', base.pricePerCover, base.pricePerCover*(1-disc/100), moneyf, null)}
     ${cmp('Facturación bruta / serv', today.gross, scen.gross, moneyf, 'up')}
     ${cmp('Resultado / servicio', today.profit, scen.profit, moneyf, 'up')}
     ${cmp('Resultado mensual (slot)', today.profit*WEEKS_PER_MONTH, scen.profit*WEEKS_PER_MONTH, moneyf, 'up')}
-  </tbody></table>`;
+  </tbody></table></div>`;
 
   // ---- verdict box ----
   const verdict = beVsToday==null
@@ -4236,7 +4508,7 @@ function renderHeikaDelivery(out, ctrl, kp){
 
   const cmp=(l,a,b,f,better)=>{ const dv2=b-a, good=better==null?null:(better==='up'?dv2>=0:dv2<=0);
     return `<tr><td>${l}</td><td>${f(a)}</td><td>${f(b)}</td><td style="color:${dv2===0?'var(--ink-soft)':good?'var(--good)':'var(--bad)'};font-weight:600">${dv2>0?'+':''}${f(dv2)}</td></tr>`; };
-  const table=`<table class="rank"><thead><tr><th>Métrica</th><th>Hoy</th><th>Escenario</th><th>Δ</th></tr></thead><tbody>
+  const table=`<div class="tscroll"><table class="rank"><thead><tr><th>Métrica</th><th>Hoy</th><th>Escenario</th><th>Δ</th></tr></thead><tbody>
     ${cmp('Pedidos / día', today.orders, scen.orders, v=>v.toFixed(1), 'up')}
     ${cmp('Ticket comida · local', base.ticket, base.ticket*(1-disc/100), fmt, null)}
     ${cmp('Ticket comida · app', base.ticket, base.ticket*(1+mk/100)*(1-disc/100), fmt, null)}
@@ -4246,7 +4518,7 @@ function renderHeikaDelivery(out, ctrl, kp){
     ${cmp('Contribución / pedido', today.cmPerOrder, scen.cmPerOrder, fmt, 'up')}
     ${cmp('Resultado / día', today.profit, scen.profit, fmt, 'up')}
     ${cmp('Resultado mensual', today.profit*days, scen.profit*days, fmt, 'up')}
-  </tbody></table>`;
+  </tbody></table></div>`;
   const verdict = beOrders==null
     ? `<div class="hverdict bad">Con −${disc}% ni cuadruplicando los pedidos igualás el resultado de hoy: la promo se come la contribución por pedido, y la comisión de apps va sobre el precio rebajado.</div>`
     : wins
@@ -4560,10 +4832,10 @@ function deliveryForecastPanel(dfc, horizon){
     ${ms('Resultado / mes', fmt(mo), fmt(moP)+' a '+fmt(moO)+' · tras '+fmt((dfc.fixedW||0)*WEEKS_PER_MONTH)+' de fijos del canal', mo>=0?'var(--good)':'var(--bad)')}
     ${ms('Tendencia', (dfc.trendPct>=0?'+':'')+dfc.trendPct.toFixed(0)+'%', dfc.hasData?'últimas 4 semanas vs anteriores':'—', dfc.trendPct>3?'var(--good)':dfc.trendPct<-3?'var(--bad)':'var(--ink)')}
   </div>`;
-  let t=`<table class="rank"><thead><tr><th>Semana</th><th>Pedidos</th><th>Facturación</th><th>Contribución</th><th>Resultado (pes–esp–opt)</th></tr></thead><tbody>`;
+  let t=`<div class="tscroll"><table class="rank"><thead><tr><th>Semana</th><th>Pedidos</th><th>Facturación</th><th>Contribución</th><th>Resultado (pes–esp–opt)</th></tr></thead><tbody>`;
   dfc.weeks.forEach(w=>{ t+=`<tr><td>+${w.ahead} sem</td><td>${Math.round(w.ordersExp)}</td><td>${fmt(w.grossExp)}</td><td>${fmt(w.contribExp)}</td>
     <td><span style="color:var(--ink-soft)">${fmt(w.profitPess)}</span> · <b style="color:${w.profitExp>=0?'var(--good)':'var(--bad)'}">${fmt(w.profitExp)}</b> · <span style="color:var(--ink-soft)">${fmt(w.profitOpt)}</span></td></tr>`; });
-  t+=`</tbody></table>`;
+  t+=`</tbody></table></div>`;
   let dowHtml='';
   if(dfc.hasData){ const ds=DOW_ORDER.filter(d=>dfc.byDow[d]);
     const cap=dv.maxPerDay||0;
@@ -4674,24 +4946,24 @@ function renderYoso(){
   </div>`;
 
   // ---- weekly forecast table ----
-  let wt=`<table class="rank"><thead><tr><th>Semana</th><th>Pesimista</th><th>Esperado</th><th>Optimista</th><th>Facturación</th></tr></thead><tbody>`;
+  let wt=`<div class="tscroll"><table class="rank"><thead><tr><th>Semana</th><th>Pesimista</th><th>Esperado</th><th>Optimista</th><th>Facturación</th></tr></thead><tbody>`;
   fc.weeks.forEach(w=>{ wt+=`<tr><td>+${w.ahead} sem</td>
     <td style="color:var(--ink-soft)">${fmt(w.profitPess)}</td>
     <td style="font-weight:700;color:${w.profitExp>=0?'var(--good)':'var(--bad)'}">${fmt(w.profitExp)}</td>
     <td style="color:var(--ink-soft)">${fmt(w.profitOpt)}</td>
     <td>${fmt(w.grossExp)}</td></tr>`; });
-  wt+=`</tbody></table>`;
+  wt+=`</tbody></table></div>`;
 
   // ---- next week per-service ----
   const slots=fc.weeks[0].slots.slice().sort((a,b)=>DOW_ORDER.indexOf(a.c.dow)-DOW_ORDER.indexOf(b.c.dow));
-  let nsT=`<table class="rank"><thead><tr><th>Servicio</th><th>Cubiertos (pes–esp–opt)</th><th>Facturación</th><th>Resultado</th></tr></thead><tbody>`;
+  let nsT=`<div class="tscroll"><table class="rank"><thead><tr><th>Servicio</th><th>Cubiertos (pes–esp–opt)</th><th>Facturación</th><th>Resultado</th></tr></thead><tbody>`;
   slots.forEach(s=>{ const c=s.c, f=s.f;
     const tag = s.holiday?` <span class="ytag hol">feriado</span>`:(s.payday?` <span class="ytag pay">quincena</span>`:'');
     nsT+=`<tr><td>${DOW_SHORT[c.dow]} ${pad2(s.dt.getDate())}/${pad2(s.dt.getMonth()+1)} · ${TURNO_SHORT[c.turno]||c.turno}${tag}</td>
       <td>${Math.round(f.covers.pess)}–<b>${Math.round(f.covers.exp)}</b>–${Math.round(f.covers.opt)}</td>
       <td>${fmt(f.gross.exp)}</td>
       <td style="font-weight:700;color:${f.profit.exp>=0?'var(--good)':'var(--bad)'}">${fmt(f.profit.exp)}</td></tr>`; });
-  nsT+=`</tbody></table>`;
+  nsT+=`</tbody></table></div>`;
 
   // ---- upcoming holidays ----
   let holHtml='';
@@ -4713,6 +4985,8 @@ function renderYoso(){
     <div class="panel"><h3>Calendario de pronóstico · próximas ${yoso.horizon} semanas</h3>
       ${forecastCalendar(fc)}
       <p class="desc" style="margin:12px 0 0">Comensales y facturación estimados día por día. El sombreado marca qué tan lleno está cada día (más oscuro = más comensales). Cambiá el horizonte (4/6/8 semanas) en el panel de la izquierda. Los lunes aparecen cerrados según tu patrón de carga.</p></div>
+    <details class="kjadv"${kjUI.yosoAdv?' open':''} ontoggle="if(kjUI.yosoAdv!==this.open){kjUI.yosoAdv=this.open;kjUISave();}">
+    <summary>Avanzado · cómo se calcula</summary>
     <div class="panel"><h3>Confiabilidad · backtest walk-forward</h3>${backtest}
       <p class="desc" style="margin:10px 0 0">El <b>walk-forward</b> es el backtest honesto: entrena con las primeras semanas, predice la siguiente <b>sin haberla visto</b>, y avanza. Por eso su error es mayor que el in-sample (que hace trampa mirándose a sí mismo) — y es el número real que vas a sufrir. Mientras le gane al promedio ciego, el modelo aporta.</p>
       ${fc.wf.series.length?chartLegend([{t:'Resultado real',c:'var(--ink)',type:'line'},{t:'Predicho (sin ver)',c:'var(--vermilion)',type:'dash'}])+walkForwardChart(fc):''}</div>
@@ -4722,6 +4996,7 @@ function renderYoso(){
       <p class="desc" style="margin:12px 0 0">Cada semana nueva que cargás es una prueba a ciegas para el modelo. Acá vigilo si el error se mantiene, mejora o se dispara — una suba sostenida suele avisar que algo cambió en el negocio y que conviene revisar (o que ya es momento de pensar en un modelo más potente).</p></div>
     <div class="panel"><h3>Efecto de cada factor</h3>${factors}
       <p class="desc" style="margin:10px 0 0">Cuánto mueve cada cosa la ocupación, ya descontado el día y el turno. Feriados y quincena necesitan más data cargada para estimarse bien; por ahora el peso real lo lleva la tendencia.</p></div>
+    </details>
     <div class="panel"><h3>Perfil de demanda por día</h3>
       ${chartLegend([{t:'Cubiertos promedio por servicio',c:'var(--indigo)',type:'box'},{t:'Rango mín–máx',c:'var(--ink-soft)',type:'line'}])}
       ${dowProfileChart(recs)}
@@ -5017,7 +5292,8 @@ function gkMainMenuOf(g){ return g.menus.find(m=>m.main) || g.menus[0] || gkMenu
 function gkMainMenu(){ return gkMainMenuOf(G); }
 function gkMenu(){ return G.menus.find(m=>m.id===G.menuId) || gkMainMenu(); }
 let G = defaultGenka();
-const gkUI = { open:{}, shockIns:null, shockPct:30, collapsed:{} };
+const gkUI = { open:{}, shockIns:null, shockPct:30,
+  collapsed: (kjUI.gkCollapsed && typeof kjUI.gkCollapsed==='object') ? kjUI.gkCollapsed : (kjUI.gkCollapsed={}) };
 
 /* ---- persistence ---- */
 let gkPersistT=null;
@@ -5086,7 +5362,7 @@ function gkCompute(shock, m){
   return { pasos, costs, sub, total, precio, precioGross:precio*pr.ivaDiv, fc, plan, delta:fc-plan,
            margen:precio-total, contrib, pr, menu:m, isDlv, packaging, totalCanal, appPct, netApp, fcApp, margenApp:netApp-totalCanal };
 }
-const gkFmt2 = n => (n<0?'-':'')+'$'+Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const gkFmt2 = n => (n<0?'-':'')+'$'+Math.abs(n).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
 function gkStale(i){
   try{ return (new Date(gkToday()) - new Date(i.upd)) / 86400000 > 30; }catch(e){ return false; }
 }
@@ -5105,23 +5381,23 @@ function gkSetVariant(v){ gkMenu().variant=v; gkPersist(); renderGenka(); }
 
 /* ---- menús ---- */
 function gkSelectMenu(id){ if(G.menus.find(m=>m.id===id)){ G.menuId=id; gkPersist(); renderGenka(); renderMix(); } }
-function gkAddMenu(kind){
+async function gkAddMenu(kind){
   const isD=kind==='delivery';
-  const name=prompt(isD?'Nombre del menú de delivery':'Nombre del menú', isD?'Box delivery':'Omakase '+(G.menus.filter(m=>m.kind==='salon').length+1));
+  const name=await kjPrompt(isD?'Nombre del menú de delivery':'Nombre del menú', isD?'Box delivery':'Omakase '+(G.menus.filter(m=>m.kind==='salon').length+1), {ok:'Crear'});
   if(name==null) return;
   const m=gkMenuShape({ id:gkId(), n:String(name).trim().slice(0,40)||'Menú', kind, main:false,
     turnoRef:isD?null:'N1', priceGross:isD?((S.delivery&&S.delivery.ticket)||0):null, premGross:isD?null:85, variant:'std', packaging:null, pasos:[] }, G.menus.length);
   G.menus.push(m); G.menuId=m.id; gkPersist(); renderGenka(); renderMix();
 }
-function gkDupMenu(){
+async function gkDupMenu(){
   const src=gkMenu();
-  const name=prompt('Nombre de la copia', src.n+' (copia)'); if(name==null) return;
+  const name=await kjPrompt('Nombre de la copia', src.n+' (copia)', {ok:'Duplicar'}); if(name==null) return;
   const m=JSON.parse(JSON.stringify(src)); m.id=gkId(); m.n=String(name).trim().slice(0,40)||src.n+' (copia)'; m.main=false;
   m.pasos.forEach(p=>{ p.id=gkId(); });
   G.menus.push(m); G.menuId=m.id; gkPersist(); renderGenka(); renderMix();
 }
-function gkRenameMenu(){
-  const m=gkMenu(); const name=prompt('Nuevo nombre', m.n); if(name==null) return;
+async function gkRenameMenu(){
+  const m=gkMenu(); const name=await kjPrompt('Nuevo nombre', m.n, {ok:'Renombrar'}); if(name==null) return;
   m.n=String(name).trim().slice(0,40)||m.n; gkPersist(); renderGenka();
 }
 function gkSetMenuKind(kind){
@@ -5136,11 +5412,11 @@ function gkSetMain(id){
   if(m.kind!=='salon'){ flash('El principal es el menú de salón que leen Carta QR, Maridaje y Servicio'); return; }
   G.menus.forEach(x=>x.main=(x.id===id)); gkPersist(); renderGenka(); flash('«'+m.n+'» es ahora el menú principal ★');
 }
-function gkDelMenu(){
+async function gkDelMenu(){
   const m=gkMenu();
   if(G.menus.length<=1){ flash('Tiene que quedar al menos un menú'); return; }
   if(m.main){ flash('No se borra el menú principal ★: marcá otro como principal primero'); return; }
-  if(!confirm('¿Borrar el menú «'+m.n+'» con sus '+m.pasos.length+' pasos? Los insumos quedan.')) return;
+  if(!(await kjConfirm('¿Borrar el menú «'+m.n+'» con sus '+m.pasos.length+' pasos? Los insumos quedan.',{title:'Borrar menú',ok:'Borrar',danger:true}))) return;
   G.menus=G.menus.filter(x=>x.id!==m.id); G.menuId=gkMainMenu().id;
   gkPersist(); renderGenka(); renderMix();
 }
@@ -5170,9 +5446,9 @@ function gkAddPaso(){
   gkMenu().pasos.push(p); gkUI.open[p.id]=true;
   gkPersist(); renderGenka();
 }
-function gkDelPaso(id){
+async function gkDelPaso(id){
   const M=gkMenu(); const p=M.pasos.find(x=>x.id===id); if(!p) return;
-  if(!confirm('¿Borrar el paso «'+p.n+'» y su escandallo?')) return;
+  if(!(await kjConfirm('¿Borrar el paso «'+p.n+'» y su escandallo?',{title:'Borrar paso',ok:'Borrar',danger:true}))) return;
   M.pasos=M.pasos.filter(x=>x.id!==id);
   gkPersist(); renderGenka();
 }
@@ -5212,21 +5488,21 @@ function gkAddIng(pasoId){
 }
 
 /* ---- acciones ---- */
-function gkEnviarEsquema(){
+async function gkEnviarEsquema(){
   const c=gkCompute();
   const nuevo=+( (c.fc + (G.params.colchonPp||0)).toFixed(1) );
   if(!(nuevo>0)){ flash('El teórico todavía es 0 — cargá insumos y pasos'); return; }
   if(c.isDlv){
     const dv=S.delivery;
     const t=c.pr.stdGross||0;
-    if(!confirm('Pisar en el esquema 勘定 el canal delivery:\n· food cost '+((dv.foodPct!=null&&dv.foodPct!=='')?dv.foodPct:S.cmv.foodPct)+'% → '+nuevo+'% (teórico '+c.fc.toFixed(1)+'% + colchón '+(G.params.colchonPp||0)+' pp)\n· ticket comida $'+(dv.ticket||0)+' → $'+t+' c/IVA'+(c.menu.packaging!=null?'\n· envase $'+dv.packaging+' → $'+c.packaging+' por pedido':''))) return;
+    if(!(await kjConfirm('Pisar en el esquema 勘定 el canal delivery:\n· food cost '+((dv.foodPct!=null&&dv.foodPct!=='')?dv.foodPct:S.cmv.foodPct)+'% → '+nuevo+'% (teórico '+c.fc.toFixed(1)+'% + colchón '+(G.params.colchonPp||0)+' pp)\n· ticket comida $'+(dv.ticket||0)+' → $'+t+' c/IVA'+(c.menu.packaging!=null?'\n· envase $'+dv.packaging+' → $'+c.packaging+' por pedido':''),{title:'Enviar al esquema',ok:'Pisar el esquema'}))) return;
     dv.foodPct=nuevo; if(t>0) dv.ticket=t; if(c.menu.packaging!=null) dv.packaging=c.packaging;
     renderInputs(); renderOutputs(); renderGenka();
     flash('Canal delivery del esquema actualizado ✓ (guardá la baseline en 勘定)');
     return;
   }
-  if(!c.menu.main && !confirm('Este no es el menú principal ★. ¿Igual pisar el food cost del esquema con su teórico?')) return;
-  if(!confirm('Pisar el food cost del esquema 勘定: '+S.cmv.foodPct+'% → '+nuevo+'%\n(teórico '+c.fc.toFixed(1)+'% + colchón '+(G.params.colchonPp||0)+' pp)')) return;
+  if(!c.menu.main && !(await kjConfirm('Este no es el menú principal ★. ¿Igual pisar el food cost del esquema con su teórico?',{title:'Enviar al esquema',ok:'Pisar igual'}))) return;
+  if(!(await kjConfirm('Pisar el food cost del esquema 勘定: '+S.cmv.foodPct+'% → '+nuevo+'%\n(teórico '+c.fc.toFixed(1)+'% + colchón '+(G.params.colchonPp||0)+' pp)',{title:'Enviar al esquema',ok:'Pisar el esquema'}))) return;
   S.cmv.foodPct=nuevo;
   renderInputs(); renderOutputs(); renderGenka();
   flash('Food cost del esquema actualizado a '+nuevo+'% ✓ (guardá la baseline en 勘定)');
@@ -5269,8 +5545,10 @@ function gkToggleCard(key){
   gkUI.collapsed[key]=!gkUI.collapsed[key];
   const cd=document.querySelector('.card[data-key="'+key+'"]');
   if(cd) cd.classList.toggle('collapsed', gkUI.collapsed[key]);
+  kjUISave();
 }
 function renderGenka(){
+  const _focus=kjFocusSnap();                    /* cada onchange re-renderiza todo: el foco se restaura al final */
   const M=gkMenu();
   const c=gkCompute(undefined, M);
   const P=G.params;
@@ -5304,33 +5582,33 @@ function renderGenka(){
   /* params */
   const turnoOpts=S.turnos.map(t=>'<option value="'+t.id+'"'+(t.id===M.turnoRef?' selected':'')+'>'+escapeHtml(t.label)+' — $'+t.price+' c/IVA</option>').join('')
     +'<option value="fixed"'+(M.turnoRef==='fixed'?' selected':'')+'>Precio propio (no sigue al esquema)</option>';
-  const kindSel='<div class="row"><label>Tipo de menú<span class="sub">'+(c.isDlv?'se costea con envase y comisión de apps':'el precio sigue al turno del esquema')+'</span></label><div class="ifield"><select onchange="gkSetMenuKind(this.value)" style="border:none;background:transparent;font-family:\'Inter\',sans-serif;font-size:13px;outline:none"><option value="salon"'+(!c.isDlv?' selected':'')+'>Salón</option><option value="delivery"'+(c.isDlv?' selected':'')+'>Delivery</option></select></div></div>';
+  const kindSel='<div class="row"><label>Tipo de menú<span class="sub">'+(c.isDlv?'se costea con envase y comisión de apps':'el precio sigue al turno del esquema')+'</span></label><div class="ifield"><select data-k="p:kind" onchange="gkSetMenuKind(this.value)" style="border:none;background:transparent;font-family:\'Inter\',sans-serif;font-size:13px;outline:none"><option value="salon"'+(!c.isDlv?' selected':'')+'>Salón</option><option value="delivery"'+(c.isDlv?' selected':'')+'>Delivery</option></select></div></div>';
   const priceRows = c.isDlv
-    ? '<div class="row"><label>Precio del box (carta, c/IVA)<span class="sub">neto: '+gkFmt2(c.pr.std)+' · en el esquema hoy $'+((S.delivery&&S.delivery.ticket)||0)+'</span></label><div class="ifield"><span class="pre">$</span><input type="number" value="'+(M.priceGross==null?'':M.priceGross)+'" onchange="gkSetParam(\'priceGross\',this.value)"></div></div>'
-      +'<div class="row"><label>Envase por pedido<span class="sub">vacío = el del esquema ($'+((S.delivery&&S.delivery.packaging)||0)+')</span></label><div class="ifield"><span class="pre">$</span><input type="number" step="0.1" placeholder="'+((S.delivery&&S.delivery.packaging)||0)+'" value="'+(M.packaging==null?'':M.packaging)+'" onchange="gkSetParam(\'packaging\',this.value)"></div></div>'
-      +'<div class="row"><label>Precio premium (c/IVA)<span class="sub">variante con extras · vacío = no aplica</span></label><div class="ifield"><span class="pre">$</span><input type="number" value="'+(M.premGross==null?'':M.premGross)+'" onchange="gkSetParam(\'premGross\',this.value)"></div></div>'
-    : '<div class="row"><label>Turno de referencia (precio estándar)<span class="sub">neto: '+gkFmt2(c.pr.std)+' = $'+c.pr.stdGross+' ÷ '+c.pr.ivaDiv.toFixed(2)+'</span></label><div class="ifield"><select onchange="gkSetParam(\'turnoRef\',this.value)" style="border:none;background:transparent;font-family:\'Inter\',sans-serif;font-size:13px;outline:none">'+turnoOpts+'</select></div></div>'
-      +(M.turnoRef==='fixed'?'<div class="row"><label>Precio propio (carta, c/IVA)</label><div class="ifield"><span class="pre">$</span><input type="number" value="'+(M.priceGross==null?'':M.priceGross)+'" onchange="gkSetParam(\'priceGross\',this.value)"></div></div>':'')
-      +'<div class="row"><label>Precio premium (carta, c/IVA)<span class="sub">neto: '+gkFmt2(c.pr.prem)+'</span></label><div class="ifield"><span class="pre">$</span><input type="number" value="'+(M.premGross==null?'':M.premGross)+'" onchange="gkSetParam(\'premGross\',this.value)"></div></div>';
+    ? '<div class="row"><label>Precio del box (carta, c/IVA)<span class="sub">neto: '+gkFmt2(c.pr.std)+' · en el esquema hoy $'+((S.delivery&&S.delivery.ticket)||0)+'</span></label><div class="ifield"><span class="pre">$</span><input type="number" value="'+(M.priceGross==null?'':M.priceGross)+'" data-k="p:priceGross" onchange="gkSetParam(\'priceGross\',this.value)"></div></div>'
+      +'<div class="row"><label>Envase por pedido<span class="sub">vacío = el del esquema ($'+((S.delivery&&S.delivery.packaging)||0)+')</span></label><div class="ifield"><span class="pre">$</span><input type="number" step="0.1" placeholder="'+((S.delivery&&S.delivery.packaging)||0)+'" value="'+(M.packaging==null?'':M.packaging)+'" data-k="p:packaging" onchange="gkSetParam(\'packaging\',this.value)"></div></div>'
+      +'<div class="row"><label>Precio premium (c/IVA)<span class="sub">variante con extras · vacío = no aplica</span></label><div class="ifield"><span class="pre">$</span><input type="number" value="'+(M.premGross==null?'':M.premGross)+'" data-k="p:premGross" onchange="gkSetParam(\'premGross\',this.value)"></div></div>'
+    : '<div class="row"><label>Turno de referencia (precio estándar)<span class="sub">neto: '+gkFmt2(c.pr.std)+' = $'+c.pr.stdGross+' ÷ '+c.pr.ivaDiv.toFixed(2)+'</span></label><div class="ifield"><select data-k="p:turnoRef" onchange="gkSetParam(\'turnoRef\',this.value)" style="border:none;background:transparent;font-family:\'Inter\',sans-serif;font-size:13px;outline:none">'+turnoOpts+'</select></div></div>'
+      +(M.turnoRef==='fixed'?'<div class="row"><label>Precio propio (carta, c/IVA)</label><div class="ifield"><span class="pre">$</span><input type="number" value="'+(M.priceGross==null?'':M.priceGross)+'" data-k="p:priceGross" onchange="gkSetParam(\'priceGross\',this.value)"></div></div>':'')
+      +'<div class="row"><label>Precio premium (carta, c/IVA)<span class="sub">neto: '+gkFmt2(c.pr.prem)+'</span></label><div class="ifield"><span class="pre">$</span><input type="number" value="'+(M.premGross==null?'':M.premGross)+'" data-k="p:premGross" onchange="gkSetParam(\'premGross\',this.value)"></div></div>';
   document.getElementById('gkParams').innerHTML =
     '<p class="note">'+(c.isDlv?'Un menú de <b>delivery</b> tiene precio propio y carga el <b>envase</b>; el food cost se mira también sobre lo que queda <b>después de la comisión de la app</b> ('+c.appPct+'% en 勘定), que es lo que de verdad paga la receta.':'El precio estándar sale <b>del esquema</b> (elegí el turno de referencia); cambiarlo ahí lo cambia acá. El premium es propio de este menú.')+' El <b>factor Q</b> cubre condimentos y varios no escandallados (shoyu, sal, aceites, garnish). El <b>colchón</b> son los puntos que le sumás al teórico al enviarlo al esquema, para absorber merma operativa.</p>'
     +kindSel+priceRows
-    +'<div class="row"><label>Tipo de cambio<span class="sub">ARS por USD · compra efectiva</span></label><div class="ifield"><input type="number" value="'+P.tc+'" onchange="gkSetParam(\'tc\',this.value)"><span class="post">ARS</span></div></div>'
-    +'<div class="row"><label>Factor Q — condimentos y varios</label><div class="ifield"><input type="number" step="0.5" value="'+P.factorQ+'" onchange="gkSetParam(\'factorQ\',this.value)"><span class="post">%</span></div></div>'
-    +'<div class="row"><label>Target de food cost<span class="sub">para el precio sugerido</span></label><div class="ifield"><input type="number" value="'+P.targetPct+'" onchange="gkSetParam(\'targetPct\',this.value)"><span class="post">%</span></div></div>'
-    +'<div class="row"><label>Colchón al enviar al esquema<span class="sub">merma operativa no capturada en receta</span></label><div class="ifield"><input type="number" step="0.5" value="'+P.colchonPp+'" onchange="gkSetParam(\'colchonPp\',this.value)"><span class="post">pp</span></div></div>';
+    +'<div class="row"><label>Tipo de cambio<span class="sub">ARS por USD · compra efectiva</span></label><div class="ifield"><input type="number" value="'+P.tc+'" data-k="p:tc" onchange="gkSetParam(\'tc\',this.value)"><span class="post">ARS</span></div></div>'
+    +'<div class="row"><label>Factor Q — condimentos y varios</label><div class="ifield"><input type="number" step="0.5" value="'+P.factorQ+'" data-k="p:factorQ" onchange="gkSetParam(\'factorQ\',this.value)"><span class="post">%</span></div></div>'
+    +'<div class="row"><label>Target de food cost<span class="sub">para el precio sugerido</span></label><div class="ifield"><input type="number" value="'+P.targetPct+'" data-k="p:targetPct" onchange="gkSetParam(\'targetPct\',this.value)"><span class="post">%</span></div></div>'
+    +'<div class="row"><label>Colchón al enviar al esquema<span class="sub">merma operativa no capturada en receta</span></label><div class="ifield"><input type="number" step="0.5" value="'+P.colchonPp+'" data-k="p:colchonPp" onchange="gkSetParam(\'colchonPp\',this.value)"><span class="post">pp</span></div></div>';
 
   /* insumos */
   document.getElementById('gkInsBody').innerHTML = G.insumos.map(i=>{
     const stale=gkStale(i);
     return '<tr>'
-      +'<td><input class="gt" value="'+escapeHtml(i.n)+'" onchange="gkSetIns(\''+i.id+'\',\'n\',this.value)">'+(stale?'<span class="gcat"><span class="gkstale">▲ precio 30d+ ('+i.upd+')</span></span>':'')+'</td>'
-      +'<td><input class="gt" style="width:76px" value="'+escapeHtml(i.cat||'')+'" onchange="gkSetIns(\''+i.id+'\',\'cat\',this.value)"></td>'
-      +'<td><input value="'+i.ars+'" onchange="gkSetIns(\''+i.id+'\',\'ars\',this.value)"></td>'
-      +'<td><input class="gn" value="'+i.qty+'" onchange="gkSetIns(\''+i.id+'\',\'qty\',this.value)"></td>'
-      +'<td><select onchange="gkSetIns(\''+i.id+'\',\'unit\',this.value)"><option value="kg"'+(i.unit==='kg'?' selected':'')+'>kg</option><option value="un"'+(i.unit==='un'?' selected':'')+'>un</option><option value="l"'+(i.unit==='l'?' selected':'')+'>l</option></select></td>'
-      +'<td><input class="gn" value="'+i.iva+'" onchange="gkSetIns(\''+i.id+'\',\'iva\',this.value)"></td>'
-      +'<td><input class="gn" value="'+i.rend+'" onchange="gkSetIns(\''+i.id+'\',\'rend\',this.value)"></td>'
+      +'<td><input class="gt" value="'+escapeHtml(i.n)+'" data-k="i:'+i.id+':n" onchange="gkSetIns(\''+i.id+'\',\'n\',this.value)">'+(stale?'<span class="gcat"><span class="gkstale">▲ precio 30d+ ('+i.upd+')</span></span>':'')+'</td>'
+      +'<td><input class="gt" style="width:76px" value="'+escapeHtml(i.cat||'')+'" data-k="i:'+i.id+':cat" onchange="gkSetIns(\''+i.id+'\',\'cat\',this.value)"></td>'
+      +'<td><input value="'+i.ars+'" data-k="i:'+i.id+':ars" onchange="gkSetIns(\''+i.id+'\',\'ars\',this.value)"></td>'
+      +'<td><input class="gn" value="'+i.qty+'" data-k="i:'+i.id+':qty" onchange="gkSetIns(\''+i.id+'\',\'qty\',this.value)"></td>'
+      +'<td><select data-k="i:'+i.id+':unit" onchange="gkSetIns(\''+i.id+'\',\'unit\',this.value)"><option value="kg"'+(i.unit==='kg'?' selected':'')+'>kg</option><option value="un"'+(i.unit==='un'?' selected':'')+'>un</option><option value="l"'+(i.unit==='l'?' selected':'')+'>l</option></select></td>'
+      +'<td><input class="gn" value="'+i.iva+'" data-k="i:'+i.id+':iva" onchange="gkSetIns(\''+i.id+'\',\'iva\',this.value)"></td>'
+      +'<td><input class="gn" value="'+i.rend+'" data-k="i:'+i.id+':rend" onchange="gkSetIns(\''+i.id+'\',\'rend\',this.value)"></td>'
       +'<td class="gutil">'+gkUsdUtil(i).toFixed(2)+'<small style="color:var(--ink-soft);font-weight:400">/'+(i.unit==='un'?'un':i.unit)+'</small></td>'
       +'<td><button class="gkdel" title="Borrar insumo" onclick="gkDelIns(\''+i.id+'\')">×</button></td>'
       +'</tr>';
@@ -5353,7 +5631,7 @@ function renderGenka(){
       const lc=gkUsdUtil(i)*l.q;
       const qv=i.unit==='un'?l.q:(l.q*1000).toFixed(0);
       return '<div class="gkline"><span>'+escapeHtml(i.n)+'</span>'
-        +'<span style="text-align:right"><input value="'+qv+'" onchange="gkSetIngQ(\''+p.id+'\',\''+i.id+'\',this.value)"></span>'
+        +'<span style="text-align:right"><input data-k="'+p.id+':'+i.id+'" onchange="gkSetIngQ(\''+p.id+'\',\''+i.id+'\',this.value)" value="'+qv+'"></span>'
         +'<span class="gu">'+(i.unit==='un'?'un':'g')+'</span>'
         +'<span class="gc">'+gkFmt2(lc)+'</span>'
         +'<span><button class="gkdel" title="Quitar" onclick="gkDelIng(\''+p.id+'\',\''+i.id+'\')">×</button></span></div>';
@@ -5367,9 +5645,9 @@ function renderGenka(){
       +'<span class="gmv" onclick="event.stopPropagation()"><button title="Subir" onclick="gkMovePaso(\''+p.id+'\',-1)">▲</button><button title="Bajar" onclick="gkMovePaso(\''+p.id+'\',1)">▼</button></span>'
       +'<span class="gchev">▾</span></div>'
       +'<div class="gbody">'
-      +'<div class="gkmeta"><input class="gnm" value="'+escapeHtml(p.n)+'" onchange="gkSetPaso(\''+p.id+'\',\'n\',this.value)">'
-      +'<input class="gds" placeholder="descripción" value="'+escapeHtml(p.d||'')+'" onchange="gkSetPaso(\''+p.id+'\',\'d\',this.value)">'
-      +'<label class="gpr"><input type="checkbox" '+(p.prem?'checked':'')+' onchange="gkSetPaso(\''+p.id+'\',\'prem\',this.checked)">premium</label>'
+      +'<div class="gkmeta"><input class="gnm" data-k="'+p.id+':n" value="'+escapeHtml(p.n)+'" onchange="gkSetPaso(\''+p.id+'\',\'n\',this.value)">'
+      +'<input class="gds" data-k="'+p.id+':d" placeholder="descripción" value="'+escapeHtml(p.d||'')+'" onchange="gkSetPaso(\''+p.id+'\',\'d\',this.value)">'
+      +'<label class="gpr"><input type="checkbox" data-k="'+p.id+':prem" '+(p.prem?'checked':'')+' onchange="gkSetPaso(\''+p.id+'\',\'prem\',this.checked)">premium</label>'
       +'<button class="gkdel" title="Borrar paso" onclick="gkDelPaso(\''+p.id+'\')">🗑</button></div>'
       +'<div class="gkline hd"><span>ingrediente</span><span style="text-align:right">cant.</span><span></span><span style="text-align:right">costo</span><span></span></div>'
       +(lines||'<div style="font-size:11.5px;color:var(--ink-soft);padding:4px 0">Sin ingredientes todavía — agregá abajo.</div>')
@@ -5417,8 +5695,8 @@ function renderGenka(){
     +'<div class="gkhdr">Pareto — dónde está la plata</div>'
     +'<div class="gkpareto">'+(top.map(function(e){ const i=gkInsById(e[0]); return '<div style="margin-bottom:5px"><div class="prn"><span>'+escapeHtml(i?i.n:'?')+'</span><span class="prv">'+gkFmt2(e[1])+' · '+(c.total>0?(e[1]/c.total*100).toFixed(0):0)+'%</span></div><div class="prb" style="width:'+(e[1]/tmax*100).toFixed(0)+'%"></div></div>'; }).join('')||'<div style="font-size:11.5px;color:var(--ink-soft)">Cargá pasos con ingredientes para ver el pareto.</div>')+'</div>'
     +'<div class="gkhdr">Simulador de shock</div>'
-    +'<div class="gkshock"><select onchange="gkUI.shockIns=this.value;renderGenka()">'+G.insumos.map(i=>'<option value="'+i.id+'"'+(i.id===gkUI.shockIns?' selected':'')+'>'+escapeHtml(i.n)+'</option>').join('')+'</select></div>'
-    +'<div class="gkshock"><input type="range" min="-30" max="80" value="'+gkUI.shockPct+'" oninput="gkUI.shockPct=+this.value;renderGenka()"><span class="sv">'+(gkUI.shockPct>=0?'+':'')+gkUI.shockPct+'%</span></div>'
+    +'<div class="gkshock"><select data-k="ui:shockIns" onchange="gkUI.shockIns=this.value;renderGenka()">'+G.insumos.map(i=>'<option value="'+i.id+'"'+(i.id===gkUI.shockIns?' selected':'')+'>'+escapeHtml(i.n)+'</option>').join('')+'</select></div>'
+    +'<div class="gkshock"><input type="range" data-k="ui:shockPct" min="-30" max="80" value="'+gkUI.shockPct+'" oninput="gkUI.shockPct=+this.value;renderGenka()"><span class="sv">'+(gkUI.shockPct>=0?'+':'')+gkUI.shockPct+'%</span></div>'
     +'<div class="gkshockres">'+(gkUI.shockIns?('Si <b>'+escapeHtml(gkInsById(gkUI.shockIns).n)+'</b> '+(gkUI.shockPct>=0?'sube':'baja')+' '+Math.abs(gkUI.shockPct)+'%: costo <b>'+gkFmt2(cS.total)+'</b> · food cost <b>'+cS.fc.toFixed(1)+'%</b> ('+((cS.fc-c.fc)>=0?'+':'')+(cS.fc-c.fc).toFixed(1)+' pp)'):'—')+'</div>'
     +'<div class="gklines" style="margin-top:16px">'
     +'<div class="line"><span>Precio sugerido p/ target <b>'+P.targetPct+'%</b>'+(c.isDlv?' <small style="color:var(--ink-soft)">(vendido por app, con envase)</small>':'')+'</span><span class="v">'+gkFmt2(sug)+' <small style="font-weight:400;color:var(--ink-soft)">neto · carta '+gkFmt2(sug*c.pr.ivaDiv)+'</small></span></div>'
@@ -5431,6 +5709,7 @@ function renderGenka(){
     const cd=document.querySelector('.card[data-key="'+k+'"]');
     if(cd) cd.classList.toggle('collapsed', gkUI.collapsed[k]);
   });
+  kjFocusRestore(_focus);
 }
 
 
@@ -5583,7 +5862,7 @@ function cpTriangleHtml(mk){
   const rows=[
     {l:'Teórico · receta (原価)', v:T.teor, col:'var(--indigo, #1E3A4C)', n:'escandallo × precio neto del turno '+(T.tRef?T.tRef.label:'—')},
     {l:'Plan · esquema (勘定)', v:T.plan, col:'var(--brass-deep, #A87338)', n:'presupuesto de food cost del modelo'},
-    {l:'Real · compras ÷ ventas', v:T.real, col: T.real==null?'var(--ink-soft)':(T.real>T.teor+3?'var(--bad)':'var(--good)'), n: T.real==null?'sin ventas cargadas este mes':fmt(T.buyUsd)+' comprado ÷ '+fmt(T.netFood)+' facturado neto'}
+    {l:'Real · compras ÷ ventas', v:T.real, col: T.real==null?'var(--ink-soft)':(T.real>T.teor+3?'var(--bad)':'var(--good)'), n: T.real==null?(T.netFood>0?'sin compras cargadas este mes':'sin ventas cargadas este mes'):fmt(T.buyUsd)+' comprado ÷ '+fmt(T.netFood)+' facturado neto'}
   ];
   if(T.realAdj!=null) rows.push({l:'Real ajustado por stock (棚卸)', v:T.realAdj, col:T.realAdj>T.teor+3?'var(--bad)':'var(--good)', n:'consumo real en '+T.adjCounted.length+' insumo(s) contado(s): '+T.adjCounted.map(i=>i.n).slice(0,3).join(', ')+(T.adjCounted.length>3?'…':'')});
   const mx=Math.max(45, ...rows.map(r=>r.v||0))*1.1;
@@ -5623,8 +5902,8 @@ function cpInflationHtml(){
   const rows=withData.map(x=>{
     const col=x.d>8?'var(--bad)':x.d>3?'var(--brass-deep)':x.d<-1?'var(--good)':'var(--ink)';
     return `<tr><td>${escapeHtml(x.i.n)}<span class="gcat">${escapeHtml(x.i.cat||'')}</span></td>
-      <td>$${Math.round(x.last.u).toLocaleString('en-US')}<span class="gcat">${x.last.date.slice(5)}</span></td>
-      <td>$${Math.round(x.prev.u).toLocaleString('en-US')}<span class="gcat">${x.prev.date.slice(5)}</span></td>
+      <td>$${Math.round(x.last.u).toLocaleString('es-AR')}<span class="gcat">${x.last.date.slice(5)}</span></td>
+      <td>$${Math.round(x.prev.u).toLocaleString('es-AR')}<span class="gcat">${x.prev.date.slice(5)}</span></td>
       <td style="color:${col};font-weight:700">${x.d>=0?'+':''}${x.d.toFixed(1)}%</td>
       <td>${x.d90==null?'—':(x.d90>=0?'+':'')+x.d90.toFixed(0)+'%'}</td></tr>`;
   }).join('');
@@ -5649,7 +5928,7 @@ function renderCompras(){
   document.getElementById('fxBody').innerHTML=`
     <div class="row"><label>TC del día<span class="sub">ARS por USD · compra efectiva</span></label><div class="ifield"><input type="number" id="fxVal" value="${G.params.tc||''}" onchange="fxSet(this.value)"><span class="post">ARS</span></div></div>
     <p class="note" style="margin-top:8px">Este TC es el que usan <b>Genka 原価</b> y este tab para convertir ARS→USD. Cada compra guarda el TC del día en que se cargó, así el histórico no se distorsiona cuando el dólar se mueve.</p>
-    ${fxlog.length?`<div class="ystate" style="margin-top:10px">${fxlog.slice(-6).reverse().map(e=>`<div class="ystat"><span>${e.date}</span><b>$${e.tc.toLocaleString('en-US')}</b></div>`).join('')}</div>`:''}`;
+    ${fxlog.length?`<div class="ystate" style="margin-top:10px">${fxlog.slice(-6).reverse().map(e=>`<div class="ystat"><span>${e.date}</span><b>$${e.tc.toLocaleString('es-AR')}</b></div>`).join('')}</div>`:''}`;
 
   /* month */
   if(!cpUI.month || !cpMonths().includes(cpUI.month)) cpUI.month=cpMonths()[0];
@@ -5678,9 +5957,9 @@ function renderCompras(){
       <span class="d">${c.date.slice(5)}</span>
       <span style="font-size:12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(cpInsName(c))}${c.prov?`<span class="gcat" style="display:inline;margin-left:6px;font-size:10px;color:var(--ink-soft)">${escapeHtml(c.prov)}</span>`:''}</span>
       <span class="meta">${c.qty} ${c.ins&&gkInsById(c.ins)?gkInsById(c.ins).unit:'un'}</span>
-      <span class="meta">AR$ ${Math.round(c.ars).toLocaleString('en-US')}</span>
+      <span class="meta">AR$ ${Math.round(c.ars).toLocaleString('es-AR')}</span>
       <span class="pf">${fmt(cpUsd(c))}</span>
-      <span style="white-space:nowrap"><button class="editrow" onclick="cpEdit('${c.id}')">✎</button><button class="editrow" onclick="cpDel('${c.id}')">×</button></span>
+      <span style="white-space:nowrap"><button class="editrow" title="editar" onclick="cpEdit('${c.id}')">✎</button><button class="editrow" title="quitar" onclick="cpDel('${c.id}')">×</button></span>
     </div>`).join('');
 
   const motAgg={}; merM.forEach(m=>{ motAgg[m.motivo]=(motAgg[m.motivo]||0)+mrCost(m); });
@@ -5692,7 +5971,7 @@ function renderCompras(){
       <span style="font-size:12px">${i?escapeHtml(i.n):'—'}<span class="gcat" style="display:inline;margin-left:6px;font-size:10px;color:var(--ink-soft)">${MERMA_LABEL[m.motivo]||m.motivo}${m.nota?' · '+escapeHtml(m.nota):''}</span></span>
       <span class="meta">${m.qty} ${i?i.unit:''}</span>
       <span class="pf" style="color:var(--bad)">-${fmt(mrCost(m)).replace('$','$')}</span>
-      <span style="white-space:nowrap"><button class="editrow" onclick="mrEdit('${m.id}')">✎</button><button class="editrow" onclick="mrDel('${m.id}')">×</button></span>
+      <span style="white-space:nowrap"><button class="editrow" title="editar" onclick="mrEdit('${m.id}')">✎</button><button class="editrow" title="quitar" onclick="mrDel('${m.id}')">×</button></span>
     </div>`; }).join('');
   const motBar = merUsd>0 ? `<div class="compbar" style="margin-top:10px">${MERMA_MOTIVOS.filter(([k])=>motAgg[k]).map(([k,l],ix)=>{
       const cols=['#A8392B','#A87338','#6A6052','#1E3A4C','#8a8377'];
@@ -5778,7 +6057,7 @@ function lqEdit(id){ const l=liqs.find(x=>x.id===id); if(!l) return; lqUI.editin
   const set=(i,val)=>{ const e=document.getElementById(i); if(e) e.value=(val||val===0)?val:''; };
   set('lqApp',l.app); set('lqFrom',l.from); set('lqTo',l.to); set('lqGross',l.gross); set('lqComm',l.comm); set('lqPromo',l.promo); set('lqCancel',l.cancel); set('lqRet',l.ret); set('lqNet',l.net); set('lqPaid',l.paid); set('lqNote',l.note);
   try{ document.getElementById('cjLiq').scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){} }
-function lqDel(id){ if(!confirm('¿Borrar esta liquidación?')) return; liqs=liqs.filter(x=>x.id!==id); if(lqUI.editing===id) lqClear(); lqPersist(); renderCaja(); }
+async function lqDel(id){ if(!(await kjConfirm('¿Borrar esta liquidación?',{title:'Borrar liquidación',ok:'Borrar',danger:true}))) return; liqs=liqs.filter(x=>x.id!==id); if(lqUI.editing===id) lqClear(); lqPersist(); renderCaja(); }
 function lqApplyLag(days){ caja.appLag=Math.max(0,Math.round(days)); cjPersist(); flash('Rezago de apps en caja: '+caja.appLag+' días ✓'); renderCaja(); }
 function renderLiq(){
   const box=document.getElementById('cjLiq'); if(!box) return;
@@ -6286,9 +6565,10 @@ function cpTriangleData(mk){
   const buyUsd=buys.reduce((s,c)=>s+cpUsd(c),0);
   const svM=services.filter(s=>monthKey(s.date)===mk);
   const netFood=svM.reduce((s,sv)=>s+((sv.omakase||0)+(sv.premium||0)+(sv.extras||0)),0)/div;
-  const real=netFood>0? buyUsd/netFood*100 : null;
+  /* sin compras cargadas el "real" no es 0% (verde): es desconocido → null */
+  const real=(netFood>0 && buyUsd>0)? buyUsd/netFood*100 : null;
   const adj=cpConsumoAdj(mk);
-  const realAdj=(adj && netFood>0)? adj.val/netFood*100 : null;
+  const realAdj=(adj && netFood>0 && buyUsd>0)? adj.val/netFood*100 : null;
   return { teor, plan, real, realAdj, adjCounted: adj?adj.counted:[], buyUsd, netFood, tRef, costCover };
 }
 
@@ -6613,10 +6893,10 @@ const KJ_ERR={ username_taken:'Ese usuario ya existe', bad_username:'Usuario inv
 const kjErr = e => KJ_ERR[e && e.message] || ('No se pudo completar ('+((e&&e.message)||'error')+')');
 
 async function kjMyPassword(){
-  const cur=window.prompt('Tu contraseña actual:'); if(cur==null) return;
-  const n1=window.prompt('Contraseña nueva (mínimo 8 caracteres):'); if(n1==null) return;
+  const cur=await kjPrompt('Tu contraseña actual:', '', {input:{value:'',type:'password'},ok:'Siguiente'}); if(cur==null) return;
+  const n1=await kjPrompt('Contraseña nueva (mínimo 8 caracteres):', '', {input:{value:'',type:'password'},ok:'Siguiente'}); if(n1==null) return;
   if(n1.length<8){ flash('Mínimo 8 caracteres'); return; }
-  const n2=window.prompt('Repetila para confirmar:'); if(n2!==n1){ flash('No coinciden'); return; }
+  const n2=await kjPrompt('Repetila para confirmar:', '', {input:{value:'',type:'password'},ok:'Cambiar'}); if(n2!==n1){ flash('No coinciden'); return; }
   try{ await kjApi('POST','/api/password',{ current:cur, next:n1 }); flash('Contraseña cambiada ✓ — las otras sesiones se cerraron'); }
   catch(e){ flash(kjErr(e)); }
 }
@@ -6684,7 +6964,7 @@ async function kjUserPatch(id, patch){
 }
 async function kjUserReset(id){
   const u=(kjAdm.users||[]).find(x=>x.id===id);
-  if(!window.confirm('Generar una contraseña nueva para «'+((u&&u.name)||id)+'»? Se le cierran todas las sesiones abiertas.')) return;
+  if(!(await kjConfirm('Generar una contraseña nueva para «'+((u&&u.name)||id)+'»? Se le cierran todas las sesiones abiertas.',{title:'Nueva contraseña',ok:'Generar'}))) return;
   try{
     const j=await kjApi('POST','/api/users/'+encodeURIComponent(id)+'/password');
     window.alert('Contraseña de un solo uso para «'+j.username+'»:\n\n    '+j.password+'\n\nNo se vuelve a mostrar.');
@@ -6693,7 +6973,7 @@ async function kjUserReset(id){
 }
 async function kjUserDelete(id){
   const u=(kjAdm.users||[]).find(x=>x.id===id);
-  if(!window.confirm('Borrar a «'+((u&&u.name)||id)+'»? Si solo querés que no entre más, mejor dale de baja: el audit log conserva el nombre igual.')) return;
+  if(!(await kjConfirm('Borrar a «'+((u&&u.name)||id)+'»? Si solo querés que no entre más, mejor dale de baja: el audit log conserva el nombre igual.',{title:'Borrar usuario',ok:'Borrar',danger:true}))) return;
   try{ await kjApi('DELETE','/api/users/'+encodeURIComponent(id)); flash('Usuario borrado'); await kjUsersLoad(); }
   catch(e){ flash(kjErr(e)); }
 }
@@ -6741,7 +7021,7 @@ async function kjRoleSave(){
   }catch(e){ flash(kjErr(e)); }
 }
 async function kjLogout(){
-  const ok=window.confirm ? window.confirm('¿Cerrar sesión en este dispositivo?') : true;
+  const ok=await kjConfirm('¿Cerrar sesión en este dispositivo?',{title:'Salir',ok:'Cerrar sesión'});
   if(!ok) return;
   try{ await fetch('/api/logout',{method:'POST'}); }catch(e){}
   location.reload();
@@ -6772,7 +7052,7 @@ async function kjRestoreFile(input){
     const txt=await f.text();
     const obj=JSON.parse(txt);
     if(!obj || obj.app!=='kanjo' || !obj.data){ flash('El archivo no parece un backup de Kanjō'); return; }
-    const ok=window.confirm ? window.confirm('Esto PISA los datos actuales con el backup del '+(obj.exportedAt||'?').slice(0,10)+'. ¿Continuar?') : true;
+    const ok=await kjConfirm('Esto PISA los datos actuales con el backup del '+(obj.exportedAt||'?').slice(0,10)+'. ¿Continuar?',{title:'Restaurar backup',ok:'Pisar y restaurar',danger:true});
     if(!ok){ input.value=''; return; }
     let n=0;
     for(const [k,v] of Object.entries(obj.data)){
@@ -6883,7 +7163,7 @@ function renderResumen(){
     ])+
     sec('Rentabilidad', [
       row('Resultado proyectado', monthExp==null?'—':fmt(monthExp)+'/mes', expC, monthExp==null?'necesita historial':''),
-      row('Food cost · triángulo', realShown==null? tri.teor.toFixed(1)+'% teórico' : realShown.toFixed(1)+'%'+(tri.realAdj!=null?' <span style="font-weight:400;color:var(--ink-soft)">(aj. stock)</span>':''), triC, 'teórico '+tri.teor.toFixed(1)+'% · plan '+tri.plan+'%'),
+      row('Food cost · triángulo', realShown==null? '<span style="color:var(--ink-soft)">—</span>' : realShown.toFixed(1)+'%'+(tri.realAdj!=null?' <span style="font-weight:400;color:var(--ink-soft)">(aj. stock)</span>':''), triC, (realShown==null?(tri.netFood>0?'sin compras cargadas · ':'sin ventas cargadas · '):'')+'teórico '+tri.teor.toFixed(1)+'% · plan '+tri.plan+'%'),
       row('Mermas del mes', merPct==null? (merUsd>0?fmt(merUsd):'—') : merPct.toFixed(1)+'%', merC, merPct!=null?'sobre compras · '+fmt(merUsd):''),
     ])+
     sec('Caja y precios', [
@@ -7000,18 +7280,18 @@ function kjCierreMonths(){
   set.add(cur);
   return [...set].filter(m=>!cierres[m]).sort().reverse();
 }
-function kjCerrarMes(){
+async function kjCerrarMes(){
   const sel=document.getElementById('ciMonth'); if(!sel||!sel.value) return;
   const mk=sel.value, cur=monthKey(fmtDate(new Date()));
   if(mk===cur){
-    const ok=window.confirm? window.confirm('Estás cerrando el mes EN CURSO ('+monthLabel(mk)+'): el snapshot va a quedar incompleto. ¿Cerrar igual?') : true;
+    const ok=await kjConfirm('Estás cerrando el mes EN CURSO ('+monthLabel(mk)+'): el snapshot va a quedar incompleto. ¿Cerrar igual?',{title:'Cerrar mes',ok:'Cerrar igual'});
     if(!ok) return;
   }
   cierres[mk]=kjSnapshotMonth(mk);
   ciPersist(); flash('Mes '+monthLabel(mk)+' cerrado 締 ✓'); renderResumen();
 }
-function kjReabrirMes(mk){
-  const ok=window.confirm? window.confirm('Reabrir '+monthLabel(mk)+' borra el snapshot congelado (los tabs en vivo no se tocan). ¿Seguir?') : true;
+async function kjReabrirMes(mk){
+  const ok=await kjConfirm('Reabrir '+monthLabel(mk)+' borra el snapshot congelado (los tabs en vivo no se tocan). ¿Seguir?',{title:'Reabrir mes',ok:'Reabrir',danger:true});
   if(!ok) return;
   delete cierres[mk]; ciPersist(); flash('Mes reabierto'); renderResumen();
 }
@@ -7102,7 +7382,7 @@ function cpProvHtml(mk){
   });
   comp.sort((a,b)=>b.gap-a.gap);
   const compHtml=comp.length? `<div class="hslab" style="margin-top:14px"><span>Mismo insumo, distinto precio · últimos 90 días</span></div>
-    <div class="alerts" style="margin-top:6px">${comp.slice(0,6).map(x=>`<div class="alert warn"><b>${escapeHtml(x.ins.n)}</b>: ${escapeHtml(x.worst.name)} cobra AR$ ${Math.round(x.worst.u).toLocaleString('en-US')}/${x.ins.unit} vs AR$ ${Math.round(x.best.u).toLocaleString('en-US')} de ${escapeHtml(x.best.name)} — <b>+${x.gap.toFixed(0)}%</b>. Munición para negociar o mover el pedido.</div>`).join('')}</div>`
+    <div class="alerts" style="margin-top:6px">${comp.slice(0,6).map(x=>`<div class="alert warn"><b>${escapeHtml(x.ins.n)}</b>: ${escapeHtml(x.worst.name)} cobra AR$ ${Math.round(x.worst.u).toLocaleString('es-AR')}/${x.ins.unit} vs AR$ ${Math.round(x.best.u).toLocaleString('es-AR')} de ${escapeHtml(x.best.name)} — <b>+${x.gap.toFixed(0)}%</b>. Munición para negociar o mover el pedido.</div>`).join('')}</div>`
     : `<p class="desc" style="margin:10px 0 0">Cuando dos proveedores te vendan el mismo insumo, acá aparece la brecha de precio de los últimos 90 días.</p>`;
 
   return `<div class="panel"><h3>Proveedores <span style="font-weight:400;color:var(--ink-soft);font-size:11px">· gasto en USD neto</span></h3>
@@ -7119,7 +7399,7 @@ function kjQuick(){
   const ov=document.createElement('div');
   ov.id='kjQuickOv';
   ov.innerHTML=`<div class="kjqbox">
-    <div class="kjqhead"><span style="font-family:'Zilla Slab',serif;font-size:18px;font-weight:600">Carga rápida</span><button class="kjqx" onclick="kjQuickClose()">×</button></div>
+    <div class="kjqhead"><span style="font-family:'Zilla Slab',serif;font-size:18px;font-weight:600">Carga rápida</span><button class="kjqx" title="Cerrar" onclick="kjQuickClose()">×</button></div>
     <button class="kjqbtn" onclick="kjQuickGo('turnos','svCovers')"><span class="k">番</span><span><b>Servicio de hoy</b><i>cubiertos y facturación del turno</i></span></button>
     <button class="kjqbtn" onclick="kjQuickGo('turnos','dvOrders')"><span class="k">配</span><span><b>Delivery de hoy</b><i>pedidos, facturación y por dónde entraron</i></span></button>
     <button class="kjqbtn" onclick="kjQuickGo('reservas','rvResv')"><span class="k">約</span><span><b>Reservas</b><i>reservas, walk-ins y no-shows</i></span></button>
@@ -7427,7 +7707,7 @@ async function awAiScorePaso(pid,quiet){
 async function awRescoreAll(){
   const cand=G.pasos.filter(p=>awNorm(p.n) && awNorm(p.n)!=='nuevo paso');
   if(!cand.length){ flash('No hay pasos con nombre real'); return; }
-  if(!confirm('Esto vuelve a puntuar los '+cand.length+' pasos con IA y PISA los ajustes manuales de la matriz. ¿Seguir?')) return;
+  if(!(await kjConfirm('Esto vuelve a puntuar los '+cand.length+' pasos con IA y PISA los ajustes manuales de la matriz. ¿Seguir?',{title:'Volver a puntuar',ok:'Seguir'}))) return;
   awUI.aiBusy=true;
   let ok=0;
   try{
@@ -7861,9 +8141,9 @@ function ktAddTpl(){
   kata.tpl.push({ id:rid(), n:'Nueva plantilla', mom:'apertura', turnos:[], items:[] });
   ktPersistTpl(); ktRenderTpls();
 }
-function ktDelTpl(id){
+async function ktDelTpl(id){
   const t=kata.tpl.find(x=>x.id===id); if(!t) return;
-  const ok=window.confirm? window.confirm('¿Borrar la plantilla «'+t.n+'»? Las ejecuciones ya registradas no se tocan.') : true;
+  const ok=await kjConfirm('¿Borrar la plantilla «'+t.n+'»? Las ejecuciones ya registradas no se tocan.',{title:'Borrar plantilla',ok:'Borrar',danger:true});
   if(!ok) return;
   kata.tpl=kata.tpl.filter(x=>x.id!==id);
   ktPersistTpl(); ktRenderTpls(); renderKataHoy(); ktKpis();
@@ -8795,9 +9075,9 @@ function waBless(wk,id,kind){
   waPersist(); WA_WHEELS[wk].render(); waCloseDrawer();
   flash('Sellado ✓ — deja de figurar como IA sin revisar');
 }
-function waRemove(wk,id,kind){
+async function waRemove(wk,id,kind){
   if(!waAdmin()) return;
-  if(!confirm('¿Quitar de la carta de Wa? Sus hilos, notas y perfil desaparecen. (No afecta Genka ni Aishō.)')) return;
+  if(!(await kjConfirm('¿Quitar de la carta de Wa? Sus hilos, notas y perfil desaparecen. (No afecta Genka ni Aishō.)',{title:'Quitar de la carta',ok:'Quitar',danger:true}))) return;
   if(kind==='r'&&wk==='w1'){ WAX.bebs.comun=WAX.bebs.comun.filter(b=>b.id!==id); WAX.bebs.prem=WAX.bebs.prem.filter(b=>b.id!==id); }
   else if(kind==='r') WAX.ings.forEach(g=>{ g.items=g.items.filter(it=>it.id!==id); });
   else waEachGroup(wk,kind,g=>{ g.items=g.items.filter(it=>it.id!==id); });
@@ -9354,10 +9634,10 @@ function shunCycle(ix,mi){
 }
 function shunApprove(ix){ const it=shun.items[ix]; if(!it) return; it.pending=false; it.nota=(it.nota||'').replace(/^✦\s*/,''); shunPersist(); renderShun(); flash('Visto bueno ✓ — la sugerencia IA ahora es oficial'); }
 function shunDel(ix){ if(!kjNeed('shun','El mapa de estacionalidad')) return; shun.items.splice(ix,1); shunPersist(); renderShun(); }
-function shunEditNota(ix){
+async function shunEditNota(ix){
   if(!kjNeed('shun','Las notas de estacionalidad')) return;
   const it=shun.items[ix]; if(!it) return;
-  const v=window.prompt('Nota de '+it.n+' (vacío = sin nota):', it.nota||'');
+  const v=await kjPrompt('Nota de '+it.n+' (vacío = sin nota):', it.nota||'', {ok:'Guardar'});
   if(v===null) return;
   it.nota=v.trim(); shunPersist(); renderShun(); flash('Nota actualizada ✓');
 }
@@ -9434,7 +9714,7 @@ let zaiko={ items:[], movs:[] };
 function zkEnsure(z){ if(!z||typeof z!=='object') z={}; if(!Array.isArray(z.items)) z.items=[]; if(!Array.isArray(z.movs)) z.movs=[]; return z; }
 function zkPersist(){ persistSafe('kanjo:zaiko', zaiko); }
 async function loadZaiko(){ await kjLoadKey('kanjo:zaiko', v=>{ zaiko=zkEnsure(v); }); }
-const zkUsd=n=>'$'+(+n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const zkUsd=n=>'$'+(+n||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
 function zkDias(f){ return Math.floor((Date.now()-new Date(f+'T12:00:00').getTime())/86400000); }
 function zkFishEstado(it){
   const d=zkDias(it.ingreso), a=it.ventana[0], b=it.ventana[1];
@@ -9577,7 +9857,7 @@ function orById(id){ return oroshi.provs.find(p=>p.id===id)||null; }
 function orKeys(p){ return [orNorm(p.n), ...(p.aliases||[]).map(orNorm)].filter(Boolean); }
 function orMatch(provStr){ const k=orNorm(provStr); if(!k) return null; return oroshi.provs.find(p=>orKeys(p).includes(k))||null; }
 function orComprasDe(p){ return compras.filter(c=>orMatch(c.prov)===p); }
-function orFmtArs(v){ return 'AR$ '+Math.round(v).toLocaleString('en-US'); }
+function orFmtArs(v){ return 'AR$ '+Math.round(v).toLocaleString('es-AR'); }
 function orDaysSince(d){ try{ return Math.round((parseDate(gkToday())-parseDate(d))/86400000); }catch(e){ return 0; } }
 function orAddDays(dateStr,n){ try{ const d=parseDate(dateStr); d.setDate(d.getDate()+n); return fmtDate(d); }catch(e){ return dateStr; } }
 
@@ -9724,7 +10004,7 @@ function orRenderDetail(){
     + fr('CUIT', p.cuit?'<span class="mono">'+escapeHtml(p.cuit)+'</span>':'')
     + fr('Pago', escapeHtml(OR_PAGO[p.pago]||p.pago||''))
     + fr('Entrega', escapeHtml(p.entrega))
-    + fr('Pedido mínimo', p.minimo? '<span class="mono">AR$ '+(+p.minimo).toLocaleString('en-US')+'</span>':'')
+    + fr('Pedido mínimo', p.minimo? '<span class="mono">AR$ '+(+p.minimo).toLocaleString('es-AR')+'</span>':'')
     +'</div>'
     + (p.notas? '<p class="desc" style="margin-top:10px;font-style:italic">“'+escapeHtml(p.notas)+'”</p>':'');
 
@@ -9750,7 +10030,7 @@ function orRenderDetail(){
     }
     const dCol=d==null?'var(--ink-soft)':(d>8?'var(--bad)':d>3?'var(--brass-deep)':d<-1?'var(--good)':'var(--ink)');
     return '<tr><td>'+escapeHtml(i?i.n:'(insumo eliminado)')+'<span class="gcat">'+list.length+' compra'+(list.length>1?'s':'')+'</span></td>'
-      +'<td>AR$ '+Math.round(lastU).toLocaleString('en-US')+'<span class="gcat">/'+(i?i.unit:'un')+' · '+lastC.date.slice(5)+'</span></td>'
+      +'<td>AR$ '+Math.round(lastU).toLocaleString('es-AR')+'<span class="gcat">/'+(i?i.unit:'un')+' · '+lastC.date.slice(5)+'</span></td>'
       +'<td style="color:'+dCol+';font-weight:700">'+(d==null?'—':(d>=0?'+':'')+d.toFixed(1)+'%')+'</td>'
       +'<td>'+comp+'</td></tr>';
   }).join('');
@@ -9875,8 +10155,8 @@ function orRenderGaps(){
   comp.sort((a,b)=>b.gap-a.gap);
   document.getElementById('orGaps').innerHTML = comp.length?
     '<div class="alerts">'+comp.slice(0,8).map(x=>'<div class="alert warn"><b>'+escapeHtml(x.i.n)+'</b>: '
-      +escapeHtml(x.worst.p.n)+' cobra AR$ '+Math.round(x.worst.u).toLocaleString('en-US')+'/'+x.i.unit
-      +' vs AR$ '+Math.round(x.best.u).toLocaleString('en-US')+' de '+escapeHtml(x.best.p.n)
+      +escapeHtml(x.worst.p.n)+' cobra AR$ '+Math.round(x.worst.u).toLocaleString('es-AR')+'/'+x.i.unit
+      +' vs AR$ '+Math.round(x.best.u).toLocaleString('es-AR')+' de '+escapeHtml(x.best.p.n)
       +' — <b>+'+x.gap.toFixed(0)+'%</b>. Munición para negociar o mover el pedido.</div>').join('')+'</div>'
     : '<p class="desc">Cuando dos proveedores con ficha vendan el mismo insumo, acá aparece la brecha de precio.</p>';
 }
@@ -10228,12 +10508,12 @@ async function htPunch(pid,date,turno,dir){
   else { if(!k||k.out){ flash('No hay entrada abierta'); return; } k.out=hm; if(src==='local') k.src='local'; }
   const ok=await htkPersist(); if(ok!==false){ flash((dir==='in'?'Entrada':'Salida')+' fichada '+hm+' ✓'); } renderHito();
 }
-function htPunchEdit(id){
+async function htPunchEdit(id){
   const k=HTK.punches.find(x=>x.id===id); if(!k) return;
-  const a=window.prompt('Entrada (HH:MM):',k.in); if(a==null) return;
-  const b=window.prompt('Salida (HH:MM, vacío = sigue abierto):',k.out||''); if(b==null) return;
+  const a=await kjPrompt('Entrada (HH:MM):',k.in,{ok:'Siguiente'}); if(a==null) return;
+  const b=await kjPrompt('Salida (HH:MM, vacío = sigue abierto):',k.out||'',{ok:'Siguiente'}); if(b==null) return;
   if(!/^\d{2}:\d{2}$/.test(a)||(b&&!/^\d{2}:\d{2}$/.test(b))){ flash('Formato HH:MM'); return; }
-  if(window.confirm('¿Borrar este fichaje en lugar de corregirlo? (Aceptar = borrar · Cancelar = guardar corrección)')){ HTK.punches=HTK.punches.filter(x=>x.id!==id); }
+  if(await kjConfirm('¿Borrar este fichaje en lugar de corregirlo?',{title:'Fichaje',ok:'Borrar',cancel:'Guardar corrección',danger:true})){ HTK.punches=HTK.punches.filter(x=>x.id!==id); }
   else { k.in=a; k.out=b||null; k.edited=true; }
   htkPersist(); renderHito();
 }
@@ -10247,7 +10527,7 @@ function htRenderLegajo(admin){
     const pay=HTP&&HTP.pay[p.id];
     return `<div class="lg ${p.active?'':'inactive'}" ${admin?`onclick="htUI.editP='${p.id}';renderHito();window.scrollTo(0,0)"`:''}><b>${escapeHtml(p.n)}</b> <span class="tag mix">${p.tipo}</span>${p.active?'':' <span class="tag mix">baja</span>'}<div class="r">${escapeHtml(p.role||'')}${p.alta?' · desde '+p.alta:''}</div>
       <div class="docs">${p.docs.map(d=>{ const dd=d.venc?(parseDate(d.venc)-new Date())/864e5:null; const cls=dd==null?'':(dd<0?'bad':dd<30?'warn':'ok'); return `<span class="tag ${cls}" title="${d.venc?'vence '+d.venc:'sin vencimiento'}">${escapeHtml(d.n)}${dd!=null&&dd<30?(dd<0?' · vencido':' · '+Math.ceil(dd)+' d'):''}</span>`; }).join('')||'<span class="muted small">sin documentación cargada</span>'}</div>
-      ${admin?`<div class="sal">${pay&&pay.usd>0?('USD '+pay.usd.toLocaleString('en-US')+(pay.mode==='hora'?' / hora':' mensual'+(pay.hsMes?' · '+pay.hsMes+' hs/mes':' · <i style=\"color:var(--warn)\">faltan hs/mes</i>'))+(pay.mult>1?' · ×'+pay.mult:'')):'<i style="color:var(--warn)">sin tarifa: no computa en costos</i>'}</div>`:''}
+      ${admin?`<div class="sal">${pay&&pay.usd>0?('USD '+pay.usd.toLocaleString('es-AR')+(pay.mode==='hora'?' / hora':' mensual'+(pay.hsMes?' · '+pay.hsMes+' hs/mes':' · <i style=\"color:var(--warn)\">faltan hs/mes</i>'))+(pay.mult>1?' · ×'+pay.mult:'')):'<i style="color:var(--warn)">sin tarifa: no computa en costos</i>'}</div>`:''}
     </div>`; }).join('')+`</div>
     <p class="note" style="margin-top:12px">Tarifas y sueldos viven en una clave que el servidor no entrega al staff (<code>kanjo:hitopay</code>). El multiplicador sigue la lógica de Esquema: cargas + ART + SAC + vacaciones sobre el bruto. Para mensuales, las horas/mes declaradas son las que convierten el sueldo en costo por hora; sin ese dato la persona no entra en el costo real y el servicio sigue con el plan.</p></div></div>`;
   return h;
@@ -10281,9 +10561,9 @@ function htPersonSave(){
   if(HTP&&document.getElementById('htfPU')){ const usd=+document.getElementById('htfPU').value||0; if(usd>0) HTP.pay[p.id]={ mode:document.getElementById('htfPM').value, usd, mult:+document.getElementById('htfPX').value||1, hsMes:+document.getElementById('htfPH').value||0 }; else delete HTP.pay[p.id]; htpPersist(); }
   htUI.editP=null; flash(isNew?'Persona dada de alta ✓':'Legajo actualizado ✓'); renderHito();
 }
-function htPersonDel(id){
+async function htPersonDel(id){
   const hasP=HTK.punches.some(k=>k.pid===id);
-  if(!window.confirm(hasP?'Tiene fichajes registrados. ¿Dar de baja (conserva historial) en lugar de eliminar?\nAceptar = baja · Cancelar = no hacer nada':'¿Eliminar a esta persona del plantel?')) return;
+  if(!(await kjConfirm(hasP?'Tiene fichajes registrados. ¿Dar de baja (conserva historial) en lugar de eliminar?':'¿Eliminar a esta persona del plantel?',{title:hasP?'Dar de baja':'Eliminar',ok:hasP?'Dar de baja':'Eliminar',cancel:hasP?'No hacer nada':'Cancelar',danger:!hasP}))) return;
   if(hasP){ const p=htById(id); p.active=false; } else { HT.people=HT.people.filter(p=>p.id!==id); Object.values(HT.shifts).forEach(d=>{ delete d[id]; }); if(HTP) delete HTP.pay[id]; htpPersist(); }
   htPersist(); htUI.editP=null; renderHito();
 }
@@ -10375,9 +10655,9 @@ function kdPublish(){
   kdPersist(); flash('Carta publicada v'+v+' ✓ · el QR ya responde'); renderKondate();
 }
 function kdArchive(id){ const c=id?kdById(id):kdSel(); if(!c) return; if(c.state==='archivada'){ c.state=c.pub?'publicada':'borrador'; } else c.state='archivada'; kdPersist(); renderKondate(); }
-function kdDel(){ const c=kdSel(); if(!c) return; if(!window.confirm('¿Eliminar esta carta? El QR dejará de responder.')) return; KD.cartas=KD.cartas.filter(x=>x.id!==c.id); kdUI.sel=null; kdPersist(); renderKondate(); }
+async function kdDel(){ const c=kdSel(); if(!c) return; if(!(await kjConfirm('¿Eliminar esta carta? El QR dejará de responder.',{title:'Eliminar carta',ok:'Eliminar',danger:true}))) return; KD.cartas=KD.cartas.filter(x=>x.id!==c.id); kdUI.sel=null; kdPersist(); renderKondate(); }
 function kdDup(){ const c=kdSel(); if(!c) return; const n=JSON.parse(JSON.stringify(c)); n.id=rid(); n.token=kdToken(); n.state='borrador'; n.pub=null; n.hist=[]; n.title=c.title+' (copia)'; n.created=new Date().toISOString(); KD.cartas.unshift(n); kdUI.sel=n.id; kdPersist(); renderKondate(); }
-function kdCopyUrl(){ const c=kdSel(); if(!c) return; const u=kdUrl(c); if(navigator.clipboard){ navigator.clipboard.writeText(u).then(()=>flash('Link copiado')); } else window.prompt('Link de la carta:',u); }
+function kdCopyUrl(){ const c=kdSel(); if(!c) return; const u=kdUrl(c); if(navigator.clipboard){ navigator.clipboard.writeText(u).then(()=>flash('Link copiado')); } else kjPrompt('Link de la carta:',u,{ok:'Listo'}); }
 
 function renderKondate(){
   const el=document.getElementById('kdRoot'); if(!el) return;
@@ -10483,13 +10763,13 @@ function skSit(n,clientId){
   s.client=c?c.id:null; s.name=c?c.name:s.name; s.rest=c?(c.allerg||''):s.rest; s.hist=[{t:'sentado',at:new Date().toISOString()}];
   skPersist(); skUI.sel=n; skUI.q=''; renderSeki();
 }
-function skWalkin(n){ const nm=window.prompt('Nombre del walk-in (se puede cargar al CRM después):'); if(!nm) return; const s=skSeat(n); s.client=null; s.name=nm.trim(); s.rest=''; s.hist=[{t:'sentado',at:new Date().toISOString()}]; skPersist(); skUI.sel=n; renderSeki(); }
+async function skWalkin(n){ const nm=await kjPrompt('Nombre del walk-in (se puede cargar al CRM después):','',{ok:'Sentar'}); if(!nm) return; const s=skSeat(n); s.client=null; s.name=nm.trim(); s.rest=''; s.hist=[{t:'sentado',at:new Date().toISOString()}]; skPersist(); skUI.sel=n; renderSeki(); }
 function skClear(n){ const s=skSeat(n); Object.assign(s,{client:null,name:'',rest:'',grp:0,mar:false,off:0,extras:[],hist:[]}); skPersist(); renderSeki(); }
 function skSetRest(n,v){ skSeat(n).rest=v; skPersist(); renderSeki(); }
 function skTogMar(n){ const s=skSeat(n); s.mar=!s.mar; skPersist(); renderSeki(); }
 function skCycleGrp(n){ const s=skSeat(n); if(!s.name) return; s.grp=(s.grp+1)%5; skPersist(); renderSeki(); }
-function skExtra(n){ const nm=window.prompt('Extra (ej. nigiri de ōtoro, copa de sake):'); if(!nm) return; const usd=+window.prompt('Precio de lista USD c/IVA:')||0; skSeat(n).extras.push({n:nm.trim(),usd}); skPersist(); renderSeki(); }
-function skNoteCRM(n){ const s=skSeat(n); if(!s.client){ flash('Este asiento no está vinculado a un cliente del CRM'); return; } const c=crmById(s.client); const t=window.prompt('Nota para la ficha de '+c.name+':'); if(!t) return; c.notes=(c.notes?c.notes+'\n':'')+s.hist[0].at.slice(0,10)+': '+t.trim(); crmPersist(); flash('Nota guardada en el CRM ✓'); }
+async function skExtra(n){ const nm=await kjPrompt('Extra (ej. nigiri de ōtoro, copa de sake):','',{ok:'Siguiente'}); if(!nm) return; const usd=+(await kjPrompt('Precio de lista USD c/IVA:','',{ok:'Agregar'}))||0; skSeat(n).extras.push({n:nm.trim(),usd}); skPersist(); renderSeki(); }
+async function skNoteCRM(n){ const s=skSeat(n); if(!s.client){ flash('Este asiento no está vinculado a un cliente del CRM'); return; } const c=crmById(s.client); const t=await kjPrompt('Nota para la ficha de '+c.name+':','',{ok:'Guardar'}); if(!t) return; c.notes=(c.notes?c.notes+'\n':'')+s.hist[0].at.slice(0,10)+': '+t.trim(); crmPersist(); flash('Nota guardada en el CRM ✓'); }
 function skNow(){ return new Date().toISOString(); }
 function skNext(){ const sv=skCur(); const P=skPasos(sv); if(sv.cur>=P.length-1) return; if(sv.cur<0) sv.startedAt=sv.startedAt||skNow(); sv.cur++; sv.stepAt[sv.cur]=skNow(); sv.seats.forEach(s=>{ if(s.name){ s.hist.push({t:'paso '+(sv.cur+1+s.off),at:sv.stepAt[sv.cur]}); } }); skPersist(); renderSeki(); }
 function skPrev(){ const sv=skCur(); if(sv.cur<0) return; sv.cur--; skPersist(); renderSeki(); }
@@ -10513,13 +10793,13 @@ function skGroups(sv){
   const g={}; sv.seats.filter(s=>s.name).forEach(s=>{ const k=s.grp?'g'+s.grp:'s'+s.n; (g[k]=g[k]||[]).push(s); }); return g;
 }
 function skBill(sv,ss){ const pr=skPrices(sv); const menu=ss.length*pr.menu; const nm=ss.filter(s=>s.mar).length; const mar=pr.mar!=null?nm*pr.mar:null; const ex=ss.reduce((a,s)=>a+s.extras.reduce((b,e)=>b+(e.usd||0),0),0); return { menu, nm, mar, ex, total: menu+(mar||0)+ex, marMissing: nm>0&&pr.mar==null }; }
-function skClose(){
+async function skClose(){
   const sv=skCur(); if(!sv||sv.closed) return;
   const seated=sv.seats.filter(s=>s.name); if(!seated.length){ flash('No hay nadie sentado'); return; }
   const pr=skPrices(sv); const bills=Object.values(skGroups(sv)).map(ss=>skBill(sv,ss));
   const covers=seated.length, omakase=covers*pr.menu, bebidas=pr.mar!=null?bills.reduce((a,b)=>a+(b.mar||0),0):0, extras=bills.reduce((a,b)=>a+b.ex,0);
   const exists=services.find(s=>s.date===sv.date&&s.turno===sv.turno);
-  if(!window.confirm('Cerrar el servicio:\n· '+covers+' cubiertos · menú '+fmt(omakase)+(pr.mar!=null?' · maridaje '+fmt(bebidas):' · maridaje sin precio (queda en 0)')+' · extras '+fmt(extras)+'\n· '+(exists?'El Analista YA tiene este servicio: no se pisa, solo se marcan visitas.':'Se crea el servicio en el Analista a precio de lista, para que lo corrijas con la caja real.')+'\n· Se registran '+seated.filter(s=>s.client).length+' visitas en el CRM.\n¿Continuar?')) return;
+  if(!(await kjConfirm('Cerrar el servicio:\n· '+covers+' cubiertos · menú '+fmt(omakase)+(pr.mar!=null?' · maridaje '+fmt(bebidas):' · maridaje sin precio (queda en 0)')+' · extras '+fmt(extras)+'\n· '+(exists?'El Analista YA tiene este servicio: no se pisa, solo se marcan visitas.':'Se crea el servicio en el Analista a precio de lista, para que lo corrijas con la caja real.')+'\n· Se registran '+seated.filter(s=>s.client).length+' visitas en el CRM.\n¿Continuar?',{title:'Cerrar servicio',ok:'Cerrar y registrar'}))) return;
   if(!exists){ services.push({ id:rid(), date:sv.date, turno:sv.turno, covers, omakase, premium:0, bebidas, extras, payCard:0, payCash:0, payQR:0, cashDiscPct:0, cashUndeclared:false, note:'estimado desde Servicio 席 · corregir con caja real' }); if(typeof persistServices==='function') persistServices(); else persistSafe('kanjo:services', services); }
   /* visitas al CRM: por grupo, gasto prorrateado por persona */
   let nv=0; Object.values(skGroups(sv)).forEach(ss=>{ const b=skBill(sv,ss); ss.forEach(s=>{ if(!s.client) return; if(crm.visits.some(v=>v.client===s.client&&v.date===sv.date&&v.turno===sv.turno)) return; crm.visits.push({ id:rid(), client:s.client, date:sv.date, turno:sv.turno, party:ss.length, spend:Math.round(b.total/ss.length), notes:(s.mar?'con maridaje':'sin maridaje')+(s.extras.length?' · extras: '+s.extras.map(e=>e.n).join(', '):'')+(s.rest?' · '+s.rest:'') }); nv++; }); });
@@ -10589,7 +10869,7 @@ function renderSeki(){
       <div class="skrestf"><input type="text" value="${escapeHtml(s.rest)}" placeholder="restricción o alergia (libre)" onchange="skSetRest(${s.n},this.value)">${s.rest?`<div class="skrest">⚠ ${hits.map(h=>h.lbl).join(' · ')||escapeHtml(s.rest)}${algs.size?' · pasos marcados <b>sust.</b> llevan alguno de: '+[...algs].join(', '):' · sin alérgeno reconocido: revisá a mano'}</div>`:''}</div>
       <div class="skpace"><span class="v ${s.off?'late':''}">${s.off?(s.off>0?'+':'')+s.off+' paso'+(Math.abs(s.off)>1?'s':''):'al ritmo'}</span><span class="small muted">${s.off?'desfasado de la barra':'vs. barra'}</span></div>
       <ul class="sksteps">${P.map((p,i)=>`<li class="${i<st?'done':i===st?'cur':''}"><div>${String(i+1).padStart(2,'0')} · ${escapeHtml(p.n)}${(p.alg||[]).some(a=>algs.has(a))?' <span class="tag bad">sust.</span>':''}</div><span>${p.min?p.min+'′':''}</span></li>`).join('')}</ul>
-      <div class="skbtns">${sv.closed?'':`<button class="btn" onclick="skSeatNext(${s.n})">Servir siguiente solo acá</button><button class="btn ghost" onclick="skSeatPrev(${s.n})">−1</button><button class="btn ghost" onclick="skTogMar(${s.n})">${s.mar?'Quitar maridaje':'+ Maridaje'}</button><button class="btn ghost" onclick="skExtra(${s.n})">+ Extra</button><button class="btn ghost" onclick="skNoteCRM(${s.n})">Nota al CRM</button><button class="btn ghost" style="color:var(--bad)" onclick="if(confirm('¿Vaciar el asiento?'))skClear(${s.n})">Vaciar</button>`}</div>
+      <div class="skbtns">${sv.closed?'':`<button class="btn" onclick="skSeatNext(${s.n})">Servir siguiente solo acá</button><button class="btn ghost" onclick="skSeatPrev(${s.n})">−1</button><button class="btn ghost" onclick="skTogMar(${s.n})">${s.mar?'Quitar maridaje':'+ Maridaje'}</button><button class="btn ghost" onclick="skExtra(${s.n})">+ Extra</button><button class="btn ghost" onclick="skNoteCRM(${s.n})">Nota al CRM</button><button class="btn ghost" style="color:var(--bad)" onclick="kjConfirm('¿Vaciar el asiento?',{title:'Vaciar asiento',ok:'Vaciar',danger:true}).then(ok=>{ if(ok) skClear(${s.n}); })">Vaciar</button>`}</div>
       ${s.extras.length?`<div class="skex">${s.extras.map((e,i)=>`<div><span>${escapeHtml(e.n)}</span><span class="mono">${fmt(e.usd)} <a href="#" onclick="skSeat(${s.n}).extras.splice(${i},1);skPersist();renderSeki();return false">✕</a></span></div>`).join('')}</div>`:''}
       <div class="skhist">${s.hist.slice(-8).map(h=>`<div><span>${escapeHtml(h.t)}</span><span class="mono">${new Date(h.at).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}</span></div>`).join('')}</div>
     </div></div>`;
@@ -10608,6 +10888,7 @@ async function loadMe(){
     }
   }catch(e){}
 }
+document.body.classList.add('kj-loading');    /* hasta que carguen los datos reales, lo pintado son defaults */
 loadMe().then(()=>Promise.all([          /* la sesión primero: define qué claves se pueden leer */
   loadBaselineSilent(),                        /* el esquema guardado ES la app: sin esto todo calcula sobre defaults */
   loadServices(), loadDelivery(), loadFcHealth(),
@@ -10621,5 +10902,13 @@ loadMe().then(()=>Promise.all([          /* la sesión primero: define qué clav
   loadScenarios();
   renderServiceList(); renderTurnos();         /* las métricas por servicio dependen de S */
   applyRoles(); renderResumen();
+  kjOpenHash();                                /* #tab en la URL: se abre si existe y el rol lo puede ver */
+}).catch(e=>{
+  console.error('[kanjo] error al cargar', e);
+  try{ applyRoles(); renderResumen(); }catch(_){}
+  flash('No se pudieron cargar todos los datos: revisá la conexión');
+}).finally(()=>{
+  document.body.classList.remove('kj-loading');
+  kjA11y();
 });
 </script>
