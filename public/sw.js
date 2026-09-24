@@ -1,7 +1,7 @@
 /* Service worker: shell con cache, API siempre por red.
    '/' y '/shim.js' van red-primero: si no, un deploy que cambie el shim
    nunca llega a las PWAs instaladas (cache-first + nombre fijo). */
-const CACHE='kanjo-v2';
+const CACHE='kanjo-v3';
 const SHELL=['/manifest.json','/icon-192.png','/icon-512.png'];
 const NET_FIRST=new Set(['/','/index.html','/shim.js','/login.html']);
 self.addEventListener('install', e=>{
@@ -21,4 +21,12 @@ self.addEventListener('fetch', e=>{
     return;
   }
   e.respondWith(caches.match(e.request).then(hit=>hit||fetch(e.request).then(r=>{ const cp=r.clone(); caches.open(CACHE).then(c=>c.put(e.request,cp)); return r; })));
+});
+/* notificaciones locales (alertas de la app): tocar abre o enfoca el tablero */
+self.addEventListener('notificationclick', e=>{
+  e.notification.close();
+  e.waitUntil(self.clients.matchAll({type:'window', includeUncontrolled:true}).then(cs=>{
+    const c=cs.find(x=>'focus' in x); if(c) return c.focus();
+    if(self.clients.openWindow) return self.clients.openWindow('/');
+  }));
 });

@@ -1230,6 +1230,10 @@
     </div>
     <div class="scenwrap"><table class="scen" id="scenTable"></table></div>
     <div class="scenempty" id="scenHint"></div>
+    <div class="panel" style="margin-top:16px"><h3>Shock cambiario e inflación de insumos</h3>
+      <p class="desc" style="margin:0 0 10px">El modelo está en dólares, pero cobrás y pagás en pesos. Si el dólar salta y la carta no acompaña, la facturación en USD cae; los insumos importados (pescado, sake) siguen en dólares y los locales suben con la inflación. Probá cuánto tenés que subir la carta para sostener el margen.</p>
+      <div class="cgrid" style="grid-template-columns:1fr 1fr;gap:16px"><div id="shockIn"></div><div id="shockOut"></div></div>
+    </div>
   </section>
 
   <div class="foot">
@@ -1287,6 +1291,8 @@
             <div class="exptools">
               <button class="minib" onclick="exportServices()">Exportar servicios (CSV)</button>
               <button class="minib" onclick="exportMonthly()">Exportar resumen mensual (CSV)</button>
+              <button class="minib" onclick="kjImportPick('services')" title="CSV del POS o de una planilla: fecha, turno, cubiertos, omakase, premium, bebidas, extras, tarjeta, QR, efectivo">⬆ Importar CSV</button>
+              <input type="file" id="kjImportFile" accept=".csv,text/csv,text/plain" style="display:none" onchange="kjImportFile(this)">
             </div>
           </div>
         </div>
@@ -1311,7 +1317,7 @@
               <button class="btn ghost" onclick="seedDelivery()">Cargar ejemplo</button>
             </div>
             <div class="svlist" id="dvList" style="margin-top:10px"></div>
-            <div class="exptools"><button class="minib" onclick="exportDelivery()">Exportar delivery (CSV)</button></div>
+            <div class="exptools"><button class="minib" onclick="exportDelivery()">Exportar delivery (CSV)</button><button class="minib" onclick="kjImportPick('delivery')" title="CSV: fecha, pedidos, comida, bebidas, apps, propio, efectivo, cancelados">⬆ Importar CSV</button></div>
           </div>
         </div>
       </div>
@@ -1677,6 +1683,7 @@
             <div class="row"><label>Walk-ins<span class="sub">sin reserva</span></label><div class="ifield"><input type="number" id="rvWalk" placeholder="0"></div></div>
             <div class="row"><label>Cubiertos<span class="sub">vacío = auto de 番付</span></label><div class="ifield"><input type="number" id="rvCovers"></div></div>
             <button class="gkadd" id="rvSaveBtn" onclick="rvSave()">Registrar</button>
+            <button class="minib" style="margin-left:6px" onclick="kjImportPick('reservas')" title="CSV de Meitre o planilla: fecha, turno, reservas, walk-ins, cubiertos">⬆ Importar CSV</button>
             <p class="note" style="margin-top:10px">Un registro por servicio: si cargás dos veces la misma fecha y turno, se pisa el anterior.</p>
           </div>
         </div>
@@ -2990,6 +2997,55 @@ function renderIvaOutputs(){
   document.getElementById('ivaOut').innerHTML = wf + timing;
 }
 
+/* ----------------------------- shock cambiario ----------------------------- */
+let shock={ deval:20, infl:15, priceAdj:0, importShare:45, wageAdj:null };
+function setShock(k,v){ shock[k]= v===''? null : (parseFloat(v)||0); renderShock(); }
+/* estado transformado: precios de carta en ARS suben priceAdj y se convierten a USD
+   con el dólar nuevo; insumos importados quedan en USD, los locales suben con la
+   inflación y se dolarizan al nuevo TC; sueldos y fijos en ARS siguen a la inflación
+   (o al ajuste salarial que cargues); CapEx en USD no cambia. */
+function shockedState(base, sh){
+  const st=ensureShape(JSON.parse(JSON.stringify(base)));
+  const dv=1+(sh.deval||0)/100, inf=1+(sh.infl||0)/100, pa=1+(sh.priceAdj||0)/100, wa=1+((sh.wageAdj!=null?sh.wageAdj:sh.infl)||0)/100;
+  const imp=Math.max(0,Math.min(100,sh.importShare||0))/100;
+  const priceF=pa/dv;                                   /* precio en USD después del shock */
+  const cmvF=(imp + (1-imp)*inf/dv)/priceF;             /* food cost % = costo USD ÷ precio USD */
+  st.turnos.forEach(t=>{ t.price*=priceF; t.bev*=priceF; });
+  st.cmv.foodPct*=cmvF; st.cmv.bevPct*=cmvF;
+  if(st.delivery){ st.delivery.ticket*=priceF; st.delivery.bev*=priceF; if(st.delivery.foodPct!=null&&st.delivery.foodPct!=='') st.delivery.foodPct*=cmvF; st.delivery.packaging*=inf/dv; st.delivery.courier*=inf/dv; st.delivery.laborExtra*=wa/dv; st.delivery.ads*=inf/dv; }
+  st.labor.forEach(x=>{ x.gross*=wa/dv; });
+  st.ocupacion.forEach(x=>{ x.amount*=inf/dv; }); st.operacion.forEach(x=>{ x.amount*=inf/dv; });
+  return st;
+}
+function renderShock(){
+  const inEl=document.getElementById('shockIn'), outEl=document.getElementById('shockOut'); if(!inEl||!outEl) return;
+  const row=(l,k,unit,sub,ph)=>`<div class="row"><label>${l}${sub?`<span class="sub">${sub}</span>`:''}</label><div class="ifield"><input type="number" class="small" value="${shock[k]==null?'':shock[k]}" placeholder="${ph||''}" oninput="setShock('${k}',this.value)"><span class="post">${unit}</span></div></div>`;
+  inEl.innerHTML=row('Devaluación del peso','deval','%','salto del dólar contra hoy')
+    +row('Inflación de insumos locales','infl','%','arroz, verduras, envases, servicios')
+    +row('Ajuste salarial','wageAdj','%','vacío = igual a la inflación','= inflación')
+    +row('Insumos dolarizados','importShare','%','pescado importado, sake, wagyu · parte del CMV')
+    +row('Cuánto subís la carta','priceAdj','%','en pesos · 0 = no tocás precios');
+  const base=metricsOf(S), sh=metricsOf(shockedState(S,shock));
+  /* precio de carta necesario para sostener el margen operativo actual */
+  let need=null; for(let a=0;a<=150;a+=1){ const m=metricsOf(shockedState(S,{...shock,priceAdj:a})); if(m.margen>=base.margen-0.05){ need=a; break; } }
+  const fmB=v=>isFinite(v)?Math.round(v)+'%':'—';
+  const cmp=(l,a,b,f,better)=>{ const d=b-a, good=better==null?null:(better==='up'?d>=0:d<=0); return `<tr><td>${l}</td><td>${f(a)}</td><td>${f(b)}</td><td style="color:${Math.abs(d)<1e-9?'var(--ink-soft)':good?'var(--good)':'var(--bad)'};font-weight:600">${d>0?'+':''}${f(d)}</td></tr>`; };
+  outEl.innerHTML=`<table class="rank"><thead><tr><th>Métrica</th><th>Hoy</th><th>Con shock</th><th>Δ</th></tr></thead><tbody>
+    ${cmp('Facturación / mes (USD)', base.revenue, sh.revenue, fmt, 'up')}
+    ${cmp('Resultado operativo', base.resultado, sh.resultado, fmt, 'up')}
+    ${cmp('Margen operativo', base.margen, sh.margen, pct, 'up')}
+    ${cmp('Ocup. de equilibrio', base.be, sh.be, fmB, 'down')}
+    ${cmp('IVA neto / mes', base.iva, sh.iva, fmt, null)}
+  </tbody></table>
+  <div class="hverdict ${sh.margen>=base.margen-1?'good':'bad'}" style="margin-top:10px">${need==null?'Ni con +150% de carta recuperás el margen: el shock cambia la estructura, no el precio.':(need<=(shock.priceAdj||0)?`Con <b>+${shock.priceAdj||0}%</b> de carta el margen se sostiene (hacía falta +${need}%).`:`Para sostener el margen de hoy (${pct(base.margen)}) la carta tiene que subir <b>+${need}%</b> en pesos; con +${shock.priceAdj||0}% queda en ${pct(sh.margen)}.`)}</div>
+  <div class="toolbar" style="margin-top:10px"><button class="minib" onclick="setShock('priceAdj',${need==null?0:need})">Aplicar +${need==null?0:need}% a la carta</button><button class="minib" onclick="saveShockScenario()">Guardar como escenario</button></div>`;
+}
+function saveShockScenario(){
+  const name='Shock '+(shock.deval||0)+'% dólar · carta +'+(shock.priceAdj||0)+'%';
+  scenarios.push({ id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), name, snap:shockedState(S,shock) });
+  persistScenarios(); renderScenarios(); flash('Escenario «'+name+'» guardado ✓');
+}
+
 /* ----------------------------- scenarios ----------------------------- */
 function metricsOf(st){
   const prev=S; S=st;
@@ -3056,6 +3112,7 @@ function renderScenarios(){
   });
   body+='</tbody>';
   document.getElementById('scenTable').innerHTML = thead+body;
+  renderShock();
   document.getElementById('scenHint').textContent = scenarios.length
     ? ''
     : 'Todavía no guardaste escenarios. Ajustá los números arriba, ponele un nombre y guardá — la columna "Actual" siempre refleja el modelo en pantalla.';
@@ -4176,6 +4233,35 @@ function heikaBreakeven(base, disc, target){
   return null;
 }
 
+/* elasticidad MEDIDA: por combo día×turno, ocupación contra precio implícito por
+   cubierto (omakase ÷ cubiertos). Solo cuenta si el precio varió ≥5% dentro del
+   combo. Devuelve puntos de ocupación por cada −10% de precio, ponderado por n. */
+function heikaMeasuredElasticity(recs){
+  const map={}; recs.forEach(r=>{ const cov=r.m.covers; if(cov<=0) return; const p=(r.sv.omakase||0)/cov; if(p<=0) return; const k=r.dow+'_'+r.sv.turno; (map[k]=map[k]||[]).push({p, occ:r.m.occ}); });
+  let wsum=0, num=0, combos=0;
+  Object.values(map).forEach(pts=>{ if(pts.length<6) return;
+    const ps=pts.map(x=>x.p), mn=Math.min(...ps), mx=Math.max(...ps); if(mn<=0 || mx/mn-1<0.05) return;
+    const n=pts.length, mp=ps.reduce((a,b)=>a+b,0)/n, mo=pts.reduce((a,x)=>a+x.occ,0)/n;
+    let sxy=0,sxx=0; pts.forEach(x=>{ sxy+=(x.p-mp)*(x.occ-mo); sxx+=(x.p-mp)**2; }); if(sxx<=0) return;
+    const slope=sxy/sxx;                              /* pts de ocupación por $1 de precio */
+    const per10=Math.max(0,-slope*mp*0.10);           /* por cada −10% del precio medio */
+    combos++; wsum+=per10*n; num+=n; });
+  return combos ? { pts:wsum/num, n:num, combos } : null;
+}
+/* historial de precio implícito por mes y turno (mediana de omakase ÷ cubiertos) */
+function heikaPriceHistory(recs){
+  const by={}; recs.forEach(r=>{ const cov=r.m.covers; if(cov<=0||!(r.sv.omakase>0)) return; const k=monthKey(r.sv.date); (by[k]=by[k]||{})[r.sv.turno]=(by[k][r.sv.turno]||[]).concat([(r.sv.omakase||0)/cov]); });
+  const months=Object.keys(by).sort();
+  const med=a=>{ const s=a.slice().sort((x,y)=>x-y); const m=Math.floor(s.length/2); return s.length%2? s[m] : (s[m-1]+s[m])/2; };
+  return months.map(mk=>({ mk, turnos:Object.fromEntries(TURNOS.map(t=>[t.id, by[mk][t.id]? {p:med(by[mk][t.id]), n:by[mk][t.id].length} : null])) }));
+}
+function heikaHistoryHtml(recs){
+  const h=heikaPriceHistory(recs); if(h.length<2) return '';
+  const rows=h.map((m,i)=>`<tr><td>${monthLabel(m.mk)}</td>${TURNOS.map(t=>{ const v=m.turnos[t.id]; if(!v) return '<td style="color:var(--ink-soft)">—</td>'; const prev=i>0&&h[i-1].turnos[t.id]? h[i-1].turnos[t.id].p : null; const d=prev? (v.p/prev-1)*100 : null;
+    return `<td>${fmt(v.p)}${d!=null&&Math.abs(d)>=2?` <span style="font-size:10px;color:${d>0?'var(--good)':'var(--vermilion)'}">${d>0?'+':''}${d.toFixed(0)}%</span>`:''}<span class="gcat">${v.n} serv.</span></td>`; }).join('')}</tr>`).join('');
+  return `<div class="panel"><h3>Historial de precio implícito por cubierto</h3><div style="overflow-x:auto"><table class="gkins"><thead><tr><th style="text-align:left">Mes</th>${TURNOS.map(t=>`<th>${t.label}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="desc" style="margin:8px 0 0">Mediana de omakase ÷ cubiertos por mes (carta c/IVA). Cada salto de precio acá es un experimento natural: con la ocupación de antes y de después el modelo mide tu elasticidad real en vez de suponerla.</p></div>`;
+}
 function heikaCombos(recs){
   const map={};
   recs.forEach(r=>{ const k=r.dow+'_'+r.sv.turno; (map[k]=map[k]||[]).push(r); });
@@ -4227,6 +4313,9 @@ function renderHeika(){
       <div class="hslab"><span>Puntos de ocupación por cada −10%</span><b>+${pts} pts</b></div>
       <input type="range" min="0" max="15" step="0.5" value="${pts}" oninput="setHeikaPts(this.value)">
     </div>
+    ${(()=>{ const e=heikaMeasuredElasticity(recs); return e
+      ? `<p class="note" style="margin-top:8px">Medido en tu historial: <b>+${e.pts.toFixed(1)} pts</b> por cada −10% (${e.n} servicios en ${e.combos} combos con cambio de precio). <button class="minib" onclick="setHeikaPts(${Math.min(15,Math.round(e.pts*2)/2)})">usar</button></p>`
+      : `<p class="note" style="margin-top:8px">Todavía no hay cambios de precio en el historial para medir la reacción real: los presets son supuestos. Cuando cambies la carta, el modelo aprende de la ocupación antes y después.</p>`; })()}
     <p class="note" style="margin-top:12px">Supuesto: con <b>−${disc}%</b>, la ocupación pasaría de <b>${Math.round(base.occ0)}%</b> a <b>${Math.round(occScen)}%</b>${capped?' (topado por capacidad)':''}. El precio del omakase baja de <b>${fmt(base.pricePerCover)}</b> a <b>${fmt(base.pricePerCover*(1-disc/100))}</b> por cubierto.</p>`;
 
   // ---- KPIs headline ----
@@ -4273,7 +4362,8 @@ function renderHeika(){
     <div class="panel"><h3>Resultado por servicio según ocupación</h3>${heikaChart(base, disc, today, scen, beVsToday, beAbs)}
       <p class="desc" style="margin:10px 0 0">Curva sólida = con el descuento; punteada = al precio de hoy. ● Hoy · ◆ Escenario. La línea horizontal es el resultado a batir; la vertical, el equilibrio de ocupación.</p></div>
     <div class="panel"><h3>¿Y si me equivoco con la reacción?</h3>${sens}
-      <p class="desc" style="margin:10px 0 0">Misma jugada si la gente reacciona la mitad o el doble de lo que supusiste. Si incluso "a la mitad" sigue en verde, es una apuesta robusta.</p></div>`;
+      <p class="desc" style="margin:10px 0 0">Misma jugada si la gente reacciona la mitad o el doble de lo que supusiste. Si incluso "a la mitad" sigue en verde, es una apuesta robusta.</p></div>
+    ${heikaHistoryHtml(recs)}`;
 }
 
 /* ---- Heika · delivery: otra elasticidad (pedidos, no sillas) y otra palanca (apps vs canal propio) ---- */
@@ -4813,14 +4903,33 @@ function renderYoso(){
 
   // ---- next week per-service ----
   const slots=fc.weeks[0].slots.slice().sort((a,b)=>DOW_ORDER.indexOf(a.c.dow)-DOW_ORDER.indexOf(b.c.dow));
-  let nsT=`<table class="rank"><thead><tr><th>Servicio</th><th>Cubiertos (pes–esp–opt)</th><th>Facturación</th><th>Resultado</th></tr></thead><tbody>`;
+  /* dotación: cada turno se compara con las sillas; flojo (<50%) = dotación mínima,
+     pico (>85%) = refuerzo. El ahorro estimado en un turno flojo es el rol más
+     barato del esquema (no socio) prorrateado por servicio. */
+  const seatsN=S.revenue.seats||13;
+  const cheapRole=S.labor.filter(x=>(x.gross||0)>0 && !/socio|itamae/i.test(x.name||'')).map(x=>(x.gross||0)*laborMult(x)).sort((a,b)=>a-b)[0]||0;
+  const saveSlot=cheapRole/servicesPerMonth();
+  let labPlanW=0, grossW=0, nFlojo=0, nPico=0;
+  let nsT=`<table class="rank"><thead><tr><th>Servicio</th><th>Cubiertos (pes–esp–opt)</th><th>Facturación</th><th>Resultado</th><th>Dotación</th></tr></thead><tbody>`;
   slots.forEach(s=>{ const c=s.c, f=s.f;
     const tag = s.holiday?` <span class="ytag hol">feriado</span>`:(s.payday?` <span class="ytag pay">quincena</span>`:'');
+    const lab=laborAlloc(c.turno), ratio=seatsN? f.covers.exp/seatsN : 0; labPlanW+=lab; grossW+=f.gross.exp;
+    const dot = ratio<0.5 ? `<span class="ytag" style="background:#f4e8e4;color:var(--vermilion)">flojo · mínima</span>` : ratio>0.85 ? `<span class="ytag" style="background:#e7efe6;color:var(--good)">pico · refuerzo</span>` : `<span class="ytag" style="background:var(--panel-2);color:var(--ink-soft)">normal</span>`;
+    if(ratio<0.5) nFlojo++; if(ratio>0.85) nPico++;
     nsT+=`<tr><td>${DOW_SHORT[c.dow]} ${pad2(s.dt.getDate())}/${pad2(s.dt.getMonth()+1)} · ${TURNO_SHORT[c.turno]||c.turno}${tag}</td>
       <td>${Math.round(f.covers.pess)}–<b>${Math.round(f.covers.exp)}</b>–${Math.round(f.covers.opt)}</td>
       <td>${fmt(f.gross.exp)}</td>
-      <td style="font-weight:700;color:${f.profit.exp>=0?'var(--good)':'var(--bad)'}">${fmt(f.profit.exp)}</td></tr>`; });
+      <td style="font-weight:700;color:${f.profit.exp>=0?'var(--good)':'var(--bad)'}">${fmt(f.profit.exp)}</td>
+      <td>${dot}<span class="gcat">laboral plan ${fmt(lab)} · ${f.gross.exp>0?Math.round(lab/(f.gross.exp/(1+S.iva.rateVentas/100))*100):0}%</span></td></tr>`; });
   nsT+=`</tbody></table>`;
+  const labPct = grossW>0 ? labPlanW/(grossW/(1+S.iva.rateVentas/100))*100 : 0;
+  nsT+=`<div class="mstat" style="margin-top:10px">
+    ${(()=>{ const ms=(l,v,n,col)=>`<div class="ms"><div class="ml">${l}</div><div class="mv"${col?` style="color:${col}"`:''}>${v}</div><div class="mn">${n}</div></div>`;
+      return ms('Laboral plan · semana', fmt(labPlanW), labPct.toFixed(0)+'% de la facturación neta esperada', labPct<=30?'var(--good)':labPct<=38?'var(--warn)':'var(--bad)')
+        + ms('Turnos flojos', String(nFlojo), nFlojo? 'ahorro posible ~'+fmt(nFlojo*saveSlot)+' con dotación mínima' : 'ninguno bajo 50% de sillas', nFlojo?'var(--brass-deep)':null)
+        + ms('Turnos pico', String(nPico), nPico? 'confirmá refuerzo en Equipo 人' : 'ninguno sobre 85% de sillas', nPico?'var(--good)':null); })()}
+  </div>
+  <p class="desc" style="margin:8px 0 0">La dotación sugerida sale de la ocupación esperada contra las sillas. El ahorro en turnos flojos asume que sacás el rol más barato del esquema (${fmt(saveSlot)} por servicio); en Equipo 人 armás el cuadro real.</p>`;
 
   // ---- upcoming holidays ----
   let holHtml='';
@@ -6894,6 +7003,94 @@ async function kjLogout(){
   location.reload();
 }
 
+/* ---- alertas: notificaciones locales de la PWA ----
+   Sin servidor de push: se disparan al abrir la app (o al volver a ella), una vez
+   por día y por alerta. Caja negativa, insumos sin precio hace 30 días, ayer sin
+   servicio ni delivery cargados, delivery por debajo del plan. */
+function kjAlertsList(){
+  const out=[]; const today=fmtDate(new Date());
+  try{ const B=cjBuild(); if(B.minW && B.minW.saldo<0) out.push({ id:'caja', title:'Caja: saldo negativo proyectado', body:fmt(B.minW.saldo)+' la semana del '+fmtDate(B.minW.ws)+'. Revisá Caja 現金.' }); }catch(e){}
+  try{ const st=G.insumos.filter(gkStale); if(st.length>=3) out.push({ id:'precios', title:'Precios de insumos sin actualizar', body:st.length+' insumos con precio de más de 30 días: '+st.slice(0,3).map(i=>i.n).join(', ')+'…' }); }catch(e){}
+  try{ if(services.length){ const last=services.map(s=>s.date).sort().pop(); const gap=(parseDate(today)-parseDate(last))/86400000; if(gap>=2) out.push({ id:'servicio', title:'Faltan servicios por cargar', body:'El último es del '+last+'. Cargalo desde ⚡ carga rápida.' }); } }catch(e){}
+  try{ const dc=deliveryCalc(S); if(dc.on && delivery.length){ const last=delivery.map(d=>d.date).sort().pop(); const gap=(parseDate(today)-parseDate(last))/86400000; if(gap>=2) out.push({ id:'delivery', title:'Faltan días de delivery', body:'El último registro es del '+last+'.' }); } }catch(e){}
+  return out;
+}
+async function kjAlertsEnable(){
+  if(!('Notification' in window)){ flash('Este navegador no soporta notificaciones'); return; }
+  const p=await Notification.requestPermission();
+  if(p==='granted'){ flash('Alertas activadas ✓ · se avisan al abrir la app'); kjAlertsCheck(true); renderResumen(); }
+  else flash('Sin permiso de notificaciones');
+}
+function kjAlertsCheck(force){
+  if(!('Notification' in window) || Notification.permission!=='granted') return;
+  const today=fmtDate(new Date()); let seen={};
+  try{ seen=JSON.parse(localStorage.getItem('kanjo:alertsSeen')||'{}'); }catch(e){}
+  const list=kjAlertsList(); let shown=0;
+  list.forEach(a=>{ if(!force && seen[a.id]===today) return; seen[a.id]=today; shown++;
+    const opts={ body:a.body, icon:'/icon-192.png', tag:'kanjo-'+a.id };
+    try{ if(navigator.serviceWorker && navigator.serviceWorker.getRegistration){ navigator.serviceWorker.getRegistration().then(r=>{ if(r&&r.showNotification) r.showNotification(a.title,opts); else new Notification(a.title,opts); }); } else new Notification(a.title,opts); }catch(e){}
+  });
+  try{ localStorage.setItem('kanjo:alertsSeen', JSON.stringify(seen)); }catch(e){}
+  if(force && !list.length) flash('Sin alertas hoy ✓');
+}
+
+/* ---- importar CSV (servicios · delivery · reservas) ----
+   Acepta el CSV que exporta la app y también archivos de un POS o una planilla:
+   detecta el separador, busca las columnas por nombre (con sinónimos) y acepta
+   fechas AAAA-MM-DD o DD/MM/AAAA. Turnos: M / N1 / N2 o sus nombres. */
+function kjParseCSV(text){
+  text=String(text||'').replace(/^\ufeff/,'');
+  const first=text.split(/\r?\n/)[0]||''; const sep=(first.match(/;/g)||[]).length>=(first.match(/,/g)||[]).length?';':',';
+  const rows=[]; let row=[], cell='', q=false;
+  for(let i=0;i<text.length;i++){ const ch=text[i];
+    if(q){ if(ch==='"'){ if(text[i+1]==='"'){ cell+='"'; i++; } else q=false; } else cell+=ch; }
+    else if(ch==='"') q=true;
+    else if(ch===sep){ row.push(cell); cell=''; }
+    else if(ch==='\n'||ch==='\r'){ if(ch==='\r'&&text[i+1]==='\n') i++; row.push(cell); rows.push(row); row=[]; cell=''; }
+    else cell+=ch; }
+  if(cell.length||row.length){ row.push(cell); rows.push(row); }
+  return rows.filter(r=>r.some(c=>String(c).trim()!==''));
+}
+const kjNorm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+function kjColIndex(header, aliases){ const h=header.map(kjNorm); for(const a of aliases){ const i=h.findIndex(x=>x===a || x.startsWith(a+' ') || x.includes(a)); if(i>=0) return i; } return -1; }
+function kjNum(v){ if(v==null) return 0; let t=String(v).trim().replace(/[$\s]/g,''); if(!t) return 0; if(/,\d{1,2}$/.test(t)) t=t.replace(/\./g,'').replace(',','.'); else t=t.replace(/,/g,''); const n=parseFloat(t); return isNaN(n)?0:n; }
+function kjDate(v){ const t=String(v||'').trim(); let m=t.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/); if(m) return m[1]+'-'+pad2(+m[2])+'-'+pad2(+m[3]); m=t.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})/); if(m){ const y=m[3].length===2?'20'+m[3]:m[3]; return y+'-'+pad2(+m[2])+'-'+pad2(+m[1]); } return null; }
+function kjTurno(v){ const t=kjNorm(v); if(!t) return 'N1'; if(t==='m'||t==='md'||/medio|almuerzo|lunch/.test(t)) return 'M'; if(t==='n2'||/2|segund|tarde|late/.test(t)) return 'N2'; return 'N1'; }
+function kjImportPick(kind){ const el=document.getElementById('kjImportFile'); if(!el) return; el.dataset.kind=kind; el.value=''; el.click(); }
+async function kjImportFile(input){
+  const f=input.files&&input.files[0]; if(!f) return; const kind=input.dataset.kind||'services';
+  const text=await f.text(); const rows=kjParseCSV(text); if(rows.length<2){ flash('El archivo no tiene filas'); return; }
+  const header=rows[0], body=rows.slice(1);
+  const ix=(aliases)=>kjColIndex(header,aliases);
+  let added=0, updated=0, skipped=0;
+  if(kind==='services'){
+    const cD=ix(['fecha','date','dia']), cT=ix(['turno','shift','servicio']), cC=ix(['cubiertos','covers','pax','comensales']), cO=ix(['omakase','menu','facturacion omakase']), cP=ix(['premium','pairing']), cB=ix(['bebidas','bebida','drinks']), cE=ix(['extras','extra','a la carte']), cCard=ix(['tarjeta','card','credito']), cQR=ix(['qr','billetera','mercado pago']), cCash=ix(['efectivo','cash']), cDisc=ix(['desc','descuento']);
+    if(cD<0||cC<0){ flash('No encuentro las columnas fecha y cubiertos'); return; }
+    body.forEach(r=>{ const date=kjDate(r[cD]); if(!date){ skipped++; return; } const turno=cT>=0?kjTurno(r[cT]):'N1';
+      const rec={ date, turno, covers:kjNum(r[cC]), omakase:cO>=0?kjNum(r[cO]):0, premium:cP>=0?kjNum(r[cP]):0, bebidas:cB>=0?kjNum(r[cB]):0, extras:cE>=0?kjNum(r[cE]):0, payCard:cCard>=0?kjNum(r[cCard]):0, payQR:cQR>=0?kjNum(r[cQR]):0, payCash:cCash>=0?kjNum(r[cCash]):0, cashDiscPct:cDisc>=0?kjNum(r[cDisc]):0, cashUndeclared:false };
+      if(rec.covers<=0 && rec.omakase<=0){ skipped++; return; }
+      const ex=services.find(s=>s.date===date&&s.turno===turno); if(ex){ Object.assign(ex,rec); updated++; } else { services.push({id:rid(),...rec}); added++; } });
+    persistServices(); renderServiceList(); renderTurnos();
+  } else if(kind==='delivery'){
+    const cD=ix(['fecha','date','dia']), cN=ix(['pedidos','orders','cantidad']), cF=ix(['comida','food','facturacion comida']), cB=ix(['bebidas','bebida']), cA=ix(['apps','app','rappi','pedidosya']), cOw=ix(['propio','own','directo','whatsapp']), cCash=ix(['efectivo','cash']), cX=ix(['cancel']);
+    if(cD<0||cN<0){ flash('No encuentro las columnas fecha y pedidos'); return; }
+    body.forEach(r=>{ const date=kjDate(r[cD]); if(!date){ skipped++; return; }
+      const rec=dlvEnsure({ id:rid(), date, orders:kjNum(r[cN]), food:cF>=0?kjNum(r[cF]):0, bev:cB>=0?kjNum(r[cB]):0, app:cA>=0?kjNum(r[cA]):0, own:cOw>=0?kjNum(r[cOw]):0, ownCash:cCash>=0?kjNum(r[cCash]):0, cancel:cX>=0?kjNum(r[cX]):0, note:'' });
+      if(rec.orders<=0 && rec.food<=0){ skipped++; return; }
+      const ex=delivery.find(d=>d.date===date); if(ex){ Object.assign(ex,rec,{id:ex.id}); updated++; } else { delivery.push(rec); added++; } });
+    persistDelivery(); renderDeliveryList(); renderTurnos();
+  } else if(kind==='reservas'){
+    const cD=ix(['fecha','date','dia']), cT=ix(['turno','shift']), cR=ix(['reservas','reservations','resv','booked']), cW=ix(['walk','walkin','sin reserva']), cC=ix(['cubiertos','covers','pax','asistieron']);
+    if(cD<0||cR<0){ flash('No encuentro las columnas fecha y reservas'); return; }
+    body.forEach(r=>{ const date=kjDate(r[cD]); if(!date){ skipped++; return; } const turno=cT>=0?kjTurno(r[cT]):'N1';
+      const rec={ id:rid(), date, turno, resv:kjNum(r[cR]), walk:cW>=0?kjNum(r[cW]):0, covers: cC>=0&&String(r[cC]).trim()!==''? kjNum(r[cC]) : null };
+      if(rec.resv<=0){ skipped++; return; }
+      const ex=reservas.find(x=>x.date===date&&x.turno===turno); if(ex){ Object.assign(ex,rec,{id:ex.id}); updated++; } else { reservas.push(rec); added++; } });
+    rvPersist(); if(typeof renderReservas==='function') renderReservas();
+  }
+  flash(`Importado: ${added} nuevos · ${updated} actualizados · ${skipped} salteados`);
+}
+
 /* ---- backup / restore total ---- */
 /* el backup cubre TODAS las claves de la app; las que el rol no pueda leer
    o escribir se saltean solas (el servidor devuelve 403 y se ignora) */
@@ -7068,6 +7265,7 @@ function renderResumen(){
       <div class="ystate"><div class="ystat"><span>${escapeHtml(S_.name||S_.username)}</span><b>${escapeHtml(S_.roleName||S_.role)}</b></div></div>
       <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
         <button class="gkadd" style="margin:0" onclick="kjMyPassword()">Cambiar mi contraseña</button>
+        <button class="gkadd" style="margin:0" onclick="kjAlertsEnable()" title="Caja negativa, precios viejos, días sin cargar">${('Notification' in window && Notification.permission==='granted')?'🔔 Alertas activas':'🔔 Activar alertas'}</button>
         <button class="gkadd" style="margin:0" onclick="kjLogout()">⎋ Salir</button>
       </div>
       <p class="desc" style="margin:8px 0 0">Cada cambio que guardás queda firmado con tu nombre en el registro de actividad.</p></div>` : '';
@@ -10768,5 +10966,7 @@ loadMe().then(()=>Promise.all([          /* la sesión primero: define qué clav
   loadScenarios();
   renderServiceList(); renderTurnos();         /* las métricas por servicio dependen de S */
   applyRoles(); renderResumen();
+  try{ kjAlertsCheck(false); }catch(e){}
+  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible'){ try{ kjAlertsCheck(false); }catch(e){} } });
 });
 </script>
