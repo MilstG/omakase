@@ -127,6 +127,56 @@ APP_PASSWORD_ADMIN=admin123 APP_PASSWORD_STAFF=staff123 node server.js
 # Para empezar de cero: borrá data.json (ahí viven también usuarios y roles).
 ```
 
+## Novedades v6 — impuestos más finos, features nuevas y UI
+
+**Impuestos** (validá los parámetros con tu contador; el modelo sigue siendo de planificación):
+
+- **IVA**: el crédito sobre CMV sale de las compras reales de los últimos 90 días (alícuota
+  de cada factura) o del % manual si no hay historial; cada línea de ③ Ocupación y ④ Operación
+  lleva su alícuota (0 / 10,5 / 21 / 27) y de ahí sale su crédito. La caja paga la **posición
+  mensual** a los días de diferimiento (PyME), en vez de un golpe trimestral. El diferimiento
+  se valúa por devaluación esperada.
+- **Débitos y créditos**: 0,6 % sobre cada movimiento bancario (cobros con tarjeta, QR, apps y
+  link; pagos por banco según el % que cargues). El efectivo no lo paga. La parte computable es
+  pago a cuenta de Ganancias y se descuenta ahí.
+- **Ganancias**: alícuota plana o **escala de sociedades** con tramos anuales en ARS editables
+  (anualiza el resultado mensual al TC de Genka). Anticipos mensuales en la caja.
+- **Retenciones de tarjeta y QR**: bajan el cobro de la semana y se descuentan de IVA, IIBB y
+  anticipos cuando vencen; si quedan sin aplicar, la caja avisa.
+- **Cargas sociales por rol**: manual, relación de dependencia (calculado desde contribuciones
+  patronales, ART, SAC y otros) o monotributista (×1).
+
+**Features**:
+
+- **Elasticidad medida** en Precios dinámicos: cuando el historial tiene cambios de precio, el
+  modelo mide cuánto reaccionó la ocupación y te deja usar ese número en vez de un preset;
+  historial de precio implícito por mes y turno.
+- **Dotación desde el pronóstico**: cada turno de la semana que viene marcado flojo / normal /
+  pico según sillas, con el costo laboral plan y el ahorro posible en los flojos.
+- **Shock cambiario** en Escenarios: devaluación, inflación de insumos, ajuste salarial e
+  insumos dolarizados; dice cuánto tiene que subir la carta para sostener el margen y lo guarda
+  como escenario.
+- **Alertas locales** de la PWA (caja negativa, precios de insumos viejos, días sin cargar): se
+  activan desde *Tu cuenta* y se avisan al abrir o volver a la app, una vez por día.
+- **Importar CSV** de servicios, delivery y reservas desde el POS, Meitre o una planilla:
+  separador automático, columnas por sinónimos, fechas ISO o DD/MM/AAAA.
+- **Presupuesto vs real por centro de costo** (Resumen 予実): plan del esquema contra lo cargado
+  en servicios, delivery, compras y fichajes, mes a mes, con desvíos y lecturas; el mes en curso
+  se prorratea por días transcurridos. El cierre de mes guarda el cuadro.
+- **Comparativa de meses cerrados**: sparklines de margen, food cost, ticket, ocupación y
+  delivery cuando hay dos o más cierres.
+- **Excel para el contador**: un solo archivo `.xls` con nueve hojas (P&L plan, servicios,
+  delivery, resumen mensual, compras, mermas, liquidaciones, cierres, presupuesto vs real).
+  Sin dependencias externas (formato SpreadsheetML; Excel avisa por la extensión y abre igual).
+
+**UI**: navegación compacta y fija en el teléfono; sin scroll horizontal en ningún tab; KPIs del
+encabezado en grilla; tarjetas colapsadas que se recuerdan y «colapsar todo»; paneles avanzados
+del pronóstico plegados; el foco no se pierde al editar en Genka ni en el esquema; diálogos
+propios en vez de `prompt`/`confirm`; toasts apilados a la derecha; semáforo de food cost sin
+falsos verdes; números en formato es-AR; `#tab` en la URL; listas largas con «ver más»;
+etiquetas de accesibilidad, foco visible y más contraste; estado de carga; hoja de impresión
+y botón imprimir en el esquema.
+
 ## Novedades v5.1 — conciliación de apps, precio por canal y capacidad
 
 - **Liquidaciones de apps** (Caja 現金, clave `kanjo:liquidaciones`, escriben *caja* y *turnos*):
