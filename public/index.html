@@ -7017,6 +7017,40 @@ function kjReabrirMes(mk){
   if(!ok) return;
   delete cierres[mk]; ciPersist(); flash('Mes reabierto'); renderResumen();
 }
+/* ---- comparativa de meses cerrados: sparklines SVG inline, sólo lectura ---- */
+function kjSparkSvg(vals, col){
+  const v=vals.filter(x=>x!=null && isFinite(x)); if(v.length<2) return '';
+  const W=96, H=22, p=3, mn=Math.min(...v), mx=Math.max(...v), r=(mx-mn)||1;
+  const pts=v.map((x,i)=>[p+i*(W-2*p)/(v.length-1), H-p-(x-mn)/r*(H-2*p)]);
+  const d=pts.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' ');
+  const last=pts[pts.length-1];
+  return `<svg class="spark" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true" style="display:block;overflow:visible;margin:3px 0 2px"><polyline points="${d}" fill="none" stroke="${col}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="2.2" fill="${col}"/></svg>`;
+}
+function kjCiTrendHtml(keysAsc){
+  const cs=keysAsc.map(k=>cierres[k]);
+  const anyDlv=cs.some(c=>c.dlvDays>0);
+  const anyFoodReal=cs.some(c=>c.foodReal>0 || c.foodRealAdj>0);   /* 0 = mes sin compras, no es un real */
+  const pp=v=>v.toFixed(1)+'%', dpp=d=>(d>=0?'+':'−')+Math.abs(d).toFixed(1)+' pp';
+  const dpc=(a,b)=> a? (b>=a?'+':'−')+Math.abs((b/a-1)*100).toFixed(0)+'%' : '';
+  const defs=[
+    { l:'Margen', up:true, f:c=> c.net>0? c.profit/c.net*100 : null, fv:pp, fd:(a,b)=>dpp(b-a) },
+    { l:'Food cost '+(anyFoodReal?'real':'teórico'), up:false, f:c=> c.foodRealAdj>0? c.foodRealAdj : c.foodReal>0? c.foodReal : c.foodTeor, fv:pp, fd:(a,b)=>dpp(b-a) },
+    { l:'Ticket', up:true, f:c=>c.ticket, fv:fmt, fd:dpc },
+    { l:'Ocupación', up:true, f:c=>c.occ, fv:pp, fd:(a,b)=>dpp(b-a) },
+    ...(anyDlv? [{ l:'Delivery neto', up:true, f:c=> c.dlvDays? c.dlvNet : null, fv:fmt, fd:dpc }] : []),
+  ];
+  const tiles=defs.map(d=>{
+    const vals=cs.map(d.f); const v=vals.filter(x=>x!=null && isFinite(x));
+    if(v.length<2) return `<div class="ms"><div class="ml">${d.l}</div><div class="mv" style="font-size:15px;color:var(--ink-soft)">—</div><div class="mn">menos de 2 meses con dato</div></div>`;
+    const a=v[0], b=v[v.length-1], delta=b-a;
+    const col = Math.abs(delta)<1e-9 ? 'var(--ink-soft)' : ((delta>0)===d.up ? 'var(--good)' : 'var(--bad)');
+    return `<div class="ms"><div class="ml">${d.l}</div>
+      <div class="mv" style="font-size:15px">${d.fv(b)} <span style="font-size:11px;font-weight:600;color:${col}">${d.fd(a,b)}</span></div>
+      <div class="mn">${kjSparkSvg(v, col)}${d.fv(a)} → ${d.fv(b)} · ${v.length} meses</div></div>`;
+  }).join('');
+  return `<div class="hslab" style="margin:2px 0 6px"><span>Tendencia · ${monthLabel(keysAsc[0])} → ${monthLabel(keysAsc[keysAsc.length-1])}</span><span>${cs.length} meses cerrados</span></div>
+    <div class="mstat" style="grid-template-columns:repeat(auto-fit,minmax(118px,1fr));margin-bottom:12px">${tiles}</div>`;
+}
 function kjCiToggleBv(mk){ const r=document.getElementById('ciBv_'+mk); if(r) r.style.display = r.style.display==='none' ? '' : 'none'; }
 function kjCierresHtml(){
   if(kjLoad.fail['kanjo:cierres'] || !kjR('cierres')) return '';   /* sin permiso de lectura: panel oculto */
@@ -7047,8 +7081,9 @@ function kjCierresHtml(){
       <td>${c.noshowPct==null?'—':c.noshowPct+'%'}</td>
       ${admin?`<td class="adminonly"><button class="editrow" onclick="kjReabrirMes('${mk}')">×</button></td>`:''}
     </tr>`; }).join('');
+  const trend = keys.length>=2 ? kjCiTrendHtml([...keys].reverse()) : '';
   return `<div class="panel"><h3>Cierre de mes <span style="font-family:'Zilla Slab',serif">締</span> <span style="font-weight:400;color:var(--ink-soft);font-size:11px">· P&L histórico congelado</span></h3>
-    ${action}
+    ${action}${trend}
     <div style="overflow-x:auto"><table class="gkins"><thead><tr><th style="text-align:left">Mes</th><th>Servicios</th><th>Fact. neta</th><th>Resultado</th><th>Delivery</th><th>Food cost</th><th>Mermas</th><th>No-show</th>${admin?'<th></th>':''}</tr></thead><tbody>${rows}</tbody></table></div>${dets}
     <p class="desc" style="margin:8px 0 0">Los valores están congelados al momento del cierre — el resto de los tabs siguen recalculando en vivo con los parámetros de hoy. Esa es la diferencia entre <b>registro</b> y <b>simulador</b>.</p></div>`;
 }
