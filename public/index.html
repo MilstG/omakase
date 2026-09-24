@@ -3148,9 +3148,10 @@ function toCSV(rows){
     return /[",\n;]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
   }).join(';')).join('\r\n');
 }
-function downloadFile(filename, content){
+function downloadFile(filename, content, mime){
   try{
-    const blob=new Blob(['\ufeff'+content],{type:'text/csv;charset=utf-8;'});
+    const isCsv = !mime || /csv/.test(mime);
+    const blob=new Blob([(isCsv?'\ufeff':'')+content],{type:mime||'text/csv;charset=utf-8;'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     a.href=url; a.download=filename;
@@ -3162,10 +3163,10 @@ function downloadFile(filename, content){
     return false;
   }
 }
-function exportPL(){
+function exportPLRows(){
   const c=compute(), iva=ivaCompute();
   const pf=v=> c.revenue? (v/c.revenue*100).toFixed(1) : '';
-  const rows=[
+  return [
     ['Kanjō · P&L mensual (USD, neto de IVA)'],
     ['Concepto','$/mes','% facturación'],
     ['Facturación neta', Math.round(c.revenue), '100.0'],
@@ -3191,6 +3192,9 @@ function exportPL(){
     ['IVA crédito', -Math.round(iva.credito), ''],
     ['IVA neto a remitir', Math.round(iva.neto), ''],
   ];
+}
+function exportPL(){
+  const rows=exportPLRows();
   downloadFile('kanjo-pyl-mensual.csv', toCSV(rows)) ? flash('P&L exportado ✓') : flash('No se pudo exportar en este entorno');
 }
 
@@ -3651,13 +3655,17 @@ function renderDeliveryList(){
       <button class="delrow" onclick="delDelivery('${d.id}')" title="quitar">×</button>
     </div>`; }).join('') + (delivery.length>60?`<div class="svempty">… y ${delivery.length-60} más (exportá el CSV para verlos todos)</div>`:'');
 }
-function exportDelivery(){
-  if(!delivery.length){ tFlash('No hay delivery para exportar'); return; }
+function exportDeliveryRows(){
   const head=['Fecha','Día','Pedidos','Comida','Bebidas','Total carta','Apps','Canal propio','Efectivo','Cancelados','% apps','Neto','CMV','Envases','Comisión apps','Envíos','Procesamiento','Impuestos','Cancelados $','Contribución','Fijos del día','Resultado','Nota'];
   const rows=[head];
   [...delivery].sort((a,b)=>a.date<b.date?-1:1).forEach(d=>{ const m=deliveryMetrics(d);
     rows.push([d.date, DOW_FULL[dowOf(d.date)], d.orders, d.food, d.bev, Math.round(m.gross), Math.round(m.app), Math.round(m.own), Math.round(m.ownCash), d.cancel||0,
       Math.round(m.appShare*100), Math.round(m.net), Math.round(m.cmv), Math.round(m.packaging), Math.round(m.commission), Math.round(m.courier), Math.round(m.pagos), Math.round(m.imp), Math.round(m.cancelCost), Math.round(m.contrib), Math.round(m.fixedDay), Math.round(m.profit), d.note||'']); });
+  return rows;
+}
+function exportDelivery(){
+  if(!delivery.length){ tFlash('No hay delivery para exportar'); return; }
+  const rows=exportDeliveryRows();
   downloadFile('kanjo-delivery.csv', toCSV(rows)) ? tFlash('Delivery exportado ✓') : tFlash('No se pudo exportar');
 }
 /* panel de análisis del canal (en el analista de turnos, debajo del salón) */
@@ -4014,8 +4022,7 @@ function buildInsights(recs){
   return grid+narr;
 }
 
-function exportServices(){
-  if(!services.length){ tFlash('No hay servicios para exportar'); return; }
+function exportServicesRows(){
   const head=['Fecha','Día','Turno','Cubiertos','Omakase','Premium','Bebidas','Extras','Total carta','Tarjeta','QR','Efectivo','Desc.efvo %','Sin declarar','Facturación neta','CMV','Comisiones','Impuestos','Laboral asignado','Fijos comunes','Resultado'];
   const rows=[head];
   [...services].sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0).forEach(sv=>{
@@ -4024,10 +4031,14 @@ function exportServices(){
       Math.round(m.grossTotal), sv.payCard||0, sv.payQR||0, sv.payCash||0, sv.cashDiscPct||0, sv.cashUndeclared?'SÍ':'',
       Math.round(m.netTotal), Math.round(m.cmv), Math.round(m.pagos), Math.round(m.imp), Math.round(m.allocLabor), Math.round(m.allocOther), Math.round(m.profit)]);
   });
+  return rows;
+}
+function exportServices(){
+  if(!services.length){ tFlash('No hay servicios para exportar'); return; }
+  const rows=exportServicesRows();
   downloadFile('kanjo-servicios.csv', toCSV(rows)) ? tFlash('Servicios exportados ✓') : tFlash('No se pudo exportar');
 }
-function exportMonthly(){
-  if(!services.length){ tFlash('No hay datos'); return; }
+function exportMonthlyRows(){
   const recs=services.map(sv=>({sv,m:serviceMetrics(sv),dow:dowOf(sv.date)}));
   const byM={}; recs.forEach(r=>{ const k=monthKey(r.sv.date); (byM[k]=byM[k]||[]).push(r); });
   const head=['Mes','Servicios','Cubiertos','Facturación neta','CMV','Comisiones','Impuestos','Laboral','Resultado','Margen %','Efvo s/declarar'];
@@ -4045,6 +4056,11 @@ function exportMonthly(){
       rows.push([monthLabel(k), a.n, a.orders, Math.round(a.net), Math.round(sum(r=>r.m.cmv)), Math.round(a.packaging), Math.round(a.commission), Math.round(a.courier),
         Math.round(sum(r=>r.m.imp+r.m.pagos)), Math.round(a.contrib), Math.round(sum(r=>r.m.fixedDay)), Math.round(a.profit)]); });
   }
+  return rows;
+}
+function exportMonthly(){
+  if(!services.length){ tFlash('No hay datos'); return; }
+  const rows=exportMonthlyRows();
   downloadFile('kanjo-resumen-mensual.csv', toCSV(rows)) ? tFlash('Resumen mensual exportado ✓') : tFlash('No se pudo exportar');
 }
 
@@ -7236,6 +7252,7 @@ function renderResumen(){
       row('Inflación canasta (90d)', basket? (basket.pct>=0?'+':'')+basket.pct.toFixed(1)+'%' : '—', basC, basket? basket.n+' insumos con historial':'cargá compras 仕入'),
       row('Precio del menú', rp.price>0? fmt(rp.price)+(rp.breach?' → '+fmt(rp.needGross):' ✓') : '—', rpC, rp.breach? 'sugerido para sostener '+rp.tgt+'%':'sostiene el target de '+rp.tgt+'%'),
     ])+
+    renderBudgetVsReal(rsUI.bvMonth||mk)+
     kjCierresHtml();
 
   /* insights */
@@ -7270,6 +7287,12 @@ function renderResumen(){
       </div>
       <p class="desc" style="margin:8px 0 0">Cada cambio que guardás queda firmado con tu nombre en el registro de actividad.</p></div>` : '';
 
+  /* Excel para el contador: lo ve quien lee Caja */
+  const excelBtn = kjR('caja') ? `<button class="gkadd" style="margin:0" onclick="kjExportContador()">⬇ Excel para el contador</button>` : '';
+  const contadorCard = (excelBtn && !kjCanAdmin()) ? `<div class="panel"><h3>Para el contador</h3>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0">${excelBtn}</div>
+      <p class="desc" style="margin:8px 0 0">Un solo archivo con P&L plan, servicios, delivery, resumen mensual, compras, mermas, liquidaciones de apps, cierres y presupuesto vs real.</p></div>` : '';
+
   /* administración: usuarios, permisos, backup y audit log */
   let adminCard='';
   if(kjCanAdmin()){
@@ -7287,12 +7310,13 @@ function renderResumen(){
       <div class="hslab" style="margin-top:12px"><span>Backup total</span></div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0">
         <button class="gkadd" style="margin:0" onclick="kjBackup()">⬇ Backup total</button>
+        ${excelBtn}
         <button class="gkadd" style="margin:0" onclick="kjRestorePick()">⬆ Restaurar</button>
         <input type="file" id="kjRestoreFile" accept="application/json" style="display:none" onchange="kjRestoreFile(this)">
       </div></div>`;
   }
 
-  side.innerHTML=insHtml+nav+meCard+adminCard;
+  side.innerHTML=insHtml+nav+meCard+contadorCard+adminCard;
 }
 
 
@@ -7334,7 +7358,8 @@ function kjSnapshotMonth(mk){
     foodRealAdj: T.realAdj==null? null : +T.realAdj.toFixed(1),
     comprasUsd:+buysAll.toFixed(0), mermasUsd:+merUsd.toFixed(0),
     mermasPct: buysAll>0? +(merUsd/buysAll*100).toFixed(1) : null,
-    noshowPct: nsPct==null? null : +nsPct.toFixed(1)
+    noshowPct: nsPct==null? null : +nsPct.toFixed(1),
+    budget: kjBudgetSlim(kjBudgetData(mk))
   };
 }
 function kjCierreMonths(){
@@ -7360,6 +7385,41 @@ function kjReabrirMes(mk){
   if(!ok) return;
   delete cierres[mk]; ciPersist(); flash('Mes reabierto'); renderResumen();
 }
+/* ---- comparativa de meses cerrados: sparklines SVG inline, sólo lectura ---- */
+function kjSparkSvg(vals, col){
+  const v=vals.filter(x=>x!=null && isFinite(x)); if(v.length<2) return '';
+  const W=96, H=22, p=3, mn=Math.min(...v), mx=Math.max(...v), r=(mx-mn)||1;
+  const pts=v.map((x,i)=>[p+i*(W-2*p)/(v.length-1), H-p-(x-mn)/r*(H-2*p)]);
+  const d=pts.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' ');
+  const last=pts[pts.length-1];
+  return `<svg class="spark" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true" style="display:block;overflow:visible;margin:3px 0 2px"><polyline points="${d}" fill="none" stroke="${col}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="2.2" fill="${col}"/></svg>`;
+}
+function kjCiTrendHtml(keysAsc){
+  const cs=keysAsc.map(k=>cierres[k]);
+  const anyDlv=cs.some(c=>c.dlvDays>0);
+  const anyFoodReal=cs.some(c=>c.foodReal>0 || c.foodRealAdj>0);   /* 0 = mes sin compras, no es un real */
+  const pp=v=>v.toFixed(1)+'%', dpp=d=>(d>=0?'+':'−')+Math.abs(d).toFixed(1)+' pp';
+  const dpc=(a,b)=> a? (b>=a?'+':'−')+Math.abs((b/a-1)*100).toFixed(0)+'%' : '';
+  const defs=[
+    { l:'Margen', up:true, f:c=> c.net>0? c.profit/c.net*100 : null, fv:pp, fd:(a,b)=>dpp(b-a) },
+    { l:'Food cost '+(anyFoodReal?'real':'teórico'), up:false, f:c=> c.foodRealAdj>0? c.foodRealAdj : c.foodReal>0? c.foodReal : c.foodTeor, fv:pp, fd:(a,b)=>dpp(b-a) },
+    { l:'Ticket', up:true, f:c=>c.ticket, fv:fmt, fd:dpc },
+    { l:'Ocupación', up:true, f:c=>c.occ, fv:pp, fd:(a,b)=>dpp(b-a) },
+    ...(anyDlv? [{ l:'Delivery neto', up:true, f:c=> c.dlvDays? c.dlvNet : null, fv:fmt, fd:dpc }] : []),
+  ];
+  const tiles=defs.map(d=>{
+    const vals=cs.map(d.f); const v=vals.filter(x=>x!=null && isFinite(x));
+    if(v.length<2) return `<div class="ms"><div class="ml">${d.l}</div><div class="mv" style="font-size:15px;color:var(--ink-soft)">—</div><div class="mn">menos de 2 meses con dato</div></div>`;
+    const a=v[0], b=v[v.length-1], delta=b-a;
+    const col = Math.abs(delta)<1e-9 ? 'var(--ink-soft)' : ((delta>0)===d.up ? 'var(--good)' : 'var(--bad)');
+    return `<div class="ms"><div class="ml">${d.l}</div>
+      <div class="mv" style="font-size:15px">${d.fv(b)} <span style="font-size:11px;font-weight:600;color:${col}">${d.fd(a,b)}</span></div>
+      <div class="mn">${kjSparkSvg(v, col)}${d.fv(a)} → ${d.fv(b)} · ${v.length} meses</div></div>`;
+  }).join('');
+  return `<div class="hslab" style="margin:2px 0 6px"><span>Tendencia · ${monthLabel(keysAsc[0])} → ${monthLabel(keysAsc[keysAsc.length-1])}</span><span>${cs.length} meses cerrados</span></div>
+    <div class="mstat" style="grid-template-columns:repeat(auto-fit,minmax(118px,1fr));margin-bottom:12px">${tiles}</div>`;
+}
+function kjCiToggleBv(mk){ const r=document.getElementById('ciBv_'+mk); if(r) r.style.display = r.style.display==='none' ? '' : 'none'; }
 function kjCierresHtml(){
   if(kjLoad.fail['kanjo:cierres'] || !kjR('cierres')) return '';   /* sin permiso de lectura: panel oculto */
   const keys=Object.keys(cierres).sort().reverse();
@@ -7370,10 +7430,16 @@ function kjCierresHtml(){
       <button class="gkadd" style="margin:0" onclick="kjCerrarMes()">締 Cerrar mes</button></div>` : '';
   if(!keys.length) return `<div class="panel"><h3>Cierre de mes <span style="font-family:'Zilla Slab',serif">締</span></h3>${action}
     <div class="svempty">Todavía no hay meses cerrados. Al cerrar un mes, sus números quedan <b>congelados</b>: aunque después cambies el TC, un sueldo o un rendimiento, la historia no se reescribe.</div></div>`;
+  /* detalle plan vs real de cada cierre: bloque plegado debajo de la tabla (fuera del scroll horizontal) */
+  const dets=keys.filter(mk=>{ const c=cierres[mk]; return c.budget&&Array.isArray(c.budget.lines)&&c.budget.lines.length; }).map(mk=>{ const c=cierres[mk];
+    return `<div id="ciBv_${mk}" style="display:none;margin-top:8px">
+        <div class="hslab"><span>Presupuesto vs real · ${monthLabel(mk)}${c.budget.factor<1?` · plan prorrateado a ${c.budget.daysElapsed}/${c.budget.daysInMonth} días`:''}</span><a href="#" onclick="kjCiToggleBv('${mk}');return false" style="color:var(--brass-deep)">cerrar</a></div>
+        ${kjBudgetTableHtml(c.budget.lines, {label:'Otros gastos (compras "otro")', real:c.budget.otros||0, note:'informativo'})}</div>`; }).join('');
   const rows=keys.map(mk=>{ const c=cierres[mk];
     const fr=c.foodRealAdj!=null? c.foodRealAdj : c.foodReal;
+    const bv=c.budget&&Array.isArray(c.budget.lines)&&c.budget.lines.length;
     return `<tr>
-      <td style="text-align:left">${monthLabel(mk)}<span class="gcat">cerrado ${(c.closedAt||'').slice(0,10)}</span></td>
+      <td style="text-align:left">${monthLabel(mk)}<span class="gcat">cerrado ${(c.closedAt||'').slice(0,10)}${bv?` · <a href="#" onclick="kjCiToggleBv('${mk}');return false" style="color:var(--brass-deep)">plan vs real</a>`:''}</span></td>
       <td>${c.services}<span class="gcat">${c.covers} cub · ${c.occ}%</span></td>
       <td>${fmt(c.net)}<span class="gcat">bruto ${fmt(c.gross)}</span></td>
       <td style="font-weight:700;color:${c.profit>=0?'var(--good)':'var(--bad)'}">${fmt(c.profit)}${c.dlvDays?`<span class="gcat">salón · delivery ${fmt(c.dlvProfit)}</span>`:''}</td>
@@ -7383,10 +7449,208 @@ function kjCierresHtml(){
       <td>${c.noshowPct==null?'—':c.noshowPct+'%'}</td>
       ${admin?`<td class="adminonly"><button class="editrow" onclick="kjReabrirMes('${mk}')">×</button></td>`:''}
     </tr>`; }).join('');
+  const trend = keys.length>=2 ? kjCiTrendHtml([...keys].reverse()) : '';
   return `<div class="panel"><h3>Cierre de mes <span style="font-family:'Zilla Slab',serif">締</span> <span style="font-weight:400;color:var(--ink-soft);font-size:11px">· P&L histórico congelado</span></h3>
-    ${action}
-    <div style="overflow-x:auto"><table class="gkins"><thead><tr><th style="text-align:left">Mes</th><th>Servicios</th><th>Fact. neta</th><th>Resultado</th><th>Delivery</th><th>Food cost</th><th>Mermas</th><th>No-show</th>${admin?'<th></th>':''}</tr></thead><tbody>${rows}</tbody></table></div>
+    ${action}${trend}
+    <div style="overflow-x:auto"><table class="gkins"><thead><tr><th style="text-align:left">Mes</th><th>Servicios</th><th>Fact. neta</th><th>Resultado</th><th>Delivery</th><th>Food cost</th><th>Mermas</th><th>No-show</th>${admin?'<th></th>':''}</tr></thead><tbody>${rows}</tbody></table></div>${dets}
     <p class="desc" style="margin:8px 0 0">Los valores están congelados al momento del cierre — el resto de los tabs siguen recalculando en vivo con los parámetros de hoy. Esa es la diferencia entre <b>registro</b> y <b>simulador</b>.</p></div>`;
+}
+
+/* =====================================================================
+   RESUMEN · Presupuesto vs real por centro de costo 予実
+   Plan = compute() (el esquema 勘定); real = lo cargado en Turnos, Delivery,
+   Compras y Hito para el mes. Si el mes está en curso, el plan se prorratea
+   por días transcurridos para que la comparación sea a fecha.
+   ===================================================================== */
+const rsUI={ bvMonth:'' };
+const BV_CATS={ comida:'Comida', bebida:'Bebida', otro:'Otro' };   /* valores del select #cpCat */
+function kjBudgetMonths(){
+  const set=new Set([monthKey(fmtDate(new Date()))]);
+  services.forEach(s=>set.add(monthKey(s.date)));
+  compras.forEach(c=>set.add(monthKey(c.date)));
+  delivery.forEach(d=>set.add(monthKey(d.date)));
+  return [...set].sort().reverse();
+}
+function kjBudgetData(mk){
+  const c=compute();
+  const today=new Date(), cur=monthKey(fmtDate(today));
+  const [y,m]=mk.split('-').map(Number);
+  const daysInMonth=new Date(y, m, 0).getDate();
+  const current = mk===cur;
+  const daysElapsed = current ? Math.min(daysInMonth, today.getDate()) : daysInMonth;
+  const factor = current ? daysElapsed/daysInMonth : 1;
+  const P=v=>(v||0)*factor;
+
+  const svM=services.filter(s=>monthKey(s.date)===mk).map(sv=>({sv, m:serviceMetrics(sv)}));
+  const dM=delivery.filter(d=>monthKey(d.date)===mk).map(d=>({d, m:deliveryMetrics(d)}));
+  const cpM=compras.filter(x=>monthKey(x.date)===mk);
+  const sumS=f=>svM.reduce((a,r)=>a+f(r.m,r.sv),0), sumD=f=>dM.reduce((a,r)=>a+f(r.m,r.d),0);
+  const cpCat=cat=>cpM.filter(x=>(x.cat||'comida')===cat).reduce((a,x)=>a+cpUsd(x),0);
+  const hasReal = svM.length>0 || dM.length>0 || cpM.length>0;
+
+  /* facturación */
+  const revReal = sumS(m=>m.netTotal) + sumD(m=>m.net);
+  /* CMV: compras de comida (ajustadas por stock si hay conteo) + bebida */
+  const adj = (typeof cpConsumoAdj==='function') ? cpConsumoAdj(mk) : null;
+  const foodBuys = adj ? adj.val : cpCat('comida');
+  const cmvLoaded = !!adj || cpM.some(x=>['comida','bebida'].includes(x.cat||'comida'));
+  const cmvReal = cmvLoaded ? foodBuys + cpCat('bebida') : P(c.cmv);
+  /* laboral: fichajes de Hito por servicio; sin fichajes, el plan */
+  let laborReal=null, laborN=0;
+  if(typeof htLaborReal==='function'){
+    let tot=0; svM.forEach(r=>{ const v=htLaborReal(r.sv); if(v!=null){ tot+=v; laborN++; } else tot+=laborAlloc(r.sv.turno); });
+    if(laborN>0) laborReal=tot;
+  }
+  const otrosReal = cpCat('otro');
+  const pagosImpReal = sumS(m=>m.pagos+m.imp) + sumD(m=>m.pagos+m.imp);
+  const dlvReal = sumD(m=>m.packaging+m.commission+m.courier);
+
+  const lines=[
+    { key:'revenue', label:'Facturación neta', inv:true, plan:P(c.revenue), real:revReal,
+      note: svM.length||dM.length ? svM.length+' servicios · '+dM.length+' días delivery' : 'sin servicios cargados' },
+    { key:'cmv', label:'CMV', plan:P(c.cmv), real:cmvReal, asPlan:!cmvLoaded,
+      note: adj ? 'compras ajustadas por stock ('+adj.counted.length+' insumos contados)' : (cmvLoaded? 'compras comida + bebida' : '= plan (sin compras cargadas)') },
+    { key:'labor', label:'Laboral', plan:P(c.labor), real: laborReal!=null? laborReal : P(c.labor),
+      note: laborReal!=null ? laborN+' de '+svM.length+' servicios con fichajes 人' : '= plan (sin fichajes)', asPlan: laborReal==null },
+    { key:'ocup', label:'Ocupación', plan:P(c.ocup), real:P(c.ocup), note:'= plan (sin carga)', asPlan:true },
+    { key:'oper', label:'Operación', plan:P(c.oper), real:P(c.oper), note:'= plan (sin carga)', asPlan:true },
+    { key:'pagosImp', label:'Procesamiento e impuestos', plan:P(c.pagos+c.imp), real:pagosImpReal, note:'comisiones + IIBB + déb/créd de lo cargado' },
+    { key:'delivery', label:'Delivery · canal', plan:P(c.delivery), real:dlvReal, note:'envase + apps + envíos'+(c.dlv.ads?' · pauta sólo en plan':'') },
+    { key:'capex', label:'CapEx amortizado', plan:P(c.capex), real:P(c.capex), note:'= plan (amortización)', asPlan:true },
+  ];
+  const costReal = lines.filter(l=>!l.inv).reduce((a,l)=>a+l.real,0);
+  lines.push({ key:'resultado', label:'Resultado operativo', inv:true, total:true, plan:P(c.resultado), real:revReal-costReal, note:'real = facturación real − costos reales' });
+  const otros = { key:'otros', label:'Otros gastos (compras "otro")', plan:null, real:otrosReal, info:true, note:'informativo · no suma al resultado (ocupación/operación quedan = plan)' };
+  return { mk, current, daysElapsed, daysInMonth, factor, hasReal, lines, otros, laborN };
+}
+/* desvío con signo de lectura: adverso = costo por encima / ingreso por debajo */
+function kjBudgetDev(l){
+  if(l.plan==null) return null;
+  const d=l.real-l.plan;
+  const p = Math.abs(l.plan)>0.5 ? d/Math.abs(l.plan)*100 : (Math.abs(d)>0.5? (d>0?Infinity:-Infinity) : 0);
+  const adverse = l.inv ? d<0 : d>0;
+  const ap=Math.abs(p);
+  const col = !adverse ? 'g' : ap<=5 ? 'g' : ap<=15 ? 'a' : 'r';
+  return { d, p, adverse, col };
+}
+function kjBudgetSlim(B){
+  return { factor:+B.factor.toFixed(3), daysElapsed:B.daysElapsed, daysInMonth:B.daysInMonth,
+    lines: B.lines.map(l=>({ key:l.key, label:l.label, plan:+l.plan.toFixed(0), real:+l.real.toFixed(0), inv:!!l.inv, asPlan:!!l.asPlan, total:!!l.total })),
+    otros:+B.otros.real.toFixed(0) };
+}
+function kjBudgetTableHtml(lines, otros){
+  const dot=c=>`<span class="dotr" style="background:${c==='g'?'var(--good)':c==='a'?'var(--brass-deep)':c==='r'?'var(--bad)':'var(--ink-soft)'}"></span>`;
+  const pf=p=> p==null? '—' : !isFinite(p)? (p>0?'+∞':'−∞') : (p>=0?'+':'−')+Math.abs(p).toFixed(1)+'%';
+  const rows=lines.map(l=>{ const v=kjBudgetDev(l); const b=l.total?'font-weight:700;':'';
+    return `<tr${l.total?' style="border-top:1px solid var(--rule)"':''}>
+      <td style="text-align:left;${b}">${l.label}${l.note?`<span class="gcat">${l.note}</span>`:''}</td>
+      <td style="${b}">${fmt(l.plan)}</td>
+      <td style="${b}${l.asPlan?'color:var(--ink-soft)':''}">${fmt(l.real)}</td>
+      <td style="${b}color:${v&&v.adverse&&v.col!=='g'?'var(--bad)':'inherit'}">${l.asPlan?'—':(v.d>=0?'+':'−')+fmt(Math.abs(v.d))}</td>
+      <td style="${b}white-space:nowrap">${l.asPlan?'—':pf(v.p)+' '+dot(v.col)}</td></tr>`; }).join('');
+  const otrosRow = otros && otros.real>0 ? `<tr><td style="text-align:left;color:var(--ink-soft)">${otros.label}<span class="gcat">${otros.note}</span></td><td>—</td><td style="color:var(--ink-soft)">${fmt(otros.real)}</td><td>—</td><td>—</td></tr>` : '';
+  return `<div style="overflow-x:auto"><table class="gkins"><thead><tr><th style="text-align:left">Centro</th><th>Plan</th><th>Real</th><th>Desvío $</th><th>Desvío %</th></tr></thead><tbody>${rows}${otrosRow}</tbody></table></div>`;
+}
+function kjBudgetReadings(B){
+  const rev=B.lines.find(l=>l.key==='revenue'), res=B.lines.find(l=>l.key==='resultado');
+  const rv=kjBudgetDev(rev), rs=kjBudgetDev(res);
+  const costs=B.lines.filter(l=>!l.inv && !l.asPlan).map(l=>({l, v:kjBudgetDev(l)})).filter(x=>x.v.adverse && x.v.d>0.5).sort((a,b)=>b.v.d-a.v.d);
+  const s=[];
+  const pace = B.current ? ` a ${B.daysElapsed}/${B.daysInMonth} días` : '';
+  if(rv.adverse && Math.abs(rv.p)>5) s.push(`La facturación viene <b>${Math.abs(rv.p).toFixed(0)}% por debajo</b> del plan${pace} (${fmt(rev.real)} vs ${fmt(rev.plan)}).`);
+  else s.push(`La facturación ${rv.d>=0?'cumple':'roza'} el plan${pace}: ${fmt(rev.real)} vs ${fmt(rev.plan)} (${rv.p>=0?'+':'−'}${Math.abs(rv.p).toFixed(1)}%).`);
+  if(costs.length){ const w=costs[0]; s.push(`El mayor desvío adverso está en <b>${w.l.label}</b>: ${fmt(w.l.real)} contra ${fmt(w.l.plan)} de plan (+${fmt(w.v.d)}${isFinite(w.v.p)?', +'+w.v.p.toFixed(0)+'%':''}).`); }
+  else s.push('Ningún centro de costo con carga real supera su plan.');
+  s.push(`Resultado: <b style="color:${res.real>=0?'var(--good)':'var(--bad)'}">${fmt(res.real)}</b> real vs ${fmt(res.plan)} plan (${rs.adverse?'−':'+'}${fmt(Math.abs(rs.d))}).`);
+  return s.join(' ');
+}
+function renderBudgetVsReal(mk){
+  const months=kjBudgetMonths();
+  if(!mk || !months.includes(mk)) mk=months[0];
+  rsUI.bvMonth=mk;
+  const B=kjBudgetData(mk);
+  const sel=`<select class="sel" style="width:auto" onchange="rsUI.bvMonth=this.value;renderResumen()">${months.map(m=>`<option value="${m}"${m===mk?' selected':''}>${monthLabel(m)}</option>`).join('')}</select>`;
+  const head=`<h3 style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><span>Presupuesto vs real <span style="font-family:'Zilla Slab',serif">予実</span> <span style="font-weight:400;color:var(--ink-soft);font-size:11px">· por centro de costo</span></span>${sel}</h3>`;
+  if(!B.hasReal) return `<div class="panel">${head}<div class="svempty">Sin servicios, delivery ni compras cargados en ${monthLabel(mk)}. El plan del esquema 勘定 espera del otro lado de la mesa.</div></div>`;
+  const pro = B.current ? `<p class="desc" style="margin:0 0 8px">Mes en curso: el plan está <b>prorrateado a ${B.daysElapsed} de ${B.daysInMonth} días</b> (×${B.factor.toFixed(2)}) para comparar a fecha.</p>` : '';
+  return `<div class="panel">${head}${pro}${kjBudgetTableHtml(B.lines, B.otros)}
+    <div class="hslab" style="margin-top:10px"><span>Lecturas</span></div>
+    <p class="desc" style="margin:6px 0 0">${kjBudgetReadings(B)}</p></div>`;
+}
+
+/* =====================================================================
+   Excel para el contador — un archivo, varias hojas.
+   La CSP no permite librerías externas: se genera "Excel 2003 XML
+   Spreadsheet" (SpreadsheetML) a mano, extensión .xls. Excel, LibreOffice
+   y Numbers lo abren con todas las hojas; los números quedan numéricos.
+   ===================================================================== */
+function kjXmlEsc(v){ return String(v).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+function kjXlsWorkbook(sheets){   /* [{name, rows:[[...]]}] */
+  const cell=(v,style)=>{
+    const st = style? ` ss:StyleID="${style}"` : '';
+    if(v==null || v==='') return `<Cell${st}/>`;
+    if(typeof v==='number') return isFinite(v) ? `<Cell${st}><Data ss:Type="Number">${v}</Data></Cell>` : `<Cell${st}/>`;
+    if(typeof v==='string' && /^-?\d+(\.\d+)?$/.test(v)) return `<Cell${st}><Data ss:Type="Number">${+v}</Data></Cell>`;   /* '12.3' de los % */
+    return `<Cell${st}><Data ss:Type="String">${kjXmlEsc(v)}</Data></Cell>`;
+  };
+  const name=n=>kjXmlEsc(String(n).replace(/[\[\]:*?\/\\]/g,' ').trim().slice(0,31));
+  const ws=sheets.map(sh=>`<Worksheet ss:Name="${name(sh.name)}"><Table>`+
+    (sh.rows||[]).map((r,i)=> r.length ? '<Row>'+r.map(v=>cell(v, i===0?'h':null)).join('')+'</Row>' : '<Row/>').join('\n')+
+    `</Table></Worksheet>`).join('\n');
+  return `<?xml version="1.0"?>\n<?mso-application progid="Excel.Sheet"?>\n`+
+    `<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet" xmlns:html="http://www.w3.org/TR/REC-html40">\n`+
+    `<Styles><Style ss:ID="Default" ss:Name="Normal"><Font ss:FontName="Calibri" ss:Size="11"/></Style><Style ss:ID="h"><Font ss:Bold="1"/></Style></Styles>\n${ws}\n</Workbook>`;
+}
+function kjComprasRows(){
+  const rows=[['Fecha','Proveedor','Insumo / descripción','Tipo','Cantidad','Unidad','Total ARS (c/IVA)','IVA %','TC','USD neto']];
+  [...compras].sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0).forEach(c=>{ const i=c.ins? gkInsById(c.ins) : null;
+    rows.push([c.date, c.prov||'', i? i.n : (c.desc||''), BV_CATS[c.cat||'comida']||c.cat||'', c.qty||0, i? i.unit : 'un', c.ars||0, c.iva||0, c.tc||G.params.tc||'', +cpUsd(c).toFixed(2)]); });
+  return rows;
+}
+function kjMermasRows(){
+  const rows=[['Fecha','Insumo','Cantidad','Unidad','Motivo','Costo USD','Nota']];
+  [...mermas].sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0).forEach(m=>{ const i=gkInsById(m.ins);
+    rows.push([m.date, i? i.n : (m.ins||''), m.qty||0, i? i.unit : '', MERMA_LABEL[m.motivo]||m.motivo||'', +mrCost(m).toFixed(2), m.nota||'']); });
+  return rows;
+}
+function kjLiqsRows(){
+  const rows=[['App','Desde','Hasta','Ventas según app (bruto)','Comisión','Promos','Cancelados','Retenciones','Neto acreditado','Pagado el','Take rate %','Bruto registrado 配','Diferencia vs registrado','Diferencia vs cálculo','Días de rezago','Nota']];
+  [...liqs].sort((a,b)=>a.from<b.from?-1:a.from>b.from?1:0).forEach(l=>{ const m=lqMetrics(l);
+    rows.push([l.app, l.from, l.to, l.gross, l.comm, l.promo, l.cancel, l.ret, l.net, l.paid||'', +m.take.toFixed(1), Math.round(m.reg.gross), Math.round(m.gap), Math.round(m.diff), m.lag==null?'':m.lag, l.note||'']); });
+  return rows;
+}
+function kjCierresRows(){
+  const rows=[['Mes','Cerrado el','TC','Servicios','Cubiertos','Ocupación %','Bruto salón','Neto salón','Ticket','Resultado salón','Food cost teórico %','Food cost plan %','Food cost real %','Food cost real aj. stock %','Compras USD','Mermas USD','Mermas %','No-show %','Delivery días','Delivery pedidos','Delivery bruto','Delivery neto','Delivery contribución','Delivery resultado','Delivery % apps']];
+  Object.keys(cierres).sort().forEach(mk=>{ const c=cierres[mk];
+    rows.push([monthLabel(mk), (c.closedAt||'').slice(0,10), c.tc==null?'':c.tc, c.services, c.covers, c.occ, c.gross, c.net, c.ticket==null?'':c.ticket, c.profit,
+      c.foodTeor, c.foodPlan, c.foodReal==null?'':c.foodReal, c.foodRealAdj==null?'':c.foodRealAdj, c.comprasUsd, c.mermasUsd, c.mermasPct==null?'':c.mermasPct, c.noshowPct==null?'':c.noshowPct,
+      c.dlvDays||0, c.dlvOrders||0, c.dlvGross||0, c.dlvNet||0, c.dlvContrib||0, c.dlvProfit||0, c.dlvAppPct==null?'':c.dlvAppPct]); });
+  return rows;
+}
+function kjBudgetRows(mk){
+  const B=kjBudgetData(mk);
+  const rows=[['Presupuesto vs real · '+monthLabel(mk)+(B.current?' · plan prorrateado a '+B.daysElapsed+'/'+B.daysInMonth+' días':'')],
+    ['Centro','Plan','Real','Desvío $','Desvío %','Nota']];
+  B.lines.forEach(l=>{ const v=kjBudgetDev(l);
+    rows.push([l.label, Math.round(l.plan), Math.round(l.real), l.asPlan?'':Math.round(v.d), l.asPlan||!isFinite(v.p)?'':+v.p.toFixed(1), l.note||'']); });
+  rows.push([B.otros.label, '', Math.round(B.otros.real), '', '', B.otros.note]);
+  return rows;
+}
+function kjExportContador(){
+  const mk=monthKey(fmtDate(new Date()));
+  const sheets=[
+    { name:'P&L plan', rows:exportPLRows() },
+    { name:'Servicios', rows: services.length? exportServicesRows() : [['Sin servicios cargados']] },
+    { name:'Delivery', rows: delivery.length? exportDeliveryRows() : [['Sin delivery cargado']] },
+    { name:'Resumen mensual', rows: services.length? exportMonthlyRows() : [['Sin servicios cargados']] },
+    { name:'Compras', rows:kjComprasRows() },
+    { name:'Mermas', rows:kjMermasRows() },
+    { name:'Liquidaciones apps', rows:kjLiqsRows() },
+    { name:'Cierres', rows:kjCierresRows() },
+    { name:'Presupuesto vs real', rows:kjBudgetRows(mk) },
+  ];
+  const ok=downloadFile('kanjo-contador-'+mk+'.xls', kjXlsWorkbook(sheets), 'application/vnd.ms-excel');
+  flash(ok? 'Excel para el contador exportado ✓ (9 hojas)' : 'No se pudo exportar en este entorno');
 }
 
 /* ---- audit log (vive en el servidor) ---- */
