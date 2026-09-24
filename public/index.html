@@ -2964,9 +2964,10 @@ function toCSV(rows){
     return /[",\n;]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
   }).join(';')).join('\r\n');
 }
-function downloadFile(filename, content){
+function downloadFile(filename, content, mime){
   try{
-    const blob=new Blob(['\ufeff'+content],{type:'text/csv;charset=utf-8;'});
+    const isCsv = !mime || /csv/.test(mime);
+    const blob=new Blob([(isCsv?'\ufeff':'')+content],{type:mime||'text/csv;charset=utf-8;'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     a.href=url; a.download=filename;
@@ -2978,10 +2979,10 @@ function downloadFile(filename, content){
     return false;
   }
 }
-function exportPL(){
+function exportPLRows(){
   const c=compute(), iva=ivaCompute();
   const pf=v=> c.revenue? (v/c.revenue*100).toFixed(1) : '';
-  const rows=[
+  return [
     ['Kanjō · P&L mensual (USD, neto de IVA)'],
     ['Concepto','$/mes','% facturación'],
     ['Facturación neta', Math.round(c.revenue), '100.0'],
@@ -3005,6 +3006,9 @@ function exportPL(){
     ['IVA crédito', -Math.round(iva.credito), ''],
     ['IVA neto a remitir', Math.round(iva.neto), ''],
   ];
+}
+function exportPL(){
+  const rows=exportPLRows();
   downloadFile('kanjo-pyl-mensual.csv', toCSV(rows)) ? flash('P&L exportado ✓') : flash('No se pudo exportar en este entorno');
 }
 
@@ -3465,13 +3469,17 @@ function renderDeliveryList(){
       <button class="delrow" onclick="delDelivery('${d.id}')" title="quitar">×</button>
     </div>`; }).join('') + (delivery.length>60?`<div class="svempty">… y ${delivery.length-60} más (exportá el CSV para verlos todos)</div>`:'');
 }
-function exportDelivery(){
-  if(!delivery.length){ tFlash('No hay delivery para exportar'); return; }
+function exportDeliveryRows(){
   const head=['Fecha','Día','Pedidos','Comida','Bebidas','Total carta','Apps','Canal propio','Efectivo','Cancelados','% apps','Neto','CMV','Envases','Comisión apps','Envíos','Procesamiento','Impuestos','Cancelados $','Contribución','Fijos del día','Resultado','Nota'];
   const rows=[head];
   [...delivery].sort((a,b)=>a.date<b.date?-1:1).forEach(d=>{ const m=deliveryMetrics(d);
     rows.push([d.date, DOW_FULL[dowOf(d.date)], d.orders, d.food, d.bev, Math.round(m.gross), Math.round(m.app), Math.round(m.own), Math.round(m.ownCash), d.cancel||0,
       Math.round(m.appShare*100), Math.round(m.net), Math.round(m.cmv), Math.round(m.packaging), Math.round(m.commission), Math.round(m.courier), Math.round(m.pagos), Math.round(m.imp), Math.round(m.cancelCost), Math.round(m.contrib), Math.round(m.fixedDay), Math.round(m.profit), d.note||'']); });
+  return rows;
+}
+function exportDelivery(){
+  if(!delivery.length){ tFlash('No hay delivery para exportar'); return; }
+  const rows=exportDeliveryRows();
   downloadFile('kanjo-delivery.csv', toCSV(rows)) ? tFlash('Delivery exportado ✓') : tFlash('No se pudo exportar');
 }
 /* panel de análisis del canal (en el analista de turnos, debajo del salón) */
@@ -3828,8 +3836,7 @@ function buildInsights(recs){
   return grid+narr;
 }
 
-function exportServices(){
-  if(!services.length){ tFlash('No hay servicios para exportar'); return; }
+function exportServicesRows(){
   const head=['Fecha','Día','Turno','Cubiertos','Omakase','Premium','Bebidas','Extras','Total carta','Tarjeta','QR','Efectivo','Desc.efvo %','Sin declarar','Facturación neta','CMV','Comisiones','Impuestos','Laboral asignado','Fijos comunes','Resultado'];
   const rows=[head];
   [...services].sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0).forEach(sv=>{
@@ -3838,10 +3845,14 @@ function exportServices(){
       Math.round(m.grossTotal), sv.payCard||0, sv.payQR||0, sv.payCash||0, sv.cashDiscPct||0, sv.cashUndeclared?'SÍ':'',
       Math.round(m.netTotal), Math.round(m.cmv), Math.round(m.pagos), Math.round(m.imp), Math.round(m.allocLabor), Math.round(m.allocOther), Math.round(m.profit)]);
   });
+  return rows;
+}
+function exportServices(){
+  if(!services.length){ tFlash('No hay servicios para exportar'); return; }
+  const rows=exportServicesRows();
   downloadFile('kanjo-servicios.csv', toCSV(rows)) ? tFlash('Servicios exportados ✓') : tFlash('No se pudo exportar');
 }
-function exportMonthly(){
-  if(!services.length){ tFlash('No hay datos'); return; }
+function exportMonthlyRows(){
   const recs=services.map(sv=>({sv,m:serviceMetrics(sv),dow:dowOf(sv.date)}));
   const byM={}; recs.forEach(r=>{ const k=monthKey(r.sv.date); (byM[k]=byM[k]||[]).push(r); });
   const head=['Mes','Servicios','Cubiertos','Facturación neta','CMV','Comisiones','Impuestos','Laboral','Resultado','Margen %','Efvo s/declarar'];
@@ -3859,6 +3870,11 @@ function exportMonthly(){
       rows.push([monthLabel(k), a.n, a.orders, Math.round(a.net), Math.round(sum(r=>r.m.cmv)), Math.round(a.packaging), Math.round(a.commission), Math.round(a.courier),
         Math.round(sum(r=>r.m.imp+r.m.pagos)), Math.round(a.contrib), Math.round(sum(r=>r.m.fixedDay)), Math.round(a.profit)]); });
   }
+  return rows;
+}
+function exportMonthly(){
+  if(!services.length){ tFlash('No hay datos'); return; }
+  const rows=exportMonthlyRows();
   downloadFile('kanjo-resumen-mensual.csv', toCSV(rows)) ? tFlash('Resumen mensual exportado ✓') : tFlash('No se pudo exportar');
 }
 
@@ -6926,6 +6942,12 @@ function renderResumen(){
       </div>
       <p class="desc" style="margin:8px 0 0">Cada cambio que guardás queda firmado con tu nombre en el registro de actividad.</p></div>` : '';
 
+  /* Excel para el contador: lo ve quien lee Caja */
+  const excelBtn = kjR('caja') ? `<button class="gkadd" style="margin:0" onclick="kjExportContador()">⬇ Excel para el contador</button>` : '';
+  const contadorCard = (excelBtn && !kjCanAdmin()) ? `<div class="panel"><h3>Para el contador</h3>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0">${excelBtn}</div>
+      <p class="desc" style="margin:8px 0 0">Un solo archivo con P&L plan, servicios, delivery, resumen mensual, compras, mermas, liquidaciones de apps, cierres y presupuesto vs real.</p></div>` : '';
+
   /* administración: usuarios, permisos, backup y audit log */
   let adminCard='';
   if(kjCanAdmin()){
@@ -6943,12 +6965,13 @@ function renderResumen(){
       <div class="hslab" style="margin-top:12px"><span>Backup total</span></div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0">
         <button class="gkadd" style="margin:0" onclick="kjBackup()">⬇ Backup total</button>
+        ${excelBtn}
         <button class="gkadd" style="margin:0" onclick="kjRestorePick()">⬆ Restaurar</button>
         <input type="file" id="kjRestoreFile" accept="application/json" style="display:none" onchange="kjRestoreFile(this)">
       </div></div>`;
   }
 
-  side.innerHTML=insHtml+nav+meCard+adminCard;
+  side.innerHTML=insHtml+nav+meCard+contadorCard+adminCard;
 }
 
 
@@ -7208,6 +7231,81 @@ function renderBudgetVsReal(mk){
   return `<div class="panel">${head}${pro}${kjBudgetTableHtml(B.lines, B.otros)}
     <div class="hslab" style="margin-top:10px"><span>Lecturas</span></div>
     <p class="desc" style="margin:6px 0 0">${kjBudgetReadings(B)}</p></div>`;
+}
+
+/* =====================================================================
+   Excel para el contador — un archivo, varias hojas.
+   La CSP no permite librerías externas: se genera "Excel 2003 XML
+   Spreadsheet" (SpreadsheetML) a mano, extensión .xls. Excel, LibreOffice
+   y Numbers lo abren con todas las hojas; los números quedan numéricos.
+   ===================================================================== */
+function kjXmlEsc(v){ return String(v).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+function kjXlsWorkbook(sheets){   /* [{name, rows:[[...]]}] */
+  const cell=(v,style)=>{
+    const st = style? ` ss:StyleID="${style}"` : '';
+    if(v==null || v==='') return `<Cell${st}/>`;
+    if(typeof v==='number') return isFinite(v) ? `<Cell${st}><Data ss:Type="Number">${v}</Data></Cell>` : `<Cell${st}/>`;
+    if(typeof v==='string' && /^-?\d+(\.\d+)?$/.test(v)) return `<Cell${st}><Data ss:Type="Number">${+v}</Data></Cell>`;   /* '12.3' de los % */
+    return `<Cell${st}><Data ss:Type="String">${kjXmlEsc(v)}</Data></Cell>`;
+  };
+  const name=n=>kjXmlEsc(String(n).replace(/[\[\]:*?\/\\]/g,' ').trim().slice(0,31));
+  const ws=sheets.map(sh=>`<Worksheet ss:Name="${name(sh.name)}"><Table>`+
+    (sh.rows||[]).map((r,i)=> r.length ? '<Row>'+r.map(v=>cell(v, i===0?'h':null)).join('')+'</Row>' : '<Row/>').join('\n')+
+    `</Table></Worksheet>`).join('\n');
+  return `<?xml version="1.0"?>\n<?mso-application progid="Excel.Sheet"?>\n`+
+    `<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet" xmlns:html="http://www.w3.org/TR/REC-html40">\n`+
+    `<Styles><Style ss:ID="Default" ss:Name="Normal"><Font ss:FontName="Calibri" ss:Size="11"/></Style><Style ss:ID="h"><Font ss:Bold="1"/></Style></Styles>\n${ws}\n</Workbook>`;
+}
+function kjComprasRows(){
+  const rows=[['Fecha','Proveedor','Insumo / descripción','Tipo','Cantidad','Unidad','Total ARS (c/IVA)','IVA %','TC','USD neto']];
+  [...compras].sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0).forEach(c=>{ const i=c.ins? gkInsById(c.ins) : null;
+    rows.push([c.date, c.prov||'', i? i.n : (c.desc||''), BV_CATS[c.cat||'comida']||c.cat||'', c.qty||0, i? i.unit : 'un', c.ars||0, c.iva||0, c.tc||G.params.tc||'', +cpUsd(c).toFixed(2)]); });
+  return rows;
+}
+function kjMermasRows(){
+  const rows=[['Fecha','Insumo','Cantidad','Unidad','Motivo','Costo USD','Nota']];
+  [...mermas].sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0).forEach(m=>{ const i=gkInsById(m.ins);
+    rows.push([m.date, i? i.n : (m.ins||''), m.qty||0, i? i.unit : '', MERMA_LABEL[m.motivo]||m.motivo||'', +mrCost(m).toFixed(2), m.nota||'']); });
+  return rows;
+}
+function kjLiqsRows(){
+  const rows=[['App','Desde','Hasta','Ventas según app (bruto)','Comisión','Promos','Cancelados','Retenciones','Neto acreditado','Pagado el','Take rate %','Bruto registrado 配','Diferencia vs registrado','Diferencia vs cálculo','Días de rezago','Nota']];
+  [...liqs].sort((a,b)=>a.from<b.from?-1:a.from>b.from?1:0).forEach(l=>{ const m=lqMetrics(l);
+    rows.push([l.app, l.from, l.to, l.gross, l.comm, l.promo, l.cancel, l.ret, l.net, l.paid||'', +m.take.toFixed(1), Math.round(m.reg.gross), Math.round(m.gap), Math.round(m.diff), m.lag==null?'':m.lag, l.note||'']); });
+  return rows;
+}
+function kjCierresRows(){
+  const rows=[['Mes','Cerrado el','TC','Servicios','Cubiertos','Ocupación %','Bruto salón','Neto salón','Ticket','Resultado salón','Food cost teórico %','Food cost plan %','Food cost real %','Food cost real aj. stock %','Compras USD','Mermas USD','Mermas %','No-show %','Delivery días','Delivery pedidos','Delivery bruto','Delivery neto','Delivery contribución','Delivery resultado','Delivery % apps']];
+  Object.keys(cierres).sort().forEach(mk=>{ const c=cierres[mk];
+    rows.push([monthLabel(mk), (c.closedAt||'').slice(0,10), c.tc==null?'':c.tc, c.services, c.covers, c.occ, c.gross, c.net, c.ticket==null?'':c.ticket, c.profit,
+      c.foodTeor, c.foodPlan, c.foodReal==null?'':c.foodReal, c.foodRealAdj==null?'':c.foodRealAdj, c.comprasUsd, c.mermasUsd, c.mermasPct==null?'':c.mermasPct, c.noshowPct==null?'':c.noshowPct,
+      c.dlvDays||0, c.dlvOrders||0, c.dlvGross||0, c.dlvNet||0, c.dlvContrib||0, c.dlvProfit||0, c.dlvAppPct==null?'':c.dlvAppPct]); });
+  return rows;
+}
+function kjBudgetRows(mk){
+  const B=kjBudgetData(mk);
+  const rows=[['Presupuesto vs real · '+monthLabel(mk)+(B.current?' · plan prorrateado a '+B.daysElapsed+'/'+B.daysInMonth+' días':'')],
+    ['Centro','Plan','Real','Desvío $','Desvío %','Nota']];
+  B.lines.forEach(l=>{ const v=kjBudgetDev(l);
+    rows.push([l.label, Math.round(l.plan), Math.round(l.real), l.asPlan?'':Math.round(v.d), l.asPlan||!isFinite(v.p)?'':+v.p.toFixed(1), l.note||'']); });
+  rows.push([B.otros.label, '', Math.round(B.otros.real), '', '', B.otros.note]);
+  return rows;
+}
+function kjExportContador(){
+  const mk=monthKey(fmtDate(new Date()));
+  const sheets=[
+    { name:'P&L plan', rows:exportPLRows() },
+    { name:'Servicios', rows: services.length? exportServicesRows() : [['Sin servicios cargados']] },
+    { name:'Delivery', rows: delivery.length? exportDeliveryRows() : [['Sin delivery cargado']] },
+    { name:'Resumen mensual', rows: services.length? exportMonthlyRows() : [['Sin servicios cargados']] },
+    { name:'Compras', rows:kjComprasRows() },
+    { name:'Mermas', rows:kjMermasRows() },
+    { name:'Liquidaciones apps', rows:kjLiqsRows() },
+    { name:'Cierres', rows:kjCierresRows() },
+    { name:'Presupuesto vs real', rows:kjBudgetRows(mk) },
+  ];
+  const ok=downloadFile('kanjo-contador-'+mk+'.xls', kjXlsWorkbook(sheets), 'application/vnd.ms-excel');
+  flash(ok? 'Excel para el contador exportado ✓ (9 hojas)' : 'No se pudo exportar en este entorno');
 }
 
 /* ---- audit log (vive en el servidor) ---- */
