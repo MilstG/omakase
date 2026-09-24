@@ -6892,6 +6892,7 @@ function renderResumen(){
       row('Inflación canasta (90d)', basket? (basket.pct>=0?'+':'')+basket.pct.toFixed(1)+'%' : '—', basC, basket? basket.n+' insumos con historial':'cargá compras 仕入'),
       row('Precio del menú', rp.price>0? fmt(rp.price)+(rp.breach?' → '+fmt(rp.needGross):' ✓') : '—', rpC, rp.breach? 'sugerido para sostener '+rp.tgt+'%':'sostiene el target de '+rp.tgt+'%'),
     ])+
+    renderBudgetVsReal(rsUI.bvMonth||mk)+
     kjCierresHtml();
 
   /* insights */
@@ -6989,7 +6990,8 @@ function kjSnapshotMonth(mk){
     foodRealAdj: T.realAdj==null? null : +T.realAdj.toFixed(1),
     comprasUsd:+buysAll.toFixed(0), mermasUsd:+merUsd.toFixed(0),
     mermasPct: buysAll>0? +(merUsd/buysAll*100).toFixed(1) : null,
-    noshowPct: nsPct==null? null : +nsPct.toFixed(1)
+    noshowPct: nsPct==null? null : +nsPct.toFixed(1),
+    budget: kjBudgetSlim(kjBudgetData(mk))
   };
 }
 function kjCierreMonths(){
@@ -7015,6 +7017,7 @@ function kjReabrirMes(mk){
   if(!ok) return;
   delete cierres[mk]; ciPersist(); flash('Mes reabierto'); renderResumen();
 }
+function kjCiToggleBv(mk){ const r=document.getElementById('ciBv_'+mk); if(r) r.style.display = r.style.display==='none' ? '' : 'none'; }
 function kjCierresHtml(){
   if(kjLoad.fail['kanjo:cierres'] || !kjR('cierres')) return '';   /* sin permiso de lectura: panel oculto */
   const keys=Object.keys(cierres).sort().reverse();
@@ -7025,10 +7028,16 @@ function kjCierresHtml(){
       <button class="gkadd" style="margin:0" onclick="kjCerrarMes()">締 Cerrar mes</button></div>` : '';
   if(!keys.length) return `<div class="panel"><h3>Cierre de mes <span style="font-family:'Zilla Slab',serif">締</span></h3>${action}
     <div class="svempty">Todavía no hay meses cerrados. Al cerrar un mes, sus números quedan <b>congelados</b>: aunque después cambies el TC, un sueldo o un rendimiento, la historia no se reescribe.</div></div>`;
+  /* detalle plan vs real de cada cierre: bloque plegado debajo de la tabla (fuera del scroll horizontal) */
+  const dets=keys.filter(mk=>{ const c=cierres[mk]; return c.budget&&Array.isArray(c.budget.lines)&&c.budget.lines.length; }).map(mk=>{ const c=cierres[mk];
+    return `<div id="ciBv_${mk}" style="display:none;margin-top:8px">
+        <div class="hslab"><span>Presupuesto vs real · ${monthLabel(mk)}${c.budget.factor<1?` · plan prorrateado a ${c.budget.daysElapsed}/${c.budget.daysInMonth} días`:''}</span><a href="#" onclick="kjCiToggleBv('${mk}');return false" style="color:var(--brass-deep)">cerrar</a></div>
+        ${kjBudgetTableHtml(c.budget.lines, {label:'Otros gastos (compras "otro")', real:c.budget.otros||0, note:'informativo'})}</div>`; }).join('');
   const rows=keys.map(mk=>{ const c=cierres[mk];
     const fr=c.foodRealAdj!=null? c.foodRealAdj : c.foodReal;
+    const bv=c.budget&&Array.isArray(c.budget.lines)&&c.budget.lines.length;
     return `<tr>
-      <td style="text-align:left">${monthLabel(mk)}<span class="gcat">cerrado ${(c.closedAt||'').slice(0,10)}</span></td>
+      <td style="text-align:left">${monthLabel(mk)}<span class="gcat">cerrado ${(c.closedAt||'').slice(0,10)}${bv?` · <a href="#" onclick="kjCiToggleBv('${mk}');return false" style="color:var(--brass-deep)">plan vs real</a>`:''}</span></td>
       <td>${c.services}<span class="gcat">${c.covers} cub · ${c.occ}%</span></td>
       <td>${fmt(c.net)}<span class="gcat">bruto ${fmt(c.gross)}</span></td>
       <td style="font-weight:700;color:${c.profit>=0?'var(--good)':'var(--bad)'}">${fmt(c.profit)}${c.dlvDays?`<span class="gcat">salón · delivery ${fmt(c.dlvProfit)}</span>`:''}</td>
@@ -7040,8 +7049,130 @@ function kjCierresHtml(){
     </tr>`; }).join('');
   return `<div class="panel"><h3>Cierre de mes <span style="font-family:'Zilla Slab',serif">締</span> <span style="font-weight:400;color:var(--ink-soft);font-size:11px">· P&L histórico congelado</span></h3>
     ${action}
-    <div style="overflow-x:auto"><table class="gkins"><thead><tr><th style="text-align:left">Mes</th><th>Servicios</th><th>Fact. neta</th><th>Resultado</th><th>Delivery</th><th>Food cost</th><th>Mermas</th><th>No-show</th>${admin?'<th></th>':''}</tr></thead><tbody>${rows}</tbody></table></div>
+    <div style="overflow-x:auto"><table class="gkins"><thead><tr><th style="text-align:left">Mes</th><th>Servicios</th><th>Fact. neta</th><th>Resultado</th><th>Delivery</th><th>Food cost</th><th>Mermas</th><th>No-show</th>${admin?'<th></th>':''}</tr></thead><tbody>${rows}</tbody></table></div>${dets}
     <p class="desc" style="margin:8px 0 0">Los valores están congelados al momento del cierre — el resto de los tabs siguen recalculando en vivo con los parámetros de hoy. Esa es la diferencia entre <b>registro</b> y <b>simulador</b>.</p></div>`;
+}
+
+/* =====================================================================
+   RESUMEN · Presupuesto vs real por centro de costo 予実
+   Plan = compute() (el esquema 勘定); real = lo cargado en Turnos, Delivery,
+   Compras y Hito para el mes. Si el mes está en curso, el plan se prorratea
+   por días transcurridos para que la comparación sea a fecha.
+   ===================================================================== */
+const rsUI={ bvMonth:'' };
+const BV_CATS={ comida:'Comida', bebida:'Bebida', otro:'Otro' };   /* valores del select #cpCat */
+function kjBudgetMonths(){
+  const set=new Set([monthKey(fmtDate(new Date()))]);
+  services.forEach(s=>set.add(monthKey(s.date)));
+  compras.forEach(c=>set.add(monthKey(c.date)));
+  delivery.forEach(d=>set.add(monthKey(d.date)));
+  return [...set].sort().reverse();
+}
+function kjBudgetData(mk){
+  const c=compute();
+  const today=new Date(), cur=monthKey(fmtDate(today));
+  const [y,m]=mk.split('-').map(Number);
+  const daysInMonth=new Date(y, m, 0).getDate();
+  const current = mk===cur;
+  const daysElapsed = current ? Math.min(daysInMonth, today.getDate()) : daysInMonth;
+  const factor = current ? daysElapsed/daysInMonth : 1;
+  const P=v=>(v||0)*factor;
+
+  const svM=services.filter(s=>monthKey(s.date)===mk).map(sv=>({sv, m:serviceMetrics(sv)}));
+  const dM=delivery.filter(d=>monthKey(d.date)===mk).map(d=>({d, m:deliveryMetrics(d)}));
+  const cpM=compras.filter(x=>monthKey(x.date)===mk);
+  const sumS=f=>svM.reduce((a,r)=>a+f(r.m,r.sv),0), sumD=f=>dM.reduce((a,r)=>a+f(r.m,r.d),0);
+  const cpCat=cat=>cpM.filter(x=>(x.cat||'comida')===cat).reduce((a,x)=>a+cpUsd(x),0);
+  const hasReal = svM.length>0 || dM.length>0 || cpM.length>0;
+
+  /* facturación */
+  const revReal = sumS(m=>m.netTotal) + sumD(m=>m.net);
+  /* CMV: compras de comida (ajustadas por stock si hay conteo) + bebida */
+  const adj = (typeof cpConsumoAdj==='function') ? cpConsumoAdj(mk) : null;
+  const foodBuys = adj ? adj.val : cpCat('comida');
+  const cmvLoaded = !!adj || cpM.some(x=>['comida','bebida'].includes(x.cat||'comida'));
+  const cmvReal = cmvLoaded ? foodBuys + cpCat('bebida') : P(c.cmv);
+  /* laboral: fichajes de Hito por servicio; sin fichajes, el plan */
+  let laborReal=null, laborN=0;
+  if(typeof htLaborReal==='function'){
+    let tot=0; svM.forEach(r=>{ const v=htLaborReal(r.sv); if(v!=null){ tot+=v; laborN++; } else tot+=laborAlloc(r.sv.turno); });
+    if(laborN>0) laborReal=tot;
+  }
+  const otrosReal = cpCat('otro');
+  const pagosImpReal = sumS(m=>m.pagos+m.imp) + sumD(m=>m.pagos+m.imp);
+  const dlvReal = sumD(m=>m.packaging+m.commission+m.courier);
+
+  const lines=[
+    { key:'revenue', label:'Facturación neta', inv:true, plan:P(c.revenue), real:revReal,
+      note: svM.length||dM.length ? svM.length+' servicios · '+dM.length+' días delivery' : 'sin servicios cargados' },
+    { key:'cmv', label:'CMV', plan:P(c.cmv), real:cmvReal, asPlan:!cmvLoaded,
+      note: adj ? 'compras ajustadas por stock ('+adj.counted.length+' insumos contados)' : (cmvLoaded? 'compras comida + bebida' : '= plan (sin compras cargadas)') },
+    { key:'labor', label:'Laboral', plan:P(c.labor), real: laborReal!=null? laborReal : P(c.labor),
+      note: laborReal!=null ? laborN+' de '+svM.length+' servicios con fichajes 人' : '= plan (sin fichajes)', asPlan: laborReal==null },
+    { key:'ocup', label:'Ocupación', plan:P(c.ocup), real:P(c.ocup), note:'= plan (sin carga)', asPlan:true },
+    { key:'oper', label:'Operación', plan:P(c.oper), real:P(c.oper), note:'= plan (sin carga)', asPlan:true },
+    { key:'pagosImp', label:'Procesamiento e impuestos', plan:P(c.pagos+c.imp), real:pagosImpReal, note:'comisiones + IIBB + déb/créd de lo cargado' },
+    { key:'delivery', label:'Delivery · canal', plan:P(c.delivery), real:dlvReal, note:'envase + apps + envíos'+(c.dlv.ads?' · pauta sólo en plan':'') },
+    { key:'capex', label:'CapEx amortizado', plan:P(c.capex), real:P(c.capex), note:'= plan (amortización)', asPlan:true },
+  ];
+  const costReal = lines.filter(l=>!l.inv).reduce((a,l)=>a+l.real,0);
+  lines.push({ key:'resultado', label:'Resultado operativo', inv:true, total:true, plan:P(c.resultado), real:revReal-costReal, note:'real = facturación real − costos reales' });
+  const otros = { key:'otros', label:'Otros gastos (compras "otro")', plan:null, real:otrosReal, info:true, note:'informativo · no suma al resultado (ocupación/operación quedan = plan)' };
+  return { mk, current, daysElapsed, daysInMonth, factor, hasReal, lines, otros, laborN };
+}
+/* desvío con signo de lectura: adverso = costo por encima / ingreso por debajo */
+function kjBudgetDev(l){
+  if(l.plan==null) return null;
+  const d=l.real-l.plan;
+  const p = Math.abs(l.plan)>0.5 ? d/Math.abs(l.plan)*100 : (Math.abs(d)>0.5? (d>0?Infinity:-Infinity) : 0);
+  const adverse = l.inv ? d<0 : d>0;
+  const ap=Math.abs(p);
+  const col = !adverse ? 'g' : ap<=5 ? 'g' : ap<=15 ? 'a' : 'r';
+  return { d, p, adverse, col };
+}
+function kjBudgetSlim(B){
+  return { factor:+B.factor.toFixed(3), daysElapsed:B.daysElapsed, daysInMonth:B.daysInMonth,
+    lines: B.lines.map(l=>({ key:l.key, label:l.label, plan:+l.plan.toFixed(0), real:+l.real.toFixed(0), inv:!!l.inv, asPlan:!!l.asPlan, total:!!l.total })),
+    otros:+B.otros.real.toFixed(0) };
+}
+function kjBudgetTableHtml(lines, otros){
+  const dot=c=>`<span class="dotr" style="background:${c==='g'?'var(--good)':c==='a'?'var(--brass-deep)':c==='r'?'var(--bad)':'var(--ink-soft)'}"></span>`;
+  const pf=p=> p==null? '—' : !isFinite(p)? (p>0?'+∞':'−∞') : (p>=0?'+':'−')+Math.abs(p).toFixed(1)+'%';
+  const rows=lines.map(l=>{ const v=kjBudgetDev(l); const b=l.total?'font-weight:700;':'';
+    return `<tr${l.total?' style="border-top:1px solid var(--rule)"':''}>
+      <td style="text-align:left;${b}">${l.label}${l.note?`<span class="gcat">${l.note}</span>`:''}</td>
+      <td style="${b}">${fmt(l.plan)}</td>
+      <td style="${b}${l.asPlan?'color:var(--ink-soft)':''}">${fmt(l.real)}</td>
+      <td style="${b}color:${v&&v.adverse&&v.col!=='g'?'var(--bad)':'inherit'}">${l.asPlan?'—':(v.d>=0?'+':'−')+fmt(Math.abs(v.d))}</td>
+      <td style="${b}white-space:nowrap">${l.asPlan?'—':pf(v.p)+' '+dot(v.col)}</td></tr>`; }).join('');
+  const otrosRow = otros && otros.real>0 ? `<tr><td style="text-align:left;color:var(--ink-soft)">${otros.label}<span class="gcat">${otros.note}</span></td><td>—</td><td style="color:var(--ink-soft)">${fmt(otros.real)}</td><td>—</td><td>—</td></tr>` : '';
+  return `<div style="overflow-x:auto"><table class="gkins"><thead><tr><th style="text-align:left">Centro</th><th>Plan</th><th>Real</th><th>Desvío $</th><th>Desvío %</th></tr></thead><tbody>${rows}${otrosRow}</tbody></table></div>`;
+}
+function kjBudgetReadings(B){
+  const rev=B.lines.find(l=>l.key==='revenue'), res=B.lines.find(l=>l.key==='resultado');
+  const rv=kjBudgetDev(rev), rs=kjBudgetDev(res);
+  const costs=B.lines.filter(l=>!l.inv && !l.asPlan).map(l=>({l, v:kjBudgetDev(l)})).filter(x=>x.v.adverse && x.v.d>0.5).sort((a,b)=>b.v.d-a.v.d);
+  const s=[];
+  const pace = B.current ? ` a ${B.daysElapsed}/${B.daysInMonth} días` : '';
+  if(rv.adverse && Math.abs(rv.p)>5) s.push(`La facturación viene <b>${Math.abs(rv.p).toFixed(0)}% por debajo</b> del plan${pace} (${fmt(rev.real)} vs ${fmt(rev.plan)}).`);
+  else s.push(`La facturación ${rv.d>=0?'cumple':'roza'} el plan${pace}: ${fmt(rev.real)} vs ${fmt(rev.plan)} (${rv.p>=0?'+':'−'}${Math.abs(rv.p).toFixed(1)}%).`);
+  if(costs.length){ const w=costs[0]; s.push(`El mayor desvío adverso está en <b>${w.l.label}</b>: ${fmt(w.l.real)} contra ${fmt(w.l.plan)} de plan (+${fmt(w.v.d)}${isFinite(w.v.p)?', +'+w.v.p.toFixed(0)+'%':''}).`); }
+  else s.push('Ningún centro de costo con carga real supera su plan.');
+  s.push(`Resultado: <b style="color:${res.real>=0?'var(--good)':'var(--bad)'}">${fmt(res.real)}</b> real vs ${fmt(res.plan)} plan (${rs.adverse?'−':'+'}${fmt(Math.abs(rs.d))}).`);
+  return s.join(' ');
+}
+function renderBudgetVsReal(mk){
+  const months=kjBudgetMonths();
+  if(!mk || !months.includes(mk)) mk=months[0];
+  rsUI.bvMonth=mk;
+  const B=kjBudgetData(mk);
+  const sel=`<select class="sel" style="width:auto" onchange="rsUI.bvMonth=this.value;renderResumen()">${months.map(m=>`<option value="${m}"${m===mk?' selected':''}>${monthLabel(m)}</option>`).join('')}</select>`;
+  const head=`<h3 style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><span>Presupuesto vs real <span style="font-family:'Zilla Slab',serif">予実</span> <span style="font-weight:400;color:var(--ink-soft);font-size:11px">· por centro de costo</span></span>${sel}</h3>`;
+  if(!B.hasReal) return `<div class="panel">${head}<div class="svempty">Sin servicios, delivery ni compras cargados en ${monthLabel(mk)}. El plan del esquema 勘定 espera del otro lado de la mesa.</div></div>`;
+  const pro = B.current ? `<p class="desc" style="margin:0 0 8px">Mes en curso: el plan está <b>prorrateado a ${B.daysElapsed} de ${B.daysInMonth} días</b> (×${B.factor.toFixed(2)}) para comparar a fecha.</p>` : '';
+  return `<div class="panel">${head}${pro}${kjBudgetTableHtml(B.lines, B.otros)}
+    <div class="hslab" style="margin-top:10px"><span>Lecturas</span></div>
+    <p class="desc" style="margin:6px 0 0">${kjBudgetReadings(B)}</p></div>`;
 }
 
 /* ---- audit log (vive en el servidor) ---- */
