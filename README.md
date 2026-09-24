@@ -160,6 +160,22 @@ APP_PASSWORD_ADMIN=admin123 APP_PASSWORD_STAFF=staff123 node server.js
   activan desde *Tu cuenta* y se avisan al abrir o volver a la app, una vez por día.
 - **Importar CSV** de servicios, delivery y reservas desde el POS, Meitre o una planilla:
   separador automático, columnas por sinónimos, fechas ISO o DD/MM/AAAA.
+- **Presupuesto vs real por centro de costo** (Resumen 予実): plan del esquema contra lo cargado
+  en servicios, delivery, compras y fichajes, mes a mes, con desvíos y lecturas; el mes en curso
+  se prorratea por días transcurridos. El cierre de mes guarda el cuadro.
+- **Comparativa de meses cerrados**: sparklines de margen, food cost, ticket, ocupación y
+  delivery cuando hay dos o más cierres.
+- **Excel para el contador**: un solo archivo `.xls` con nueve hojas (P&L plan, servicios,
+  delivery, resumen mensual, compras, mermas, liquidaciones, cierres, presupuesto vs real).
+  Sin dependencias externas (formato SpreadsheetML; Excel avisa por la extensión y abre igual).
+
+**UI**: navegación compacta y fija en el teléfono; sin scroll horizontal en ningún tab; KPIs del
+encabezado en grilla; tarjetas colapsadas que se recuerdan y «colapsar todo»; paneles avanzados
+del pronóstico plegados; el foco no se pierde al editar en Genka ni en el esquema; diálogos
+propios en vez de `prompt`/`confirm`; toasts apilados a la derecha; semáforo de food cost sin
+falsos verdes; números en formato es-AR; `#tab` en la URL; listas largas con «ver más»;
+etiquetas de accesibilidad, foco visible y más contraste; estado de carga; hoja de impresión
+y botón imprimir en el esquema.
 
 ## Novedades v5.1 — conciliación de apps, precio por canal y capacidad
 

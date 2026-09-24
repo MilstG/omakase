@@ -590,6 +590,8 @@
   .complegend .lp{font-family:'JetBrains Mono',monospace;color:var(--ink-soft);margin-left:2px}
 
 
+  .shockgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.shockgrid>*{min-width:0}
+  @media (max-width:760px){.shockgrid{grid-template-columns:1fr}}
   /* ---------- tab genka · menús guardados ---------- */
   .gkmenus{display:flex;flex-wrap:wrap;gap:8px}
   .gkmenu{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:150px;padding:8px 12px;border:1px solid var(--rule);border-radius:3px;background:var(--panel);cursor:pointer;text-align:left;font-family:'Inter',sans-serif;color:var(--ink)}
@@ -1342,7 +1344,7 @@
     <div class="scenempty" id="scenHint"></div>
     <div class="panel" style="margin-top:16px"><h3>Shock cambiario e inflación de insumos</h3>
       <p class="desc" style="margin:0 0 10px">El modelo está en dólares, pero cobrás y pagás en pesos. Si el dólar salta y la carta no acompaña, la facturación en USD cae; los insumos importados (pescado, sake) siguen en dólares y los locales suben con la inflación. Probá cuánto tenés que subir la carta para sostener el margen.</p>
-      <div class="cgrid" style="grid-template-columns:1fr 1fr;gap:16px"><div id="shockIn"></div><div id="shockOut"></div></div>
+      <div class="shockgrid"><div id="shockIn"></div><div id="shockOut" class="tscroll"></div></div>
     </div>
   </section>
 
