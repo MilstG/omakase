@@ -2100,25 +2100,42 @@ function defaultState(){
       {name:'Salón / servicio',         gross:650,  mult:1.45},
       {name:'Part-time (doble turno)',  gross:400,  mult:1.45},
     ],
+    /* cada línea fija lleva su alícuota de IVA: es lo que define el crédito fiscal */
     ocupacion:[
-      {name:'Alquiler', amount:2800},
-      {name:'Expensas', amount:400},
-      {name:'Luz / gas / agua', amount:600},
-      {name:'Internet / teléfono', amount:80},
+      {name:'Alquiler', amount:2800, iva:21},
+      {name:'Expensas', amount:400, iva:0},
+      {name:'Luz / gas / agua', amount:600, iva:27},
+      {name:'Internet / teléfono', amount:80, iva:21},
     ],
     operacion:[
-      {name:'Software (Meitre · POS · contable)', amount:250},
-      {name:'Contador', amount:400},
-      {name:'Seguros', amount:150},
-      {name:'Marketing / contenido', amount:800},
-      {name:'Limpieza / insumos', amount:300},
-      {name:'Mantenimiento', amount:200},
-      {name:'Lavandería / uniformes', amount:120},
+      {name:'Software (Meitre · POS · contable)', amount:250, iva:21},
+      {name:'Contador', amount:400, iva:21},
+      {name:'Seguros', amount:150, iva:21},
+      {name:'Marketing / contenido', amount:800, iva:21},
+      {name:'Limpieza / insumos', amount:300, iva:21},
+      {name:'Mantenimiento', amount:200, iva:21},
+      {name:'Lavandería / uniformes', amount:120, iva:21},
     ],
-    pagos:{ procPct:2.2, cardRate:3.5, qrRate:1.5, defCard:45, defCash:20, defQR:35 },
-    impuestos:{ iibbPct:3.0, debCredPct:0.5, gananciasPct:25 },
+    /* cargas sociales por rol: 'manual' usa el multiplicador cargado; 'rd' lo calcula
+       desde `cargas`; 'mono' (monotributista) es ×1 */
+    cargas:{ contrib:20.4, art:3, sac:8.33, otros:2 },
+    /* retenciones: lo que tarjeta y QR descuentan en cada liquidación a cuenta de
+       IVA / Ganancias / IIBB. No es costo: es impuesto pagado antes. */
+    pagos:{ procPct:2.2, cardRate:3.5, qrRate:1.5, defCard:45, defCash:20, defQR:35, cardRetPct:1.5, qrRetPct:0.5 },
+    /* impuestos:
+       · IIBB sobre facturación neta declarada
+       · débitos y créditos: 0,6% por cada movimiento bancario (entra y sale); para
+         micro y pequeñas empresas se computa a cuenta de Ganancias (bankComputable)
+       · Ganancias: alícuota plana o escala de sociedades (tramos anuales en ARS)
+       · anticipos: se pagan mensualmente durante el año (afecta caja, no margen) */
+    impuestos:{ iibbPct:3.0, bankTaxPct:0.6, bankComputable:100, bankSharePagos:80,
+                gananciasMode:'flat', gananciasPct:25, anticipos:true,
+                escala:[ {hasta:34700000, pct:25}, {hasta:347000000, pct:30}, {hasta:0, pct:35} ] },
     capex:{ inversion:120000, anios:5 },
-    iva:{ rateVentas:21, rateCMV:10.5, shareOcup:60, shareOper:70, deferDays:90, yieldAnual:4 },
+    /* IVA: débito 21% sobre ventas; crédito desde las compras reales (alícuota de cada
+       factura) o, sin historial, rateCMV; posición mensual pagada a `deferDays` (PyME).
+       El diferimiento vale por devaluación: pagás en pesos que valen menos. */
+    iva:{ rateVentas:21, rateCMV:10.5, deferDays:90, devalAnual:30, creditFromCompras:true },
     /* canal delivery: otra dinámica (pedidos, no sillas) y otros costos
        (envase, comisión de apps, envío). Precios de carta c/IVA, como los turnos. */
     delivery:{ on:true, days:26, orders:8, ticket:42, bev:4, foodPct:38, packaging:2.5,
@@ -2127,9 +2144,22 @@ function defaultState(){
 }
 function ensureShape(st){
   const d=defaultState();
-  st.iva = Object.assign({}, d.iva, st.iva||{});
-  st.impuestos = Object.assign({}, d.impuestos, st.impuestos||{});
+  const oldIva=st.iva||{};
+  st.iva = Object.assign({}, d.iva, oldIva);
+  if(oldIva.devalAnual==null && oldIva.yieldAnual!=null) st.iva.devalAnual=oldIva.yieldAnual;
+  const oldImp=st.impuestos||{};
+  st.impuestos = Object.assign({}, d.impuestos, oldImp);
+  /* modelo viejo: débitos/créditos como % plano sobre facturación → se pasa al
+     modelo por movimiento bancario, manteniendo el 0,6% legal */
+  if(oldImp.bankTaxPct==null && oldImp.debCredPct!=null) st.impuestos.bankTaxPct = 0.6;
+  if(!Array.isArray(st.impuestos.escala) || st.impuestos.escala.length<1) st.impuestos.escala=d.impuestos.escala.map(x=>({...x}));
   st.pagos = Object.assign({}, d.pagos, st.pagos||{});
+  st.cargas = Object.assign({}, d.cargas, st.cargas||{});
+  /* alícuota de IVA por línea fija: las baselines viejas no la tienen → heurística
+     por nombre (expensas sin IVA, luz/gas 27%, resto 21%) */
+  const guessIva=n=>{ n=(n||'').toLowerCase(); if(/expensa|abl|tasa|monotrib|sin iva/.test(n)) return 0; if(/luz|gas|agua|electric|edesur|edenor|metrogas/.test(n)) return 27; return 21; };
+  ['ocupacion','operacion'].forEach(k=>{ if(Array.isArray(st[k])) st[k].forEach(x=>{ if(x.iva==null) x.iva=guessIva(x.name); }); });
+  if(Array.isArray(st.labor)) st.labor.forEach(x=>{ if(!x.cargas) x.cargas='manual'; });
   /* baseline guardada sin delivery: se agrega el bloque APAGADO para no
      inventarle facturación a un modelo real; el usuario lo prende y carga */
   if(!st.delivery || typeof st.delivery!=='object') st.delivery = Object.assign({}, d.delivery, {on:false});
@@ -2150,6 +2180,52 @@ function ensureShape(st){
 }
 let scenarios = [];
 let S = defaultState();
+
+/* ----------------------------- impuestos: helpers -----------------------------
+   Todo en USD neto. Convenciones:
+   · IIBB: % sobre facturación neta declarada.
+   · Débitos y créditos: % sobre cada movimiento bancario (cobros con tarjeta/QR/
+     transferencia y pagos por banco). El efectivo no lo paga. La parte computable
+     es pago a cuenta de Ganancias: se descuenta ahí, no del resultado operativo.
+   · Ganancias: plana o escala de sociedades sobre el resultado anualizado en ARS.
+   · Retenciones de tarjeta/QR: pago a cuenta; afectan caja, no margen.            */
+function taxCfg(st){ st=st||S; return st.impuestos||{}; }
+function bankTaxRate(st){ return (taxCfg(st).bankTaxPct||0)/100; }
+function tcActual(){ return (typeof G!=='undefined' && G && G.params && G.params.tc) ? G.params.tc : 1500; }
+/* Ganancias sobre un resultado MENSUAL en USD: devuelve impuesto mensual USD y alícuota efectiva */
+function gananciasCalc(resMensual, st){
+  st=st||S; const t=taxCfg(st);
+  if(resMensual<=0) return { tax:0, effPct:0 };
+  if(t.gananciasMode!=='escala') return { tax:resMensual*(t.gananciasPct||0)/100, effPct:(t.gananciasPct||0) };
+  const tc=tcActual(); const anualARS=resMensual*12*tc;
+  let tax=0, prev=0;
+  const esc=(t.escala||[]).slice().sort((a,b)=>(a.hasta||Infinity)-(b.hasta||Infinity));
+  for(const tr of esc){ const top = tr.hasta>0 ? tr.hasta : Infinity; const slice=Math.max(0, Math.min(anualARS,top)-prev); tax+=slice*(tr.pct||0)/100; prev=Math.max(prev,top); if(anualARS<=top) break; }
+  if(anualARS>prev){ const last=esc[esc.length-1]; tax+=(anualARS-prev)*((last&&last.pct)||0)/100; }
+  const monthlyUSD=tax/12/tc;
+  return { tax:monthlyUSD, effPct: resMensual>0 ? monthlyUSD/resMensual*100 : 0 };
+}
+/* crédito fiscal efectivo sobre CMV: desde las compras reales de los últimos 90 días
+   (alícuota de cada factura) o, sin historial suficiente, el % cargado a mano */
+function ivaCreditCMVRate(st){
+  st=st||S; const v=st.iva||{};
+  if(v.creditFromCompras!==false && typeof compras!=='undefined' && Array.isArray(compras)){
+    const cut=fmtDate(new Date(Date.now()-90*86400000));
+    const rec=compras.filter(c=>c.date>=cut && (c.cat||'comida')==='comida');
+    if(rec.length>=5){ let net=0, cred=0; rec.forEach(c=>{ const n=(c.ars||0)/(1+(c.iva||0)/100); net+=n; cred+=(c.ars||0)-n; });
+      if(net>0) return { rate:cred/net*100, src:'compras', n:rec.length }; }
+  }
+  return { rate:v.rateCMV||0, src:'manual', n:0 };
+}
+/* crédito de IVA de las líneas fijas, por alícuota de cada una (neto × alícuota) */
+function ivaCreditLines(list){ return (list||[]).reduce((a,x)=>a+(x.amount||0)*((x.iva!=null?x.iva:21)/100),0); }
+/* multiplicador de cargas de un rol según su tipo */
+function laborMult(x, st){
+  st=st||S; const cg=st.cargas||{};
+  if(x.cargas==='mono') return 1;
+  if(x.cargas==='rd') return (1+(cg.sac||0)/100+(cg.otros||0)/100)*(1+(cg.contrib||0)/100+(cg.art||0)/100);
+  return x.mult||0;
+}
 
 /* ----------------------------- delivery (canal) -----------------------------
    El delivery no vende sillas: vende pedidos. Su facturación no depende de la
@@ -2175,7 +2251,8 @@ function deliveryCalc(st){
   const app = appGross*(dv.appPct||0)/100;                       // la app se queda con su % del bruto
   const courier = orders*(1-appShare)*(dv.courier||0);          // envío propio, solo pedidos directos
   const pagos = ownGross*(st.pagos.procPct||0)/100;              // el canal propio cobra con tarjeta/link
-  const imp = rev*((st.impuestos.iibbPct||0)+(st.impuestos.debCredPct||0))/100;
+  /* IIBB sobre neto; débitos/créditos sobre lo que entra por banco (todo el delivery: apps y link) */
+  const imp = rev*(st.impuestos.iibbPct||0)/100 + gross*bankTaxRate(st);
   const laborExtra = on ? (dv.laborExtra||0) : 0;
   const ads = on ? (dv.ads||0) : 0;
   const canal = packaging+app+courier;                           // costos variables propios del canal
@@ -2231,29 +2308,40 @@ function compute(){
   const bevCost  = bevRev * S.cmv.bevPct/100 + dlv.bevRev * (S.cmv.bevPct||0)/100;
   const cmv = foodCost + bevCost;
 
-  const labor = S.labor.reduce((a,x)=>a + (x.gross||0)*(x.mult||0), 0) + dlv.laborExtra;
+  const labor = S.labor.reduce((a,x)=>a + (x.gross||0)*laborMult(x), 0) + dlv.laborExtra;
   const ocup  = S.ocupacion.reduce((a,x)=>a + (x.amount||0), 0);
   const oper  = S.operacion.reduce((a,x)=>a + (x.amount||0), 0);
   const salonPagos = salonRev * ivaDiv * S.pagos.procPct/100;   // comisión sobre caja bruta (c/IVA), como cobra el procesador
   const pagos = salonPagos + dlv.pagos;
   const iibb  = revenue * S.impuestos.iibbPct/100;
-  const debCred = revenue * S.impuestos.debCredPct/100;
-  const imp = iibb + debCred;
+  /* débitos y créditos: sobre lo que pasa por el banco. Entradas: tarjeta y QR del
+     salón (mix por defecto) y todo el delivery; salidas: la parte de los costos
+     que se paga por banco (bankSharePagos). */
+  const tmix=(S.pagos.defCard+S.pagos.defCash+S.pagos.defQR)||100;
+  const bankInSalon = salonRev*ivaDiv*(S.pagos.defCard+S.pagos.defQR)/tmix;
+  const bankIn = bankInSalon + dlv.gross;
   const capex = S.capex.inversion / Math.max(1,(S.capex.anios*12));
   const delivery = dlv.canal + dlv.ads;                           // centro ⑧: envase + apps + envíos + pauta
+  const bankOut = (cmv + labor + ocup + oper + pagos + delivery) * (S.impuestos.bankSharePagos||0)/100;
+  const bankTax = (bankIn + bankOut) * bankTaxRate(S);
+  const debCred = bankTax;                                        // nombre histórico: se muestra como "déb/créd"
+  const imp = iibb + bankTax;
 
   const variable = cmv + pagos + imp + dlv.canal;
   const fixed = labor + ocup + oper + capex + dlv.ads;
   const totalCost = variable + fixed;
   const resultado = revenue - totalCost;
   const margenPct = revenue ? resultado/revenue*100 : 0;
-  const ganancias = Math.max(0, resultado) * (S.impuestos.gananciasPct||0)/100;
+  const gan = gananciasCalc(resultado, S);
+  const bankCredit = Math.min(gan.tax, bankTax*(S.impuestos.bankComputable||0)/100);   // pago a cuenta: hasta donde haya Ganancias
+  const ganancias = gan.tax - bankCredit;
+  const gananciasEff = gan.effPct;
   const resultadoFinal = resultado - ganancias;
   const margenFinalPct = revenue ? resultadoFinal/revenue*100 : 0;
 
   /* unit economics del salón: por cubierto. El delivery se descuenta de los
      fijos a cubrir (su contribución), así el equilibrio sigue en ocupación. */
-  const salonVariable = (omakaseRev*S.cmv.foodPct/100 + bevRev*S.cmv.bevPct/100) + salonPagos + salonRev*(S.impuestos.iibbPct+S.impuestos.debCredPct)/100;
+  const salonVariable = (omakaseRev*S.cmv.foodPct/100 + bevRev*S.cmv.bevPct/100) + salonPagos + salonRev*S.impuestos.iibbPct/100 + bankInSalon*bankTaxRate(S);
   const revPerCover = totalDays ? (omFull + bvFull)/totalDays : 0;              // neto ponderado
   const revPerCoverGross = totalDays ? grossTicketSum/totalDays : 0;           // carta ponderado
   const variableRate = salonRev ? salonVariable/salonRev : 0;
@@ -2264,8 +2352,8 @@ function compute(){
   const breakevenOcc = maxCovers ? breakevenCovers/maxCovers*100 : Infinity;
 
   return {maxCovers,covers,omakaseRev,bevRev,salonRev,revenue,foodCost,bevCost,cmv,labor,ocup,oper,
-    pagos,salonPagos,iibb,debCred,imp,capex,delivery,dlv,variable,fixed,fixedNet,totalCost,resultado,margenPct,totalDays,
-    ganancias,resultadoFinal,margenFinalPct,
+    pagos,salonPagos,iibb,debCred,bankTax,bankIn,bankOut,bankCredit,imp,capex,delivery,dlv,variable,fixed,fixedNet,totalCost,resultado,margenPct,totalDays,
+    ganancias,gananciasGross:gan.tax,gananciasEff,resultadoFinal,margenFinalPct,
     revPerCover,revPerCoverGross,variableRate,cmPerCover,varPerCover,breakevenCovers,breakevenOcc};
 }
 
@@ -2307,6 +2395,12 @@ function renderInputs(){
   box.appendChild(card('labor','二','② Costo laboral','fij','Multiplicador = cargas sociales + ART + SAC + vacaciones. El bruto es ~70% del costo real; el socio va con multiplicador 1.0. El reparto por turno asigna el costo laboral según la dotación real de cada servicio.', `
     <div id="laborList">${S.labor.map((x,i)=>laborRow(x,i)).join('')}</div>
     <button class="addrow" onclick="addItem('labor')">+ agregar rol</button>
+    <div class="subhead">Cargas para relación de dependencia · × ${laborMult({cargas:'rd'}).toFixed(2)}</div>
+    <p class="note" style="margin:0 0 6px">Para los roles marcados <b>rel. dep.</b> el multiplicador sale de acá: (1 + SAC + otros) × (1 + contribuciones + ART). Contribuciones patronales con la detracción PyME vigente; ART según tu póliza; «otros» = vacaciones no gozadas, uniformes, comida de personal. Monotributistas van ×1 (la factura es el costo).</p>
+    ${numRow('Contribuciones patronales','cargas.contrib',S.cargas.contrib,'%',1,'jubilación, PAMI, obra social, asignaciones · neto de detracción')}
+    ${numRow('ART','cargas.art',S.cargas.art,'%',1,'según póliza')}
+    ${numRow('SAC (aguinaldo)','cargas.sac',S.cargas.sac,'%',2,'1/12 del sueldo')}
+    ${numRow('Otros','cargas.otros',S.cargas.otros,'%',1,'')}
     <div class="subtotal"><span class="l">Costo laboral total</span><span class="v">${fmt(c.labor)}</span></div>
     <div class="subhead">Reparto por turno · peso de dotación</div>
     ${S.turnos.map((t,i)=>`<div class="row"><label>${t.label}<span class="sub">vs. una noche completa (1,0)</span></label><div class="ifield"><span class="pre">×</span><input type="number" step="0.05" class="small" value="${t.laborW}" oninput="setTurno(${i},'laborW',this.value)"></div></div>`).join('')}
@@ -2328,15 +2422,28 @@ function renderInputs(){
     ${numRow('Comisión blended (planificación)','pagos.procPct',S.pagos.procPct,'%',1,'mix promedio · se aplica sobre la caja bruta c/IVA')}
     ${numRow('Comisión tarjeta','pagos.cardRate',S.pagos.cardRate,'%',1,'crédito/débito')}
     ${numRow('Comisión QR / billetera','pagos.qrRate',S.pagos.qrRate,'%',1,'')}
+    <div class="subhead">Retenciones en la liquidación · pago a cuenta</div>
+    <p class="note" style="margin:0 0 6px">Mercado Pago y las adquirentes retienen IVA, Ganancias e IIBB en cada liquidación. No es costo: es impuesto que pagás antes. Baja el cobro de la semana en la caja y se descuenta de los impuestos cuando vencen.</p>
+    ${numRow('Retención sobre tarjeta','pagos.cardRetPct',S.pagos.cardRetPct,'%',1,'suma de IVA + Ganancias + IIBB retenidos · sobre el bruto liquidado')}
+    ${numRow('Retención sobre QR','pagos.qrRetPct',S.pagos.qrRetPct,'%',1,'')}
     <div class="subtotal"><span class="l">Procesamiento (plan.)</span><span class="v">${fmt(c.pagos)}</span></div>
   `));
 
-  box.appendChild(card('imp','六','⑥ Impuestos','var','IIBB y débitos/créditos van sobre la facturación (no recuperables). El plan asume el <b>100% declarado</b>; en el analista de turnos, lo no declarado no tributa. IVA queda fuera del margen — ver nota arriba. Ganancias se aplica abajo, sobre el resultado.', `
-    ${numRow('Ingresos Brutos CABA','impuestos.iibbPct',S.impuestos.iibbPct,'%',1,'')}
-    ${numRow('Impuesto a débitos/créditos','impuestos.debCredPct',S.impuestos.debCredPct,'%',1,'neto del cómputo a cuenta')}
-    <div class="subtotal"><span class="l">Impuestos operativos</span><span class="v">${fmt(c.imp)}</span></div>
-    ${numRow('Impuesto a Ganancias','impuestos.gananciasPct',S.impuestos.gananciasPct,'%',0,'se aplica sobre el resultado operativo, no sobre la facturación')}
-    <div class="subtotal" style="border-top-style:dotted"><span class="l">Ganancias estimadas</span><span class="v" id="ganSubV" style="color:var(--vermilion)">${fmt(c.ganancias)}</span></div>
+  const T=S.impuestos, ganMode=T.gananciasMode==='escala';
+  box.appendChild(card('imp','六','⑥ Impuestos','var','IIBB va sobre la facturación neta. Débitos y créditos va sobre cada <b>movimiento bancario</b> (el efectivo no lo paga) y, para micro y pequeñas, es pago a cuenta de Ganancias. El plan asume el <b>100% declarado</b>; en el analista, lo no declarado no tributa. IVA queda fuera del margen — ver la sección IVA. Ganancias se aplica sobre el resultado, plana o por escala de sociedades.', `
+    ${numRow('Ingresos Brutos CABA','impuestos.iibbPct',T.iibbPct,'%',1,'alícuota de tu actividad · las retenciones de tarjetas y apps van a cuenta')}
+    <div class="subhead">Débitos y créditos bancarios</div>
+    ${numRow('Alícuota por movimiento','impuestos.bankTaxPct',T.bankTaxPct,'%',1,'0,6% por cada débito y cada crédito')}
+    ${numRow('Computable a cuenta de Ganancias','impuestos.bankComputable',T.bankComputable,'%',0,'micro y pequeñas: 100% · medianas tramo 1: 60% · resto: 33%')}
+    ${numRow('Costos pagados por banco','impuestos.bankSharePagos',T.bankSharePagos,'%',0,'el resto se paga en efectivo y no genera el impuesto')}
+    <div class="subtotal"><span class="l">Impuestos operativos · IIBB ${fmt(c.iibb)} + déb/créd ${fmt(c.bankTax)}</span><span class="v">${fmt(c.imp)}</span></div>
+    <div class="subhead">Impuesto a Ganancias</div>
+    <div class="seltoggle" style="margin:4px 0 8px"><button class="${!ganMode?'on':''}" onclick="setGanMode('flat')">Alícuota plana</button><button class="${ganMode?'on':''}" onclick="setGanMode('escala')">Escala de sociedades</button></div>
+    ${!ganMode ? numRow('Alícuota','impuestos.gananciasPct',T.gananciasPct,'%',0,'sociedad: primer tramo 25% · persona humana: tu alícuota marginal') : `
+    <p class="note" style="margin:0 0 6px">Tramos anuales en <b>ARS</b> sobre la ganancia neta imponible. Se actualizan cada año por IPC: cargá los vigentes con tu contador. El resultado mensual en USD se anualiza al TC de Genka (${tcActual().toLocaleString('es-AR')} ARS).</p>
+    ${T.escala.map((e,i)=>`<div class="row"><label>Tramo ${i+1}<span class="sub">${i===T.escala.length-1?'de ahí en adelante':'hasta (ARS/año)'}</span></label>${i===T.escala.length-1?'<div class="ifield"><span class="pre" style="color:var(--ink-soft)">∞</span></div>':`<div class="ifield"><span class="pre">$</span><input type="number" class="small" style="width:110px" value="${e.hasta}" oninput="setEscala(${i},'hasta',this.value)"></div>`}<div class="ifield"><input type="number" class="small" step="0.5" value="${e.pct}" oninput="setEscala(${i},'pct',this.value)"><span class="post">%</span></div></div>`).join('')}`}
+    <label class="chkrow"><input type="checkbox" ${T.anticipos!==false?'checked':''} onchange="setAnticipos(this.checked)"><span>Anticipos mensuales <span class="sub2">(la caja paga ~1/12 del impuesto anual cada mes)</span></span></label>
+    <div class="subtotal" style="border-top-style:dotted"><span class="l" id="ganSubL">Ganancias estimadas · ${pct(c.gananciasEff)} efectiva − ${fmt(c.bankCredit)} déb/créd a cuenta</span><span class="v" id="ganSubV" style="color:var(--vermilion)">${fmt(c.ganancias)}</span></div>
   `));
 
   box.appendChild(card('capex','七','⑦ CapEx amortizado','fij','La obra y el equipamiento prorrateados. No es caja mensual, pero sin esto creés que ganás más de lo que ganás.', `
@@ -2417,20 +2524,30 @@ function turnoRow(t,i){
 }
 function setTurno(i,field,v){ S.turnos[i][field]=parseFloat(v)||0; renderOutputs(); refreshSubtotals(); }
 function laborRow(x,i){
+  const auto = x.cargas==='rd'||x.cargas==='mono';
   return `<div class="row">
     <input type="text" class="name" value="${esc(x.name)}" oninput="setList('labor',${i},'name',this.value)">
     <div class="ifield"><span class="pre">$</span><input type="number" class="small" value="${x.gross}" oninput="setList('labor',${i},'gross',this.value)" title="bruto"></div>
-    <div class="ifield"><span class="pre">×</span><input type="number" step="0.05" class="small" value="${x.mult}" oninput="setList('labor',${i},'mult',this.value)" title="multiplicador cargas"></div>
+    <select class="sel" style="font-size:11px" title="cómo se calculan las cargas" onchange="setLaborCargas(${i},this.value)"><option value="manual"${x.cargas==='manual'||!x.cargas?' selected':''}>× manual</option><option value="rd"${x.cargas==='rd'?' selected':''}>rel. dep.</option><option value="mono"${x.cargas==='mono'?' selected':''}>monotrib.</option></select>
+    <div class="ifield"><span class="pre">×</span><input type="number" step="0.05" class="small" value="${laborMult(x).toFixed(2)}" ${auto?'disabled':''} oninput="setList('labor',${i},'mult',this.value)" title="multiplicador cargas"></div>
     <button class="delrow" onclick="delItem('labor',${i})" title="quitar">×</button>
   </div>`;
 }
+const IVA_OPTS=[0,10.5,21,27];
 function amtRow(cat,x,i){
+  const iv = x.iva!=null ? x.iva : 21;
   return `<div class="row">
     <input type="text" class="name" value="${esc(x.name)}" oninput="setList('${cat}',${i},'name',this.value)">
     <div class="ifield"><span class="pre">$</span><input type="number" value="${x.amount}" oninput="setList('${cat}',${i},'amount',this.value)"></div>
+    <select class="sel" style="font-size:11px" title="alícuota de IVA de la factura (crédito fiscal)" onchange="setList('${cat}',${i},'iva',this.value)">${IVA_OPTS.map(o=>`<option value="${o}"${+iv===o?' selected':''}>IVA ${o}%</option>`).join('')}</select>
     <button class="delrow" onclick="delItem('${cat}',${i})" title="quitar">×</button>
   </div>`;
 }
+function setLaborCargas(i,v){ S.labor[i].cargas=v; if(v==='rd'||v==='mono') S.labor[i].mult=+laborMult(S.labor[i]).toFixed(3); renderInputs(); renderOutputs(); }
+function setCargas(k,v){ S.cargas[k]=parseFloat(v)||0; S.labor.forEach(x=>{ if(x.cargas==='rd') x.mult=+laborMult(x).toFixed(3); }); renderInputs(); renderOutputs(); }
+function setGanMode(m){ S.impuestos.gananciasMode=m; renderInputs(); renderOutputs(); }
+function setEscala(i,k,v){ const e=S.impuestos.escala[i]; if(!e) return; e[k]=parseFloat(v)||0; renderOutputs(); refreshSubtotals(); }
+function setAnticipos(on){ S.impuestos.anticipos=!!on; renderOutputs(); }
 const esc = s => String(s).replace(/"/g,'&quot;');
 
 /* ----------------------------- state setters ----------------------------- */
@@ -2479,6 +2596,8 @@ function refreshSubtotals(){
     const cmv=document.getElementById('dlvCmV'); if(cmv){ cmv.textContent=fmt(c.dlv.cm); cmv.style.color=c.dlv.cm>=0?'var(--good)':'var(--vermilion)'; }
   }
   const gs=document.getElementById('ganSubV'); if(gs) gs.textContent=fmt(c.ganancias);
+  const gl=document.getElementById('ganSubL'); if(gl) gl.textContent=`Ganancias estimadas · ${pct(c.gananciasEff)} efectiva − ${fmt(c.bankCredit)} déb/créd a cuenta`;
+  const ic=cd2('imp'); if(ic){ const l=ic.querySelector('.subtotal .l'); if(l) l.textContent=`Impuestos operativos · IIBB ${fmt(c.iibb)} + déb/créd ${fmt(c.bankTax)}`; }
 }
 const cd2 = k => document.querySelector(`.card[data-key="${k}"]`);
 
@@ -2576,7 +2695,7 @@ function renderOutputs(){
   }).join('');
   body += `<tr class="tot"><td>Costo total operativo</td><td class="num r">${fmt(c.totalCost)}</td><td class="r"><span class="pct n">${pct(c.totalCost/c.revenue*100)}</span></td><td></td></tr>`;
   body += `<tr class="res"><td><b>Resultado operativo</b></td><td class="num r" style="color:${c.resultado>=0?'var(--good)':'var(--bad)'}">${fmt(c.resultado)}</td><td class="r"><span class="pct ${bench('margen',c.margenPct)}">${pct(c.margenPct)}</span></td><td></td></tr>`;
-  body += `<tr><td class="cat" style="color:var(--ink-soft)">− Impuesto a Ganancias (${(S.impuestos.gananciasPct||0)}%)</td><td class="num r" style="color:var(--vermilion)">−${fmt(c.ganancias)}</td><td class="r"><span class="pct n">${pct(c.revenue?c.ganancias/c.revenue*100:0)}</span></td><td></td></tr>`;
+  body += `<tr><td class="cat" style="color:var(--ink-soft)">− Impuesto a Ganancias (${pct(c.gananciasEff)}${c.bankCredit>0?' · neto de '+fmt(c.bankCredit)+' déb/créd a cuenta':''})</td><td class="num r" style="color:var(--vermilion)">−${fmt(c.ganancias)}</td><td class="r"><span class="pct n">${pct(c.revenue?c.ganancias/c.revenue*100:0)}</span></td><td></td></tr>`;
   body += `<tr class="res" style="border-top:2px solid var(--brass)"><td><b>Resultado final</b><br><span style="font-size:9.5px;color:var(--ink-soft);font-weight:400">después de impuestos · IVA ya neteado</span></td><td class="num r" style="color:${c.resultadoFinal>=0?'var(--good)':'var(--bad)'};font-size:16px">${fmt(c.resultadoFinal)}</td><td class="r"><span class="pct ${bench('margen',c.margenFinalPct)}">${pct(c.margenFinalPct)}</span></td><td></td></tr>`;
   document.getElementById('bdtable').innerHTML = body;
   renderCascade(c);
@@ -2624,7 +2743,7 @@ const fmtK = n => { const a=Math.abs(n), s=n<0?'-':''; return a>=1000 ? s+'$'+(a
    extra y pauta) van aparte en `dlv`, para que el prorrateo por servicio y la
    caja los traten como lo que son: costos del canal, no del salón. */
 function fixedCosts(){
-  const labor = S.labor.reduce((a,x)=>a+(x.gross||0)*(x.mult||0),0);
+  const labor = S.labor.reduce((a,x)=>a+(x.gross||0)*laborMult(x),0);
   const ocup  = S.ocupacion.reduce((a,x)=>a+(x.amount||0),0);
   const oper  = S.operacion.reduce((a,x)=>a+(x.amount||0),0);
   const capex = S.capex.inversion/Math.max(1,S.capex.anios*12);
@@ -2642,8 +2761,12 @@ function atOcc(occPct){
   const cmv=omR*S.cmv.foodPct/100 + bvR*S.cmv.bevPct/100;
   const d=deliveryCalc(S);
   const rev=salon+d.rev;
-  const variable = cmv + salon*ivaDiv*S.pagos.procPct/100 + salon*(S.impuestos.iibbPct+S.impuestos.debCredPct)/100 + d.variable;
+  const tmix=(S.pagos.defCard+S.pagos.defCash+S.pagos.defQR)||100;
+  const bankIn = salon*ivaDiv*(S.pagos.defCard+S.pagos.defQR)/tmix;
   const fx=fixedCosts().total;
+  const pre = cmv + salon*ivaDiv*S.pagos.procPct/100 + d.variable;
+  const bankOut = (pre + fx) * (S.impuestos.bankSharePagos||0)/100;
+  const variable = pre + salon*S.impuestos.iibbPct/100 + (bankIn+bankOut)*bankTaxRate(S);
   return {rev,salon,delivery:d.rev,variable,fixed:fx,total:variable+fx,res:rev-variable-fx};
 }
 
@@ -2812,28 +2935,32 @@ function renderPayback(){
 function ivaCompute(){
   const c=compute(), v=S.iva;
   const debito   = c.revenue * v.rateVentas/100;
-  const credCMV  = c.cmv  * v.rateCMV/100;
-  const credOcup = c.ocup * (v.shareOcup/100) * (v.rateVentas/100);
-  const credOper = c.oper * (v.shareOper/100) * (v.rateVentas/100);
+  const cmvRate  = ivaCreditCMVRate(S);
+  const credCMV  = c.cmv * cmvRate.rate/100;
+  const credOcup = ivaCreditLines(S.ocupacion);
+  const credOper = ivaCreditLines(S.operacion);
   const credPagos= c.pagos * (v.rateVentas/100);
   /* delivery: envases y comisiones de apps facturan con IVA 21%; el cadete suele ser monotributista (sin crédito) */
   const credDlv  = (c.dlv.packaging + c.dlv.app + c.dlv.ads) * (v.rateVentas/100);
   const credito  = credCMV + credOcup + credOper + credPagos + credDlv;
   const neto     = debito - credito;
   const float    = Math.max(0,neto) * (v.deferDays/30);
-  const benefAnual = float * v.yieldAnual/100;
+  /* el diferimiento vale lo que se devalúa el peso mientras tenés la plata */
+  const benefAnual = Math.max(0,neto)*12 * (1 - 1/Math.pow(1+(v.devalAnual||0)/100, (v.deferDays||0)/365));
   const burden   = c.revenue ? neto/c.revenue*100 : 0;
   const grossCash= c.revenue * (1 + v.rateVentas/100);
-  return {debito,credCMV,credOcup,credOper,credPagos,credDlv,credito,neto,float,benefAnual,burden,grossCash};
+  return {debito,credCMV,credOcup,credOper,credPagos,credDlv,credito,neto,float,benefAnual,burden,grossCash,cmvRate};
 }
+function setIvaSrc(on){ S.iva.creditFromCompras=!!on; renderInputs(); renderOutputs(); }
 function renderIvaInputs(){
+  const r=ivaCreditCMVRate(S);
   document.getElementById('ivaInputs').innerHTML = `
     ${numRow('Alícuota IVA sobre ventas','iva.rateVentas',S.iva.rateVentas,'%',1,'')}
-    ${numRow('IVA crédito efectivo s/ CMV','iva.rateCMV',S.iva.rateCMV,'%',1,'pescado 10,5% · resto 21% · monotributistas 0%')}
-    ${numRow('% de Ocupación con crédito IVA','iva.shareOcup',S.iva.shareOcup,'%',0,'servicios + alquiler de resp. inscripto')}
-    ${numRow('% de Operación con crédito IVA','iva.shareOper',S.iva.shareOper,'%',0,'software, marketing, mantenimiento')}
-    ${numRow('Diferimiento de pago (PyME)','iva.deferDays',S.iva.deferDays,'',0,'días — el Reg. PyME paga a 90')}
-    ${numRow('Rendimiento anual del float','iva.yieldAnual',S.iva.yieldAnual,'%',1,'tasa a la que rinde la caja retenida')}
+    <label class="chkrow"><input type="checkbox" ${S.iva.creditFromCompras!==false?'checked':''} onchange="setIvaSrc(this.checked)"><span>Crédito s/ CMV desde las compras reales <span class="sub2">(${r.src==='compras'?'hoy '+r.rate.toFixed(1)+'% efectivo · '+r.n+' facturas en 90 días':'sin historial suficiente en 仕入: usa el % manual'})</span></span></label>
+    ${numRow('IVA crédito s/ CMV (manual)','iva.rateCMV',S.iva.rateCMV,'%',1,'pescado 10,5% · resto 21% · monotributistas 0% · se usa si no hay compras')}
+    <p class="note" style="margin:6px 0">El crédito de alquiler, servicios y operación sale de la <b>alícuota de cada línea</b> en las tarjetas ③ y ④ (luz y gas 27%, expensas sin IVA, el resto 21%).</p>
+    ${numRow('Diferimiento de pago (PyME)','iva.deferDays',S.iva.deferDays,'',0,'días — la posición es mensual y el Reg. PyME la paga a 90')}
+    ${numRow('Devaluación esperada anual','iva.devalAnual',S.iva.devalAnual,'%',0,'lo que vale pagar en pesos más tarde')}
   `;
 }
 function renderIvaOutputs(){
@@ -2843,15 +2970,15 @@ function renderIvaOutputs(){
     <div class="wfrow"><div class="wfl">Caja bruta que cobrás<span class="s">facturación × ${(1+S.iva.rateVentas/100).toFixed(2)}</span></div><div class="wfv">${fmt(m.grossCash)}</div></div>
     <div class="wfrow"><div class="wfl">IVA débito<span class="s">el IVA que te paga el cliente</span></div><div class="bar"><i style="width:100%;background:var(--indigo)"></i></div><div class="wfv">${fmt(m.debito)}</div></div>
     <div class="wfrow"><div class="wfl">− IVA crédito<span class="s">el que recuperás de tus compras</span></div><div class="bar"><i style="width:${bw(m.credito)}%;background:var(--brass)"></i></div><div class="wfv">−${fmt(m.credito)}</div></div>
-    <div class="wfrow neto"><div class="wfl"><b>= IVA neto a remitir</b><span class="s">${pct(m.burden)} de tu facturación · ${fmt(m.neto*3)} por trimestre</span></div><div class="bar"><i style="width:${bw(m.neto)}%;background:var(--vermilion)"></i></div><div class="wfv">${fmt(m.neto)}</div></div>
+    <div class="wfrow neto"><div class="wfl"><b>= IVA neto a remitir</b><span class="s">${pct(m.burden)} de tu facturación · posición mensual · crédito CMV ${m.cmvRate.rate.toFixed(1)}% ${m.cmvRate.src==='compras'?'(de compras)':'(manual)'}</span></div><div class="bar"><i style="width:${bw(m.neto)}%;background:var(--vermilion)"></i></div><div class="wfv">${fmt(m.neto)}</div></div>
   </div>`;
   let timing;
   if(m.neto>0){
     timing = `<div class="timing">
       <div class="tl">Caja en tránsito · diferimiento a ${S.iva.deferDays} días</div>
       <div class="big">${fmt(m.float)}</div>
-      <div class="ben">rinde +${fmt(m.benefAnual)}/año a ${pct(S.iva.yieldAnual)}</div>
-      <p>Cobrás el IVA hoy y lo remitís recién en ~${Math.round(S.iva.deferDays/30)} ${Math.round(S.iva.deferDays/30)===1?'mes':'meses'}. Ese capital queda trabajando como working capital mientras tanto — es la ventaja financiera del régimen PyME.</p>
+      <div class="ben">vale +${fmt(m.benefAnual)}/año con ${pct(S.iva.devalAnual||0)} de devaluación</div>
+      <p>Cobrás el IVA hoy y remitís cada posición mensual recién a ${S.iva.deferDays} días. Pagás el mismo monto en pesos con pesos que valen menos; en dólares, eso es lo que te ahorra el régimen PyME.</p>
     </div>`;
   } else {
     timing = `<div class="timing">
@@ -2992,11 +3119,13 @@ function exportPL(){
     ['Ocupación', -Math.round(c.ocup), '-'+pf(c.ocup)],
     ['Operación', -Math.round(c.oper), '-'+pf(c.oper)],
     ['Procesamiento de pagos', -Math.round(c.pagos), '-'+pf(c.pagos)],
-    ['Impuestos operativos (IIBB+déb/créd)', -Math.round(c.imp), '-'+pf(c.imp)],
+    ['Ingresos Brutos', -Math.round(c.iibb), '-'+pf(c.iibb)],
+    ['Débitos y créditos bancarios', -Math.round(c.bankTax), '-'+pf(c.bankTax)],
     ['CapEx amortizado', -Math.round(c.capex), '-'+pf(c.capex)],
     ['Delivery · canal (envase + apps + envíos + pauta)', -Math.round(c.delivery), '-'+pf(c.delivery)],
     ['RESULTADO OPERATIVO', Math.round(c.resultado), c.margenPct.toFixed(1)],
-    ['Impuesto a Ganancias ('+(S.impuestos.gananciasPct||0)+'%)', -Math.round(c.ganancias), '-'+pf(c.ganancias)],
+    ['Impuesto a Ganancias ('+c.gananciasEff.toFixed(1)+'% efectiva)', -Math.round(c.gananciasGross), '-'+pf(c.gananciasGross)],
+    ['  · déb/créd computado a cuenta', Math.round(c.bankCredit), pf(c.bankCredit)],
     ['RESULTADO FINAL', Math.round(c.resultadoFinal), c.margenFinalPct.toFixed(1)],
     [],
     ['Caja IVA (no afecta el margen)'],
@@ -3126,7 +3255,7 @@ function servicesPerMonth(){ return Math.max(1, S.turnos.reduce((a,t)=>a+(t.days
 /* los fijos comunes se reparten entre salón y delivery según deliveryFixedShare():
    cada servicio de salón carga su parte del (1 − share); cada día de delivery, del share */
 function laborAlloc(turnoId){
-  const labor = S.labor.reduce((a,x)=>a+(x.gross||0)*(x.mult||0),0) * (1-deliveryFixedShare());
+  const labor = S.labor.reduce((a,x)=>a+(x.gross||0)*laborMult(x),0) * (1-deliveryFixedShare());
   let totalW=0; S.turnos.forEach(t=>{ totalW += (t.days||0)*(t.laborW!=null?t.laborW:1); });
   const t=S.turnos.find(t=>t.id===turnoId);
   const w = t ? (t.laborW!=null?t.laborW:1) : 1;
@@ -3173,7 +3302,7 @@ function serviceMetrics(sv){
   const cmv = netFood*S.cmv.foodPct/100 + netBev*S.cmv.bevPct/100;
   const cardRate=(S.pagos.cardRate||0)/100, qrRate=(S.pagos.qrRate||0)/100;
   const pagos = cardAmt*cardRate + qrAmt*qrRate;       // efectivo no paga comisión
-  const imp = declaredNet*(S.impuestos.iibbPct+S.impuestos.debCredPct)/100;  // sólo lo declarado tributa
+  const imp = declaredNet*S.impuestos.iibbPct/100 + (cardAmt+qrAmt)*bankTaxRate(S);  // IIBB sólo sobre lo declarado; déb/créd sobre lo que entra por banco
   /* Hito 人: si el servicio tiene fichajes cerrados y tarifas, el costo laboral es el real */
   const laborRealV = (typeof htLaborReal==='function') ? htLaborReal(sv) : null;
   const allocLabor = laborRealV!=null ? laborRealV : laborAlloc(sv.turno);
@@ -3364,7 +3493,7 @@ function deliveryMetrics(d){
   const commission=app*(dv.appPct||0)/100;
   const courier=Math.round(orders*(1-appShare))*(dv.courier||0);
   const pagos=(own-ownCash)*(S.pagos.procPct||0)/100;
-  const imp=net*((S.impuestos.iibbPct||0)+(S.impuestos.debCredPct||0))/100;
+  const imp=net*(S.impuestos.iibbPct||0)/100 + (gross-ownCash)*bankTaxRate(S);   /* lo que no es efectivo entra por banco */
   const cancelCost=(d.cancel||0)*((d.food||0)/Math.max(1,orders))/div*foodPct/100;   /* comida tirada */
   const variable=cmv+packaging+commission+courier+pagos+imp+cancelCost;
   const contrib=net-variable;
@@ -3699,7 +3828,7 @@ function paymentPanelHtml(recs){
   const tot=card+qr+cash||1;
   const fees=sum(r=>r.m.pagos), disc=sum(r=>r.m.cashDiscount), undecl=sum(r=>r.m.undeclared);
   const revNet=sum(r=>r.m.netTotal);
-  const taxSaved = undecl/(1+S.iva.rateVentas/100) * ((S.iva.rateVentas+S.impuestos.iibbPct+S.impuestos.debCredPct)/100);
+  const taxSaved = undecl/(1+S.iva.rateVentas/100) * ((S.iva.rateVentas+S.impuestos.iibbPct)/100);
   const segs=[['Tarjeta',card/tot*100,'var(--indigo)',card],['QR',qr/tot*100,'var(--brass)',qr],['Efectivo',cash/tot*100,'var(--good)',cash]];
   let bar='<div class="compbar">'+segs.map(([l,p,c])=>`<div class="cseg" style="width:${Math.max(0,p)}%;background:${c}" title="${l}: ${p.toFixed(1)}%">${p>9?`<span>${Math.round(p)}%</span>`:''}</div>`).join('')+'</div>';
   const leg='<div class="complegend">'+segs.map(([l,p,c,v])=>`<div class="cl2"><span class="sw" style="background:${c}"></span>${l}<span class="lp">${fmt(v)}</span></div>`).join('')+'</div>';
@@ -5880,21 +6009,32 @@ function cjBuild(){
   const weeks=[];
   let saldo=caja.saldo0||0;
   let minW=null;
+  let retPool=0;                                                   /* retenciones acumuladas (pago a cuenta) */
+  const useRet=(amt)=>{ const u=Math.min(retPool,Math.max(0,amt)); retPool-=u; return u; };
+  const deferM=Math.max(0, Math.round((S.iva.deferDays||0)/30));
+  const c0=compute(), iva0=ivaCompute();
+  const scaleIva = c0.revenue>0 ? 1 : 0;                           /* posición mensual escalada a la venta de la semana */
+  const ganM = (S.impuestos.anticipos!==false && c0.ganancias>0) ? c0.ganancias : 0;
   for(let i=0;i<H;i++){
     const ws=new Date(w0.getTime()+i*7*86400000);
     const we=new Date(ws.getTime()+6*86400000);
     const gross=weekGross[i], net=gross/div;
     const inCash=gross*pCash;
-    const inQR=gross*pQR*(1-qrRate);
+    const cardRet=(S.pagos.cardRetPct||0)/100, qrRet=(S.pagos.qrRetPct||0)/100;
+    const inQR=gross*pQR*(1-qrRate-qrRet);
     const cardSettled = i-lagW>=0 ? weekGross[i-lagW]*pCard : steadyCard;   /* pre-horizonte: régimen estable */
-    const inCard=cardSettled*(1-cardRate);
+    const inCard=cardSettled*(1-cardRate-cardRet);
+    const retW = cardSettled*cardRet + gross*pQR*qrRet;                     /* retenido: pago a cuenta, va al pozo */
     /* delivery: apps con rezago y neto de comisión; propio en la semana, neto de procesamiento */
     const dw=dW(i), dwLag=dW(Math.max(0,i-appLagW));
     const inApp=dwLag.app*(1-(dvp.appPct||0)/100);
     const inOwn=dw.own*(1-(S.pagos.procPct||0)/100);
     const inflow=inCash+inQR+inCard+inApp+inOwn;
+    retPool+=retW;
     const lines=[];
     let out=0;
+    /* débitos y créditos: sobre lo que entra por banco esta semana (tarjeta, QR, apps, link) y lo que sale por banco */
+    const bankInW=inQR+inCard+inApp+inOwn;
     const cmvW=net*blendCmv; out+=cmvW; lines.push(['CMV (compras)', -cmvW]);
     let dNet=0;
     if(dvOn && dw.orders>0){
@@ -5909,28 +6049,34 @@ function cjBuild(){
     for(let d=new Date(ws.getTime()); d<=we; d.setDate(d.getDate()+1)){
       const day=d.getDate(), mo=d.getMonth();
       if(day===1){ out+=fx0.ocup+fx0.oper; lines.push(['Alquiler + operación', -(fx0.ocup+fx0.oper)]);
-        const iibb=(net+dNet)*WEEKS_PER_MONTH*(S.impuestos.iibbPct+S.impuestos.debCredPct)/100;
-        out+=iibb; lines.push(['IIBB + déb/créd (mes ant.)', -iibb]);
         if(dcalc.ads>0){ out+=dcalc.ads; lines.push(['Pauta en apps', -dcalc.ads]); } }
       if(day===4){ const sal=fx0.labor+dcalc.laborExtra; out+=sal; lines.push(['Sueldos (mes ant.)', -sal]); }
-      if(day===1 && [3,6,9,0].includes(mo)){ /* abr jul oct ene: IVA del trimestre anterior */
+      if(day===13 && ganM>0){ const a=ganM, u=useRet(a); out+=a-u; lines.push(['Anticipo Ganancias'+(u>0?' (neto de retenciones)':''), -(a-u)]); }
+      if(day===15){ /* IIBB del mes anterior, neto de lo retenido por tarjetas y apps */
+        const iibb=(net+dNet)*WEEKS_PER_MONTH*(S.impuestos.iibbPct||0)/100; const u=useRet(iibb);
+        out+=iibb-u; lines.push(['IIBB (mes ant.)'+(u>0?' neto de retenciones':''), -(iibb-u)]); }
+      if(day===20){ /* IVA: posición mensual del mes (hoy − diferimiento), a la escala de venta de esta semana */
         const netM=net*WEEKS_PER_MONTH, dNetM=dNet*WEEKS_PER_MONTH;
         const deb=(netM+dNetM)*S.iva.rateVentas/100;
         const feesM=(gross*pCard*cardRate + gross*pQR*qrRate + dw.own*(S.pagos.procPct||0)/100)*WEEKS_PER_MONTH;   /* comisiones facturan con IVA */
-        const cred=netM*blendCmv*S.iva.rateCMV/100 + dNetM*dBlendCmv*S.iva.rateCMV/100 + (fx0.ocup*S.iva.shareOcup/100+fx0.oper*S.iva.shareOper/100)*ivaRate
+        const cmvR=ivaCreditCMVRate(S).rate/100;
+        const cred=netM*blendCmv*cmvR + dNetM*dBlendCmv*cmvR + ivaCreditLines(S.ocupacion)+ivaCreditLines(S.operacion)
                  + feesM*ivaRate + (dvOn ? (dw.orders*WEEKS_PER_MONTH*(dvp.packaging||0) + dw.app*WEEKS_PER_MONTH*(dvp.appPct||0)/100)*ivaRate : 0);
-        const ivaQ=Math.max(0,(deb-cred)*3);
-        out+=ivaQ; lines.push(['IVA trimestral (aprox.)', -ivaQ, 'iva']); }
+        const ivaM=Math.max(0,deb-cred); const u=useRet(ivaM);
+        if(ivaM>0){ out+=ivaM-u; lines.push(['IVA mensual (pos. a '+deferM+' m)'+(u>0?' neto de retenciones':''), -(ivaM-u), 'iva']); } }
     }
+    /* débitos y créditos bancarios: sobre entradas y sobre la parte de las salidas que va por banco */
+    const bankTaxW=(bankInW + out*(S.impuestos.bankSharePagos||0)/100)*bankTaxRate(S);
+    if(bankTaxW>0){ out+=bankTaxW; lines.push(['Déb/créd bancarios', -bankTaxW]); }
     (caja.extras||[]).forEach(e=>{ const ed=parseDate(e.date); if(ed>=ws&&ed<=we){ if(e.amt>=0){ lines.push([e.label, e.amt,'extra']); } else { out+=-e.amt; lines.push([e.label, e.amt,'extra']); } } });
     const extraIn=(caja.extras||[]).reduce((a,e)=>{ const ed=parseDate(e.date); return (ed>=ws&&ed<=we&&e.amt>0)? a+e.amt : a; },0);
     saldo += inflow+extraIn-out;
-    const wk={i, ws, we, gross:gross+dw.gross, inflow:inflow+extraIn, out, saldo, lines, iva:lines.some(l=>l[2]==='iva'), dlvGross:dw.gross, dlvIn:inApp+inOwn};
+    const wk={i, ws, we, gross:gross+dw.gross, inflow:inflow+extraIn, out, saldo, lines, iva:lines.some(l=>l[2]==='iva'), dlvGross:dw.gross, dlvIn:inApp+inOwn, ret:retW, retPool};
     if(minW==null||saldo<minW.saldo) minW=wk;
     weeks.push(wk);
   }
   if(dvOn && dfc) source += ' · delivery: '+(dfc.hasData?'registro 配':'plan 勘定');
-  return {weeks, minW, source, safety:fx0.total, useFc, dvOn};
+  return {weeks, minW, source, safety:fx0.total, useFc, dvOn, retPool};
 }
 
 function cjChart(weeks, safety){
@@ -5958,7 +6104,7 @@ function renderCaja(){
   kp.innerHTML=
     kpiH('Saldo mínimo proyectado', fmt(B.minW.saldo), B.minW.saldo<0?'var(--bad)':B.minW.saldo<B.safety?'var(--brass-deep)':'var(--good)', 'semana del '+fmtDate(B.minW.ws))+
     kpiH('Saldo a '+caja.horizon+' semanas', fmt(last.saldo), last.saldo>=caja.saldo0?'var(--good)':'var(--ink)', (last.saldo-caja.saldo0>=0?'+':'')+fmt(last.saldo-caja.saldo0).replace('$-','-$')+' vs hoy')+
-    kpiH('Próximo IVA trimestral', nextIva? fmt(-(nextIva.lines.find(l=>l[2]==='iva')[1])) : '—', 'var(--brass-deep)', nextIva? 'semana del '+fmtDate(nextIva.ws)+' · estimado' : 'fuera del horizonte');
+    kpiH('Próximo IVA mensual', nextIva? fmt(-(nextIva.lines.find(l=>l[2]==='iva')[1])) : '—', 'var(--brass-deep)', nextIva? 'semana del '+fmtDate(nextIva.ws)+' · pos. diferida '+Math.round((S.iva.deferDays||0)/30)+' m' : 'fuera del horizonte');
 
   const hbtn=n=>`<button class="${caja.horizon===n?'on':''}" onclick="cjSetHorizon(${n})">${n} sem</button>`;
   ctrl.innerHTML=`
@@ -5981,7 +6127,8 @@ function renderCaja(){
   const alerts=[];
   if(B.minW.saldo<0) alerts.push({sev:'bad', txt:`La caja se pone <b>negativa</b> la semana del <b>${fmtDate(B.minW.ws)}</b> (${fmt(B.minW.saldo)}). Adelantá cobros, demorá un pago grande o cubrí con aporte antes de esa fecha.`});
   else if(B.minW.saldo<B.safety) alerts.push({sev:'warn', txt:`El saldo mínimo (${fmt(B.minW.saldo)}) queda por debajo del colchón de un mes de costos fijos (${fmt(B.safety)}). No es crisis, pero un mal mes te deja sin aire.`});
-  if(nextIva){ const amt=-(nextIva.lines.find(l=>l[2]==='iva')[1]); if(amt>B.safety*0.5) alerts.push({sev:'warn', txt:`El IVA trimestral estimado (${fmt(amt)}) es un golpe grande: separá ~${fmt(amt/13*4.33)} por mes en una cuenta aparte y el pago deja de doler.`}); }
+  if(nextIva){ const amt=-(nextIva.lines.find(l=>l[2]==='iva')[1]); if(amt>B.safety*0.3) alerts.push({sev:'warn', txt:`El IVA mensual estimado (${fmt(amt)}) es un tercio del colchón: separalo en una cuenta aparte al cobrar y el pago del día 20 deja de doler.`}); }
+  if(B.retPool>0) alerts.push({sev:'warn', txt:`Al final del horizonte quedan <b>${fmt(B.retPool)}</b> de retenciones sin aplicar: son saldo a favor de IVA/Ganancias/IIBB. Que el contador las compute, si no las pagás dos veces.`});
   const alertsHtml = alerts.length? `<div class="alerts">${alerts.map(a=>`<div class="alert ${a.sev}">${a.txt}</div>`).join('')}</div>` : `<div class="okstate">✓ La caja se mantiene por encima del colchón de seguridad en todo el horizonte.</div>`;
 
   const rows=B.weeks.map(w=>`<tr${w.saldo<0?' style="background:#f6ebe9"':''}>
@@ -5992,10 +6139,10 @@ function renderCaja(){
 
   out.innerHTML=`
     <div class="panel"><h3>Saldo proyectado</h3>${cjChart(B.weeks,B.safety)}
-      <p class="desc" style="margin:8px 0 0">Línea roja = caja en cero · punteada dorada = colchón de un mes de fijos · ▼ = pago de IVA trimestral. Los cobros con tarjeta entran con ${caja.cardLag} días de rezago; el efectivo y QR, en la semana.${B.dvOn?` Las apps de delivery liquidan a ${caja.appLag} días y ya neto de su comisión (${S.delivery.appPct||0}%); envases y cadete salen en la semana.`:''}</p></div>
+      <p class="desc" style="margin:8px 0 0">Línea roja = caja en cero · punteada dorada = colchón de un mes de fijos · ▼ = pago de IVA mensual (posición diferida a ${S.iva.deferDays} días). Los cobros con tarjeta entran con ${caja.cardLag} días de rezago; el efectivo y QR, en la semana.${B.dvOn?` Las apps de delivery liquidan a ${caja.appLag} días y ya neto de su comisión (${S.delivery.appPct||0}%); envases y cadete salen en la semana.`:''}</p></div>
     ${alertsHtml}
     <div class="panel"><h3>Detalle semana a semana</h3><div style="overflow-x:auto"><table class="gkins"><thead><tr><th style="text-align:left">Semana</th><th>Cobros</th><th>Egresos</th><th>Saldo</th><th style="text-align:left">Eventos</th></tr></thead><tbody>${rows}</tbody></table></div>
-      <p class="desc" style="margin:10px 0 0">Modelo <b>aproximado</b> y transparente: alquiler+operación e IIBB el día 1, sueldos el 4, IVA trimestral el 1 de abr/jul/oct/ene. Las compras de CMV se asumen semanales y proporcionales a la venta. No reemplaza al contador — te avisa antes que él.</p></div>`;
+      <p class="desc" style="margin:10px 0 0">Modelo <b>aproximado</b> y transparente: alquiler+operación el día 1, sueldos el 4, anticipo de Ganancias el 13, IIBB el 15, IVA (posición mensual diferida) el 20; débitos y créditos cada semana sobre lo que pasa por el banco. Las retenciones de tarjeta y QR bajan el cobro y se descuentan de esos vencimientos. Las compras de CMV se asumen semanales y proporcionales a la venta. No reemplaza al contador — te avisa antes que él.</p></div>`;
   renderLiq();
 }
 
@@ -6888,7 +7035,7 @@ function renderResumen(){
     ])+
     sec('Caja y precios', [
       row('Saldo mínimo ('+(B?caja.horizon:'—')+' sem)', B?fmt(B.minW.saldo):'—', cajC, B?'colchón: '+fmt(B.safety):''),
-      row('Próximo IVA trimestral', (B&&B.weeks.find(w=>w.iva))? fmt(-(B.weeks.find(w=>w.iva).lines.find(l=>l[2]==='iva')[1])) : '—', 's', (B&&B.weeks.find(w=>w.iva))?'semana del '+fmtDate(B.weeks.find(w=>w.iva).ws):'fuera de horizonte'),
+      row('Próximo IVA mensual', (B&&B.weeks.find(w=>w.iva))? fmt(-(B.weeks.find(w=>w.iva).lines.find(l=>l[2]==='iva')[1])) : '—', 's', (B&&B.weeks.find(w=>w.iva))?'semana del '+fmtDate(B.weeks.find(w=>w.iva).ws):'fuera de horizonte'),
       row('Inflación canasta (90d)', basket? (basket.pct>=0?'+':'')+basket.pct.toFixed(1)+'%' : '—', basC, basket? basket.n+' insumos con historial':'cargá compras 仕入'),
       row('Precio del menú', rp.price>0? fmt(rp.price)+(rp.breach?' → '+fmt(rp.needGross):' ✓') : '—', rpC, rp.breach? 'sugerido para sostener '+rp.tgt+'%':'sostiene el target de '+rp.tgt+'%'),
     ])+
